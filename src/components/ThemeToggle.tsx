@@ -1,9 +1,9 @@
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef } from 'react';
 
-const ThemeToggle = () => {
+const ThemeToggle = forwardRef<HTMLButtonElement>((_, ref) => {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -34,6 +34,7 @@ const ThemeToggle = () => {
 
   return (
     <motion.button
+      ref={ref}
       onClick={toggleTheme}
       className="relative w-10 h-10 flex items-center justify-center rounded-full border border-border/50 bg-card/30 hover:bg-card/50 hover:border-primary/30 transition-colors"
       whileHover={{ scale: 1.05 }}
@@ -73,6 +74,8 @@ const ThemeToggle = () => {
       />
     </motion.button>
   );
-};
+});
+
+ThemeToggle.displayName = 'ThemeToggle';
 
 export default ThemeToggle;
