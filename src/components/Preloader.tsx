@@ -51,6 +51,29 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
               fill="none"
               className="overflow-visible"
             >
+              {/* Shimmer gradient definition */}
+              <defs>
+                <linearGradient id="shimmerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+                  <stop offset="40%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+                  <stop offset="50%" stopColor="hsl(var(--primary-foreground))" stopOpacity="0.8" />
+                  <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+                  <animate
+                    attributeName="x1"
+                    values="-100%;100%"
+                    dur="1.5s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="x2"
+                    values="0%;200%"
+                    dur="1.5s"
+                    repeatCount="indefinite"
+                  />
+                </linearGradient>
+              </defs>
+
               {/* Outer ring */}
               <motion.circle
                 cx="40"
@@ -68,12 +91,12 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 style={{ transformOrigin: 'center' }}
               />
               
-              {/* Progress ring - now tracks real asset loading */}
+              {/* Progress ring with shimmer - only shimmer while loading */}
               <motion.circle
                 cx="40"
                 cy="40"
                 r="35"
-                stroke="hsl(var(--primary))"
+                stroke={isComplete ? "hsl(var(--primary))" : "url(#shimmerGradient)"}
                 strokeWidth="2"
                 fill="none"
                 strokeLinecap="round"
