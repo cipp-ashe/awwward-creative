@@ -2,10 +2,10 @@ import { useCursor } from '@/hooks/useCursor';
 import { motion } from 'framer-motion';
 
 const CustomCursor = () => {
-  const { position, isHovering } = useCursor();
+  const { position, isHovering, prefersReducedMotion } = useCursor();
 
-  // Hide on touch devices
-  if (typeof window !== 'undefined' && 'ontouchstart' in window) {
+  // Hide on touch devices or for reduced motion users
+  if (typeof window !== 'undefined' && ('ontouchstart' in window || prefersReducedMotion)) {
     return null;
   }
 

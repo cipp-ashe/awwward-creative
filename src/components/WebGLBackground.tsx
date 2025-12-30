@@ -1,4 +1,4 @@
-import { useRef, useMemo, Suspense } from 'react';
+import { useRef, useMemo, Suspense, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -64,9 +64,14 @@ const vertexShader = `
   }
 `;
 
-const NoisePlane = () => {
+interface NoisePlaneProps {
+  isPaused: boolean;
+}
+
+const NoisePlane = ({ isPaused }: NoisePlaneProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const lastTimeRef = useRef(0);
 
   const uniforms = useMemo(
     () => ({
@@ -77,14 +82,15 @@ const NoisePlane = () => {
   );
 
   useFrame((state) => {
-    if (meshRef.current) {
-      const material = meshRef.current.material as THREE.ShaderMaterial;
-      material.uniforms.uTime.value = state.clock.elapsedTime;
-      
-      mouseRef.current.x += (state.mouse.x - mouseRef.current.x) * 0.05;
-      mouseRef.current.y += (state.mouse.y - mouseRef.current.y) * 0.05;
-      material.uniforms.uMouse.value.set(mouseRef.current.x, mouseRef.current.y);
-    }
+    // Skip updates when paused (tab hidden)
+    if (isPaused || !meshRef.current) return;
+    
+    const material = meshRef.current.material as THREE.ShaderMaterial;
+    material.uniforms.uTime.value = state.clock.elapsedTime;
+    
+    mouseRef.current.x += (state.mouse.x - mouseRef.current.x) * 0.05;
+    mouseRef.current.y += (state.mouse.y - mouseRef.current.y) * 0.05;
+    material.uniforms.uMouse.value.set(mouseRef.current.x, mouseRef.current.y);
   });
 
   return (
@@ -100,6 +106,34 @@ const NoisePlane = () => {
 };
 
 const WebGLBackground = () => {
+  const [isPaused, setIsPaused] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Pause render loop when tab is not visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPaused(document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  // Check reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  // Skip WebGL entirely for reduced motion users
+  if (prefersReducedMotion) {
+    return <div className="fixed inset-0 -z-10 bg-background" />;
+  }
+
   return (
     <div className="fixed inset-0 -z-10 bg-background">
       <Suspense fallback={<div className="w-full h-full bg-background" />}>
@@ -107,8 +141,9 @@ const WebGLBackground = () => {
           camera={{ position: [0, 0, 1], fov: 75 }}
           dpr={[1, 1.5]}
           gl={{ antialias: false, powerPreference: 'high-performance' }}
+          frameloop={isPaused ? 'demand' : 'always'}
         >
-          <NoisePlane />
+          <NoisePlane isPaused={isPaused} />
         </Canvas>
       </Suspense>
     </div>

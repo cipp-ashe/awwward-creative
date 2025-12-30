@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import EasingCurveIndicator from '@/components/EasingCurveIndicator';
 
 gsap.registerPlugin(ScrollTrigger);
+
+// Throttle threshold to prevent excessive React state updates
+const SCROLL_THROTTLE = 0.01;
 
 const MotionSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -11,6 +14,7 @@ const MotionSection = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const lastProgressRef = useRef(0);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -56,13 +60,17 @@ const MotionSection = () => {
         stagger: 0.1,
       });
 
-      // Track scroll progress for easing indicator
+      // Track scroll progress for easing indicator (throttled)
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: 'top bottom',
         end: 'bottom top',
         onUpdate: (self) => {
-          setScrollProgress(self.progress);
+          // Only update state if delta exceeds threshold
+          if (Math.abs(self.progress - lastProgressRef.current) > SCROLL_THROTTLE) {
+            lastProgressRef.current = self.progress;
+            setScrollProgress(self.progress);
+          }
         },
       });
     }, sectionRef);
