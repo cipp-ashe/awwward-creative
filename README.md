@@ -2,6 +2,8 @@
 
 An experimental demonstrator of modern creative web patterns — motion, scroll, typography, and performance working together.
 
+> **Deep Dive**: See [ARCHITECTURE.md](./ARCHITECTURE.md) for comprehensive runtime model documentation, hook dependency graphs, and system boundaries.
+
 ## Architecture Overview
 
 ```
@@ -67,26 +69,32 @@ src/
 │   └── WebGLBackground.tsx  # Three.js noise background
 │
 ├── constants/
-│   ├── animation.ts         # Easing, durations, stagger, delays
+│   ├── animation.ts         # Easing, durations, stagger, delays, GSAP presets
 │   ├── layout.ts            # Z-index, breakpoints, spacing
+│   ├── navigation.ts        # Section configuration (single source of truth)
 │   └── index.ts
 │
 ├── contexts/
-│   └── RevealContext.tsx    # Page reveal state management
+│   ├── MotionConfigContext.tsx  # Reduced motion preferences
+│   └── RevealContext.tsx        # Page reveal state management
 │
 ├── hooks/
-│   ├── useAssetLoader.ts    # Preloader asset tracking
-│   ├── useCursor.ts         # Smooth cursor position
-│   ├── useCursorVisibility.ts # Global cursor DOM state
-│   ├── useLenis.ts          # Smooth scroll initialization
-│   ├── useMobile.ts         # Viewport detection
-│   ├── useScrollTriggerInit.ts # ScrollTrigger initialization
-│   ├── useScrollTriggerRefresh.ts # Layout coordination
-│   ├── useTicker.ts         # GSAP ticker wrapper
-│   └── useToast.ts          # Toast notifications
-│   └── useToast.ts          # Toast notifications
+│   ├── useAssetLoader.ts        # Preloader asset tracking
+│   ├── useCursor.ts             # Smooth cursor position (uses useTicker)
+│   ├── useCursorVisibility.ts   # Global cursor DOM state (App.tsx only)
+│   ├── useLenis.ts              # Smooth scroll + ScrollTrigger proxy
+│   ├── useMobile.ts             # Viewport detection
+│   ├── usePreloaderState.ts     # Loading orchestration
+│   ├── useScrollTriggerInit.ts  # ScrollTrigger mount refresh
+│   ├── useScrollTriggerRefresh.ts # Layout change coordination
+│   ├── useSmoothValue.ts        # Damped value interpolation
+│   ├── useTicker.ts             # GSAP ticker wrapper for React
+│   ├── useToast.ts              # Toast notifications
+│   ├── useWebGLVisibility.ts    # Delayed WebGL mount
+│   └── index.ts                 # Barrel exports
 │
 ├── lib/
+│   ├── animation-runtime.ts # Global GSAP config, motion budget
 │   ├── gsap.ts              # Centralized GSAP plugin registration
 │   ├── math.ts              # lerp, clamp, mapRange utilities
 │   └── utils.ts             # cn() classname helper
@@ -119,9 +127,9 @@ src/
 3. **Lenis** — Smooth scroll physics
    - Butter-smooth scroll interpolation
    - Touch and wheel normalization
-   - Integrates with GSAP ScrollTrigger
+   - Integrates with GSAP ScrollTrigger via `scrollerProxy`
 
-### How They Work Together
+### Scroll Integration Flow
 
 ```
 User Scrolls
@@ -132,48 +140,42 @@ User Scrolls
 └──────┬──────┘
        │
        ▼
+┌─────────────────────┐
+│ ScrollTrigger.      │  Maps virtual scroll position
+│ scrollerProxy       │  to trigger calculations
+└──────┬──────────────┘
+       │
+       ▼
 ┌─────────────┐
 │ ScrollTrigger│  Maps scroll position to animation progress
 └──────┬──────┘
        │
        ├──► GSAP Tweens (transforms, opacity, clip-path)
        │
-       └──► React State Updates (for Framer Motion components)
-                    │
-                    ▼
-            ┌─────────────┐
-            │Framer Motion│  Handles component transitions
-            └─────────────┘
+       └──► useSmoothValue (damped values for shaders, morphing)
 ```
 
-## Runtime Model
+### Runtime Model
 
-### Animation Loop Ownership
+The application uses **two separate animation loops** by design:
 
-The application uses two separate animation loops by design:
+| System | Loop Owner | Consumers |
+|--------|------------|-----------|
+| DOM Animations | `gsap.ticker` | Lenis, useTicker, useCursor, useSmoothValue |
+| WebGL Rendering | React Three Fiber | WebGLBackground, WebGL3DSection |
 
-| System | Loop Owner | Responsibility |
-|--------|------------|----------------|
-| GSAP/Lenis | `gsap.ticker` | Scroll-linked DOM animations, cursor interpolation |
-| WebGL (R3F) | React Three Fiber | 3D scene rendering, shader updates |
+**Time Units Contract**:
+- GSAP ticker provides `deltaTime` in **milliseconds**
+- `useTicker` converts to **seconds** for consumer callbacks
+- All `useSmoothValue` and `useCursor` callbacks receive seconds
 
-This separation is intentional:
-- DOM animations and smooth scrolling share timing via GSAP's ticker
-- WebGL has independent frame budget needs and its own optimized render loop
-- Page Visibility API gates both systems when the tab is backgrounded
-
-### Time Units
-
-- **GSAP ticker deltaTime**: Milliseconds (converted to seconds in `useTicker`)
-- **Consumer callbacks**: Receive seconds for consistency
-
-```
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for complete runtime documentation.
 
 ### Using the Constants
 
 ```tsx
 // Import centralized values
-import { EASING_ARRAY, DURATION, STAGGER } from '@/constants/animation';
+import { EASING_ARRAY, DURATION, STAGGER, SMOOTHING } from '@/constants/animation';
 import { Z_INDEX } from '@/constants/layout';
 
 // Framer Motion
@@ -191,8 +193,8 @@ gsap.to(element, {
   stagger: STAGGER.normal,
 });
 
-// Z-index
-<div style={{ zIndex: Z_INDEX.modal }} />
+// Damped scroll values
+const smoothed = useSmoothValue(rawProgress, { smoothing: SMOOTHING.scroll });
 ```
 
 ### GSAP Best Practices
@@ -201,22 +203,24 @@ gsap.to(element, {
 // Always import from centralized lib (plugins pre-registered)
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 
-// Use context for cleanup
+// Use context for scoped cleanup (REQUIRED)
 useEffect(() => {
   const ctx = gsap.context(() => {
-    // All animations here
+    // All animations here are auto-cleaned on unmount
     gsap.to('.element', { ... });
     
     ScrollTrigger.create({
       trigger: sectionRef.current,
       start: 'top 80%',
-      // ...
+      invalidateOnRefresh: true, // Recalculate on layout changes
     });
-  }, containerRef); // Scope to container
+  }, containerRef);
 
-  return () => ctx.revert(); // Clean up all animations
+  return () => ctx.revert(); // Only kills THIS component's triggers
 }, []);
 ```
+
+**Anti-Pattern**: Never use `ScrollTrigger.killAll()` — it destroys triggers from other components.
 
 ### Math Utilities
 
@@ -263,13 +267,39 @@ import { Section, SectionLabel, SectionContent, SectionHeader } from '@/componen
 </section>
 ```
 
+### Adding New Sections
+
+1. Add config to `src/constants/navigation.ts`
+2. Create component in `src/components/sections/`
+3. Add mapping in `src/pages/Index.tsx` `SECTION_COMPONENTS`
+
+## Accessibility
+
+All animation systems respect `prefers-reduced-motion`:
+
+| System | Behavior when reduced motion |
+|--------|------------------------------|
+| Lenis | Disabled, native scroll |
+| useTicker | Callback skipped |
+| useCursor | Direct position (no lerp) |
+| useSmoothValue | Returns target directly |
+| WebGLBackground | Static gradient fallback |
+
 ## Performance Considerations
 
 - **GPU-only transforms**: Only animate `transform` and `opacity`
 - **Code splitting**: WebGL scenes load on-demand via `React.lazy`
 - **Reduced motion**: All animations respect `prefers-reduced-motion`
-- **Visibility-based rendering**: WebGL pauses when not in viewport
-- **Lerp-based smoothing**: Uses `requestAnimationFrame` for cursor/scroll
+- **Visibility gating**: WebGL pauses when document hidden (Page Visibility API)
+- **Motion budget**: Dev-mode warnings when ScrollTrigger/tween counts exceed thresholds
+
+### Dev Console Debugging
+
+```js
+window.__checkMotionBudget()   // Current trigger/tween counts
+window.__getAnimationStatus()  // Full animation system status
+window.__logScrollTriggers()   // List all active ScrollTriggers
+```
 
 ## Tech Stack
 
@@ -303,4 +333,5 @@ npm run preview
 ## Project Links
 
 - **Lovable**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
-- **Docs**: https://docs.lovable.dev
+- **Architecture Docs**: [ARCHITECTURE.md](./ARCHITECTURE.md)
+- **Lovable Docs**: https://docs.lovable.dev
