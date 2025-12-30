@@ -23,6 +23,19 @@ interface ParticleTrailProps {
   viewBox: { width: number; height: number };
   particleCount?: number;
   scrollProgress?: number;
+  onMouseMove?: (e: React.MouseEvent) => void;
+}
+
+interface MouseBurstParticle {
+  x: number;
+  y: number;
+  velocityX: number;
+  velocityY: number;
+  opacity: number;
+  size: number;
+  life: number;
+  maxLife: number;
+  hue: number;
 }
 
 // Color stops for gradient
@@ -71,6 +84,10 @@ const MAX_BURST_PARTICLES = 40;
 const BURST_SPAWN_COUNT = 5;
 const BURST_LIFETIME = 60; // frames
 
+const MOUSE_BURST_COUNT = 3;
+const MOUSE_BURST_LIFETIME = 45;
+const MAX_MOUSE_BURST = 60;
+
 const ParticleTrail = ({
   pathData,
   width,
@@ -82,11 +99,14 @@ const ParticleTrail = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const burstParticlesRef = useRef<Particle[]>([]);
+  const mouseBurstRef = useRef<MouseBurstParticle[]>([]);
   const pathRef = useRef<SVGPathElement | null>(null);
   const rafRef = useRef<number>();
   const scrollProgressRef = useRef(scrollProgress);
   const prevScrollRef = useRef(scrollProgress);
   const velocityRef = useRef(0);
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
+  const isHoveringRef = useRef(false);
 
   // Track scroll velocity
   useEffect(() => {
@@ -132,7 +152,6 @@ const ParticleTrail = ({
     if (burstParticlesRef.current.length >= MAX_BURST_PARTICLES) return;
 
     const path = pathRef.current;
-    const currentScroll = scrollProgressRef.current;
 
     for (let i = 0; i < BURST_SPAWN_COUNT; i++) {
       const pathPos = Math.random();
@@ -160,6 +179,62 @@ const ParticleTrail = ({
       });
     }
   }, [getPointAtPosition, svgToCanvas]);
+
+  // Spawn mouse-follow burst particles
+  const spawnMouseBurst = useCallback((mouseX: number, mouseY: number) => {
+    if (mouseBurstRef.current.length >= MAX_MOUSE_BURST) return;
+    
+    const currentScroll = scrollProgressRef.current;
+    const baseHue = 32 + currentScroll * 300; // Cycle through hues based on scroll
+    
+    for (let i = 0; i < MOUSE_BURST_COUNT; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 1.5 + Math.random() * 3;
+      const hueVariation = (Math.random() - 0.5) * 40;
+      
+      mouseBurstRef.current.push({
+        x: mouseX + (Math.random() - 0.5) * 10,
+        y: mouseY + (Math.random() - 0.5) * 10,
+        velocityX: Math.cos(angle) * speed,
+        velocityY: Math.sin(angle) * speed,
+        opacity: 0.7 + Math.random() * 0.3,
+        size: 2 + Math.random() * 4,
+        life: MOUSE_BURST_LIFETIME,
+        maxLife: MOUSE_BURST_LIFETIME,
+        hue: (baseHue + hueVariation) % 360,
+      });
+    }
+  }, []);
+
+  // Handle mouse move on canvas
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Calculate mouse velocity
+    const dx = mouseX - lastMousePosRef.current.x;
+    const dy = mouseY - lastMousePosRef.current.y;
+    const mouseSpeed = Math.sqrt(dx * dx + dy * dy);
+    
+    lastMousePosRef.current = { x: mouseX, y: mouseY };
+    
+    // Only spawn if moving fast enough
+    if (mouseSpeed > 3) {
+      spawnMouseBurst(mouseX, mouseY);
+    }
+  }, [spawnMouseBurst]);
+
+  const handleMouseEnter = useCallback(() => {
+    isHoveringRef.current = true;
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    isHoveringRef.current = false;
+  }, []);
 
   const updateParticleTargets = useCallback(() => {
     if (!pathRef.current) return;
@@ -254,6 +329,51 @@ const ParticleTrail = ({
       }
     }
 
+    // Update and draw mouse burst particles
+    const mouseBurst = mouseBurstRef.current;
+    for (let i = mouseBurst.length - 1; i >= 0; i--) {
+      const p = mouseBurst[i];
+      
+      // Update with physics
+      p.x += p.velocityX;
+      p.y += p.velocityY;
+      p.velocityX *= 0.94;
+      p.velocityY *= 0.94;
+      p.velocityY += 0.05; // Slight gravity
+      p.life--;
+
+      const lifeRatio = p.life / p.maxLife;
+      const fadeOpacity = p.opacity * lifeRatio;
+      const fadeSize = p.size * (0.3 + lifeRatio * 0.7);
+
+      // Color based on hue
+      const color = `hsl(${p.hue}, 65%, 60%)`;
+
+      // Core particle
+      ctx.fillStyle = color;
+      ctx.globalAlpha = fadeOpacity;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, fadeSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Outer glow
+      ctx.globalAlpha = fadeOpacity * 0.3;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, fadeSize * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner bright core
+      ctx.fillStyle = `hsl(${p.hue}, 80%, 80%)`;
+      ctx.globalAlpha = fadeOpacity * 0.9;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, fadeSize * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (p.life <= 0) {
+        mouseBurst.splice(i, 1);
+      }
+    }
+
     ctx.globalAlpha = 1;
     rafRef.current = requestAnimationFrame(animate);
   }, []);
@@ -293,7 +413,10 @@ const ParticleTrail = ({
       ref={canvasRef}
       width={width}
       height={height}
-      className="absolute inset-0 pointer-events-none"
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="absolute inset-0 cursor-none"
       style={{ mixBlendMode: 'screen' }}
       aria-hidden="true"
     />
