@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useReveal } from '@/contexts/RevealContext';
+import ThemeToggle from '@/components/ThemeToggle';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -159,10 +160,13 @@ const NavigationBar = () => {
             ))}
           </div>
 
-          {/* Progress percentage */}
-          <div className="text-mono text-xs text-muted-foreground">
-            <span className="text-primary">{Math.round(scrollProgress * 100)}</span>
-            <span className="opacity-50">%</span>
+          {/* Right side: Theme toggle + Progress */}
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <div className="text-mono text-xs text-muted-foreground">
+              <span className="text-primary">{Math.round(scrollProgress * 100)}</span>
+              <span className="opacity-50">%</span>
+            </div>
           </div>
         </div>
 
