@@ -564,9 +564,12 @@ const WebGL3DSection = () => {
           </div>
         )}
 
-        {/* Overlay content */}
+        {/* Overlay content with readable backdrop */}
         <div className="section-content relative z-10 pointer-events-none">
-          <div className="text-center">
+          {/* Subtle backdrop for text legibility */}
+          <div className="absolute inset-0 -mx-8 -my-12 px-8 py-12 bg-gradient-to-b from-background/80 via-background/60 to-background/80 backdrop-blur-sm rounded-3xl" />
+          
+          <div className="text-center relative">
             <motion.span 
               className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block"
               {...ANIMATION.fadeUp}
@@ -577,7 +580,7 @@ const WebGL3DSection = () => {
             </motion.span>
             
             <motion.h2 
-              className="text-display text-display-md mb-6 blend-text"
+              className="text-display text-display-md mb-6"
               {...ANIMATION.fadeUp}
               whileInView={ANIMATION.fadeUp.animate}
               viewport={{ once: true }}
