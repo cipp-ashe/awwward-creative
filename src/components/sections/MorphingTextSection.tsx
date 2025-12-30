@@ -183,20 +183,7 @@ const MorphingTextSection = () => {
 
           if (outlinePathRef.current) outlinePathRef.current.setAttribute("d", echoPath);
 
-          // --- 2. ROTATION LOGIC (Refined with damping) ---
-          const velocity = self.getVelocity();
-          const maxTilt = 12;
-          const rawTilt = Math.max(-maxTilt, Math.min(maxTilt, velocity / 100));
-
-          // Damping: 0.08 = responsive but smooth
-          const smoothingFactor = 0.08;
-          smoothTiltRef.current += (rawTilt - smoothTiltRef.current) * smoothingFactor;
-
-          if (containerRotateRef.current) {
-            // Low threshold to prevent sub-pixel rendering cost when effectively 0
-            const rotation = Math.abs(smoothTiltRef.current) < 0.01 ? 0 : smoothTiltRef.current;
-            gsap.set(containerRotateRef.current, { rotation });
-          }
+          // Rotation tilt removed - was causing rock-back during morph transitions
 
           // --- 3. GRADIENT LOGIC (Direct DOM update) ---
           const colorMain = getGradientColor(progress);
