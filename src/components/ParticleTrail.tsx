@@ -1,4 +1,15 @@
-import { useEffect, useRef, useCallback } from 'react';
+/**
+ * ParticleTrail
+ * 
+ * Canvas-based particle system that follows SVG path morphing.
+ * Performance optimizations:
+ * - Device-adaptive particle count (reduced for low-end)
+ * - Cached path length (avoids per-frame getTotalLength())
+ * - Direct ref-based path updates (bypasses React reconciliation)
+ * - Centralized RAF via useTicker (single animation loop)
+ */
+
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTicker } from '@/hooks/useTicker';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
@@ -90,6 +101,16 @@ const MOUSE_BURST_COUNT = 3;
 const MOUSE_BURST_LIFETIME = 45;
 const MAX_MOUSE_BURST = 60;
 
+/**
+ * Detect low-end device for adaptive particle count
+ * Uses hardware concurrency and device memory as heuristics
+ */
+const detectLowEndDevice = (): boolean => {
+  const cores = navigator.hardwareConcurrency || 4;
+  const memory = (navigator as { deviceMemory?: number }).deviceMemory || 4;
+  return cores <= 2 || memory <= 2;
+};
+
 const ParticleTrail = ({
   pathData,
   width,
@@ -103,6 +124,7 @@ const ParticleTrail = ({
   const burstParticlesRef = useRef<Particle[]>([]);
   const mouseBurstRef = useRef<MouseBurstParticle[]>([]);
   const pathRef = useRef<SVGPathElement | null>(null);
+  const pathLengthRef = useRef(0); // Cached path length for performance
   const scrollProgressRef = useRef(scrollProgress);
   const prevScrollRef = useRef(scrollProgress);
   const velocityRef = useRef(0);
@@ -110,6 +132,12 @@ const ParticleTrail = ({
   const isHoveringRef = useRef(false);
   
   const { shouldAnimate } = useMotionConfigSafe();
+  
+  // Device-adaptive particle count (memoized once)
+  const effectiveParticleCount = useMemo(() => {
+    const isLowEnd = detectLowEndDevice();
+    return isLowEnd ? Math.floor(particleCount * 0.5) : particleCount;
+  }, [particleCount]);
 
   // Track scroll velocity
   useEffect(() => {
@@ -121,8 +149,8 @@ const ParticleTrail = ({
 
   const initializeParticles = useCallback(() => {
     const particles: Particle[] = [];
-    for (let i = 0; i < particleCount; i++) {
-      const pathPosition = i / particleCount;
+    for (let i = 0; i < effectiveParticleCount; i++) {
+      const pathPosition = i / effectiveParticleCount;
       particles.push({
         x: 0,
         y: 0,
@@ -135,10 +163,11 @@ const ParticleTrail = ({
       });
     }
     particlesRef.current = particles;
-  }, [particleCount]);
+  }, [effectiveParticleCount]);
 
+  // Use cached path length for performance (avoids getTotalLength() per frame)
   const getPointAtPosition = useCallback((path: SVGPathElement, position: number): { x: number; y: number } => {
-    const length = path.getTotalLength();
+    const length = pathLengthRef.current || path.getTotalLength();
     const point = path.getPointAtLength(position * length);
     return { x: point.x, y: point.y };
   }, []);
@@ -390,9 +419,12 @@ const ParticleTrail = ({
     return () => { pathRef.current = null; };
   }, [initializeParticles]);
 
+  // Update path and cache length when pathData changes
   useEffect(() => {
     if (pathRef.current && pathData) {
       pathRef.current.setAttribute('d', pathData);
+      // Cache path length to avoid per-frame getTotalLength() calls
+      pathLengthRef.current = pathRef.current.getTotalLength();
       updateParticleTargets();
     }
   }, [pathData, updateParticleTargets]);
