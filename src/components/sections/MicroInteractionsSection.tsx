@@ -8,7 +8,7 @@ import { useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { Section, SectionLabel } from '@/components/layout/Section';
 import ScrollReveal, { StaggerContainer, StaggerItem } from '@/components/ScrollReveal';
-import { DELAY, STAGGER } from '@/constants/animation';
+import { DELAY, STAGGER, TRANSITION, DURATION } from '@/constants/animation';
 
 const MicroInteractionsSection = () => {
   return (
@@ -175,13 +175,13 @@ const SpringCard = ({ title, description }: CardProps) => {
       onMouseLeave={() => scale.set(1)}
       style={{ scale: springScale }}
       whileHover={{ y: -5 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      transition={TRANSITION.bounce}
       className="group p-8 bg-card/30 border border-border/50 rounded-lg hover:border-primary/30 transition-colors duration-500 cursor-pointer"
     >
       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
         <motion.div
           animate={{ rotate: [0, 15, -15, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: DURATION.pulse * 1.5, repeat: Infinity, ease: 'easeInOut' }}
           className="w-3 h-3 bg-primary rounded-sm"
         />
       </div>

@@ -5,7 +5,7 @@ import { BlendFunction } from 'postprocessing';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
-import { SMOOTHING, DELAY } from '@/constants/animation';
+import { ANIMATION, TRANSITION, SMOOTHING, DELAY, withDelay } from '@/constants/animation';
 import { useSmoothValue, useSmoothVec2 } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
@@ -569,8 +569,8 @@ const WebGL3DSection = () => {
           <div className="text-center">
             <motion.span 
               className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              {...ANIMATION.fadeUp}
+              whileInView={ANIMATION.fadeUp.animate}
               viewport={{ once: true }}
             >
               07 — WebGL
@@ -578,20 +578,20 @@ const WebGL3DSection = () => {
             
             <motion.h2 
               className="text-display text-display-md mb-6 blend-text"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              {...ANIMATION.fadeUp}
+              whileInView={ANIMATION.fadeUp.animate}
               viewport={{ once: true }}
-              transition={{ delay: DELAY.micro }}
+              transition={withDelay(TRANSITION.reveal, DELAY.micro)}
             >
               Interactive <span className="text-primary">Depth</span>
             </motion.h2>
             
             <motion.p 
               className="text-muted-foreground max-w-md mx-auto text-balance mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              {...ANIMATION.fadeUp}
+              whileInView={ANIMATION.fadeUp.animate}
               viewport={{ once: true }}
-              transition={{ delay: DELAY.xshort }}
+              transition={withDelay(TRANSITION.reveal, DELAY.xshort)}
             >
               Custom GLSL shaders displace geometry in real-time. 
               Scroll and mouse position modulate the noise field.
@@ -600,10 +600,10 @@ const WebGL3DSection = () => {
             {/* Stats display */}
             <motion.div 
               className="flex justify-center gap-8 text-mono text-xs"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
+              {...ANIMATION.fadeIn}
+              whileInView={ANIMATION.fadeIn.animate}
               viewport={{ once: true }}
-              transition={{ delay: DELAY.short }}
+              transition={withDelay(TRANSITION.fast, DELAY.short)}
             >
               <div>
                 <span className="text-primary">{Math.round(scrollProgress * 100)}%</span>

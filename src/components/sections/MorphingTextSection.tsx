@@ -14,7 +14,7 @@ import { interpolate } from 'flubber';
 import { motion } from 'framer-motion';
 import ParticleTrail from '@/components/ParticleTrail';
 import { SectionContent, SectionLabel } from '@/components/layout/Section';
-import { EASING_FN, SMOOTHING } from '@/constants/animation';
+import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from '@/constants/animation';
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
@@ -223,10 +223,9 @@ const MorphingTextSection = () => {
           {/* Current word display */}
           <motion.div
             key={morphState.currentWord}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            {...ANIMATION.fadeUp}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
+            transition={TRANSITION.fast}
             className="mb-6"
           >
             <h2 className="text-display text-display-lg capitalize">
@@ -256,7 +255,7 @@ const MorphingTextSection = () => {
           <motion.div 
             className="mt-12 text-mono text-xs text-muted-foreground/50"
             animate={{ opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            transition={{ duration: DURATION.pulse * 1.5, repeat: Infinity }}
           >
             Keep scrolling to morph
           </motion.div>
