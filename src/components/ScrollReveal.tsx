@@ -1,15 +1,45 @@
+/**
+ * ScrollReveal Component
+ * 
+ * Animates children into view when they enter the viewport.
+ * Uses Framer Motion's useInView for intersection detection.
+ * 
+ * Available variants:
+ * - fadeUp: Fade in from below (default)
+ * - fadeDown: Fade in from above
+ * - fadeLeft: Fade in from left
+ * - fadeRight: Fade in from right
+ * - scale: Scale up from smaller size
+ * - blur: Fade in from blurred state
+ * - slideUp: Slide up with slight skew
+ * - rotate: Rotate in from tilted position
+ * 
+ * @example
+ * <ScrollReveal variant="fadeUp" delay={0.2}>
+ *   <Card>Content appears on scroll</Card>
+ * </ScrollReveal>
+ */
+
 import { ReactNode, useRef } from 'react';
 import { motion, useInView, Variants } from 'framer-motion';
 
-type RevealVariant = 'fadeUp' | 'fadeDown' | 'fadeLeft' | 'fadeRight' | 'scale' | 'blur' | 'slideUp' | 'rotate';
+/** Available animation variants for scroll reveal */
+export type RevealVariant = 'fadeUp' | 'fadeDown' | 'fadeLeft' | 'fadeRight' | 'scale' | 'blur' | 'slideUp' | 'rotate';
 
-interface ScrollRevealProps {
+export interface ScrollRevealProps {
+  /** Content to animate */
   children: ReactNode;
+  /** Animation variant (default: 'fadeUp') */
   variant?: RevealVariant;
+  /** Delay before animation starts in seconds */
   delay?: number;
+  /** Animation duration in seconds (default: 0.6) */
   duration?: number;
+  /** Whether to only animate once (default: true) */
   once?: boolean;
+  /** Viewport intersection amount to trigger (0-1, default: 0.3) */
   amount?: number;
+  /** Additional CSS classes */
   className?: string;
 }
 
@@ -79,10 +109,24 @@ const ScrollReveal = ({
   );
 };
 
-// Stagger container for child elements
-interface StaggerContainerProps {
+/**
+ * StaggerContainer Component
+ * 
+ * Container that staggers the reveal animations of its StaggerItem children.
+ * Use with StaggerItem for coordinated entrance animations.
+ * 
+ * @example
+ * <StaggerContainer staggerDelay={0.1}>
+ *   <StaggerItem><Card>First</Card></StaggerItem>
+ *   <StaggerItem><Card>Second</Card></StaggerItem>
+ * </StaggerContainer>
+ */
+export interface StaggerContainerProps {
+  /** StaggerItem children to animate */
   children: ReactNode;
+  /** Delay between each child animation in seconds (default: 0.1) */
   staggerDelay?: number;
+  /** Additional CSS classes */
   className?: string;
 }
 
@@ -114,10 +158,23 @@ export const StaggerContainer = ({
   );
 };
 
-// Child item for stagger container
-interface StaggerItemProps {
+/**
+ * StaggerItem Component
+ * 
+ * Child element for StaggerContainer that inherits staggered timing.
+ * Must be a direct child of StaggerContainer.
+ * 
+ * @example
+ * <StaggerItem variant="scale">
+ *   <Card>Animated content</Card>
+ * </StaggerItem>
+ */
+export interface StaggerItemProps {
+  /** Content to animate */
   children: ReactNode;
+  /** Animation variant (default: 'fadeUp') */
   variant?: RevealVariant;
+  /** Additional CSS classes */
   className?: string;
 }
 

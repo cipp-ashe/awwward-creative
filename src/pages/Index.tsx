@@ -6,22 +6,26 @@ import { useWebGLVisibility } from '@/hooks/useWebGLVisibility';
 import { useScrollTriggerRefresh } from '@/hooks/useScrollTriggerRefresh';
 import { RevealProvider } from '@/contexts/RevealContext';
 import { NAVIGATION_SECTIONS, SectionConfig } from '@/constants/navigation';
-import CustomCursor from '@/components/CustomCursor';
-import GrainOverlay from '@/components/GrainOverlay';
-import Preloader from '@/components/Preloader';
-import SectionReveal from '@/components/SectionReveal';
-import NavigationBar from '@/components/NavigationBar';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import WebGLErrorBoundary from '@/components/WebGLErrorBoundary';
-import HeroSection from '@/components/sections/HeroSection';
-import MotionSection from '@/components/sections/MotionSection';
-import ScrollSection from '@/components/sections/ScrollSection';
-import TypographySection from '@/components/sections/TypographySection';
-import MorphingTextSection from '@/components/sections/MorphingTextSection';
-import WebGL3DSection from '@/components/sections/WebGL3DSection';
-import MicroInteractionsSection from '@/components/sections/MicroInteractionsSection';
-import PerformanceSection from '@/components/sections/PerformanceSection';
-import FooterSection from '@/components/sections/FooterSection';
+import {
+  CustomCursor,
+  GrainOverlay,
+  Preloader,
+  SectionReveal,
+  NavigationBar,
+  ErrorBoundary,
+  WebGLErrorBoundary,
+} from '@/components';
+import {
+  HeroSection,
+  MotionSection,
+  ScrollSection,
+  TypographySection,
+  MorphingTextSection,
+  WebGL3DSection,
+  MicroInteractionsSection,
+  PerformanceSection,
+  FooterSection,
+} from '@/components/sections';
 
 /** Lazy load WebGL background for performance */
 const WebGLBackground = lazy(() => import('@/components/WebGLBackground'));
