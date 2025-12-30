@@ -14,7 +14,7 @@ const MicroInteractionsSection = () => {
   return (
     <Section id="micro">
       <ScrollReveal variant="fadeUp">
-        <SectionLabel className="mb-8 block">04 — Micro-interactions</SectionLabel>
+        <SectionLabel className="mb-8 block">04 / Micro</SectionLabel>
       </ScrollReveal>
 
       <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">

@@ -103,7 +103,10 @@ const ScrollSection = () => {
 
       {/* Section label */}
       <div className="absolute top-8 left-6 md:left-12 z-10">
-        <SectionLabel>02 — Scroll</SectionLabel>
+        <SectionLabel className="block">02 / Scroll</SectionLabel>
+        <div className="text-mono text-xs text-primary/40 tracking-widest uppercase mt-1">
+          LENIS / Smooth Scroll
+        </div>
       </div>
 
       {/* Horizontal scroll container */}
@@ -117,7 +120,7 @@ const ScrollSection = () => {
               not the event
             </h2>
             <p className="text-lg text-muted-foreground">
-              Swipe right to experience scroll as a deliberate input →
+              This is scroll as input, not event →
             </p>
           </div>
         </div>

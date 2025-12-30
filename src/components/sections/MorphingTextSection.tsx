@@ -248,7 +248,7 @@ const MorphingTextSection = () => {
       {/* Sticky container */}
       <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden">
         <SectionContent className="text-center">
-          <SectionLabel className="mb-8 block">06 — Principles</SectionLabel>
+          <SectionLabel className="mb-8 block">06 / Morph</SectionLabel>
 
           {/* ROTATION CONTAINER (FIX A: Ghost Wiring)
               Rotates BOTH the SVG and ParticleTrail together to prevent desync */}

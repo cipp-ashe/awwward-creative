@@ -106,7 +106,7 @@ const TypographySection = () => {
 
   return (
     <Section ref={sectionRef} id="typography">
-      <SectionLabel className="mb-8 block">03 — Typography</SectionLabel>
+      <SectionLabel className="mb-8 block">03 / Type</SectionLabel>
 
       {/* Main animated text */}
       <div className="mb-16 overflow-hidden">

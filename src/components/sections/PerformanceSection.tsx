@@ -67,7 +67,7 @@ const PerformanceSection = () => {
   return (
     <Section ref={sectionRef} id="performance">
       <ScrollReveal variant="fadeUp">
-        <SectionLabel className="mb-8 block">05 — Performance</SectionLabel>
+        <SectionLabel className="mb-8 block">05 / Perf</SectionLabel>
       </ScrollReveal>
 
       <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">

@@ -78,7 +78,10 @@ const MotionSection = () => {
     <Section ref={sectionRef} id="motion">
       <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start">
         <div>
-          <SectionLabel className="mb-4 block">01 — Motion</SectionLabel>
+          <SectionLabel className="mb-2 block">01 / Motion</SectionLabel>
+          <div className="text-mono text-xs text-primary/40 tracking-widest uppercase mb-4">
+            GSAP / ScrollTrigger
+          </div>
           <h2 ref={headingRef} className="text-display text-display-md mb-8">
             Animation is not decoration — it's{' '}
             <span className="text-primary">interface</span>
@@ -97,7 +100,7 @@ const MotionSection = () => {
             as narrative architecture.
           </p>
           <p className="text-mono text-sm border-l-2 border-primary/30 pl-4 py-2">
-            "Animate absence as much as presence — things fade, drift, or dissolve out."
+            "Animate absence. Things fade, drift, dissolve."
           </p>
         </div>
       </div>
