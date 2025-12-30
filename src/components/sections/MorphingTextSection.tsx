@@ -3,6 +3,9 @@
  * 
  * SVG path morphing demonstration using Flubber interpolation.
  * Uses sticky scroll layout - not wrapped with Section component.
+ * 
+ * Scroll progress is damped for smooth particle trail and glow updates.
+ * SVG morphing uses direct DOM manipulation with cubic easing for performance.
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -12,6 +15,8 @@ import { motion } from 'framer-motion';
 import ParticleTrail from '@/components/ParticleTrail';
 import { SectionContent, SectionLabel } from '@/components/layout/Section';
 import { EASING_FN } from '@/constants/animation';
+import { useSmoothValue } from '@/hooks/useSmoothValue';
+import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
 // Morphability-optimized SVG paths with IDENTICAL topology
 const MORPH_PATHS = {
@@ -38,6 +43,9 @@ const MorphingTextSection = () => {
   const progressRef = useRef(0);
   const interpolatorsRef = useRef<Map<string, (t: number) => string>>(new Map());
   
+  // Raw scroll progress from ScrollTrigger
+  const [rawProgress, setRawProgress] = useState(0);
+  
   const [morphState, setMorphState] = useState<MorphState>({
     currentPath: MORPH_PATHS.motion,
     currentWord: 'motion',
@@ -45,6 +53,15 @@ const MorphingTextSection = () => {
   });
   
   const [containerSize, setContainerSize] = useState({ width: 512, height: 358 });
+  
+  const { isReducedMotion } = useMotionConfigSafe();
+  
+  // Damping layer: smooth scroll progress for particles and visual effects
+  // Uses same 0.06 factor as other sections for consistency
+  const smoothProgress = useSmoothValue(rawProgress, {
+    smoothing: 0.06,
+    threshold: 0.0001
+  });
 
   // Pre-compute interpolators for all word pairs
   const getInterpolator = useCallback((fromWord: WordKey, toWord: WordKey) => {
@@ -77,7 +94,8 @@ const MorphingTextSection = () => {
   }, []);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // Use centralized motion config instead of local check
+    if (isReducedMotion) {
       return;
     }
 
@@ -94,6 +112,9 @@ const MorphingTextSection = () => {
           const progress = self.progress;
           progressRef.current = progress;
           
+          // Update raw progress for damping layer
+          setRawProgress(progress);
+          
           const totalTransitions = WORDS.length - 1;
           const segmentProgress = progress * totalTransitions;
           const currentIndex = Math.min(Math.floor(segmentProgress), totalTransitions - 1);
@@ -108,10 +129,12 @@ const MorphingTextSection = () => {
           const easedProgress = EASING_FN.easeInOutCubic(clampedProgress);
           const newPath = interp(easedProgress);
           
+          // Direct DOM update for performance (not via React state)
           if (svgRef.current) {
             svgRef.current.setAttribute('d', newPath);
           }
           
+          // Update display word (less frequent, with threshold)
           const displayWord = localProgress > 0.5 ? toWord : fromWord;
           setMorphState(prev => {
             if (prev.currentWord !== displayWord || Math.abs(prev.progress - progress) > 0.02) {
@@ -127,7 +150,7 @@ const MorphingTextSection = () => {
       ctx.revert();
       interpolatorsRef.current.clear();
     };
-  }, [getInterpolator]);
+  }, [getInterpolator, isReducedMotion]);
 
   return (
     <section 
@@ -143,13 +166,14 @@ const MorphingTextSection = () => {
           
           {/* SVG Morph Container */}
           <div ref={svgContainerRef} className="relative mb-8">
+            {/* Use smoothed progress for particle trail */}
             <ParticleTrail
               pathData={morphState.currentPath}
               width={containerSize.width}
               height={containerSize.height}
               viewBox={{ width: 200, height: 140 }}
               particleCount={60}
-              scrollProgress={morphState.progress}
+              scrollProgress={smoothProgress}
             />
             
             <svg 
@@ -238,9 +262,10 @@ const MorphingTextSection = () => {
           </motion.div>
         </SectionContent>
         
+        {/* Use smoothed progress for glow intensity */}
         <div 
           className="glow w-[500px] h-[500px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 animate-pulse-glow"
-          style={{ opacity: 0.15 + morphState.progress * 0.1 }}
+          style={{ opacity: 0.15 + smoothProgress * 0.1 }}
         />
       </div>
     </section>
