@@ -1,8 +1,10 @@
-import { Suspense, lazy, useEffect, useState, useCallback } from 'react';
+import { Suspense, lazy } from 'react';
 import { useLenis } from '@/hooks/useLenis';
 import { useGsapScrollTrigger } from '@/hooks/useGsapScrollTrigger';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { RevealProvider, useReveal } from '@/contexts/RevealContext';
+import { usePreloaderState } from '@/hooks/usePreloaderState';
+import { useWebGLVisibility } from '@/hooks/useWebGLVisibility';
+import { useScrollTriggerRefresh } from '@/hooks/useScrollTriggerRefresh';
+import { RevealProvider } from '@/contexts/RevealContext';
 import CustomCursor from '@/components/CustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
 import Preloader from '@/components/Preloader';
@@ -20,46 +22,24 @@ import MicroInteractionsSection from '@/components/sections/MicroInteractionsSec
 import PerformanceSection from '@/components/sections/PerformanceSection';
 import FooterSection from '@/components/sections/FooterSection';
 
-// Lazy load WebGL background for performance
+/** Lazy load WebGL background for performance */
 const WebGLBackground = lazy(() => import('@/components/WebGLBackground'));
 
+/**
+ * Main page content with all sections and effects.
+ * Separated from Index to allow RevealProvider context access.
+ */
 const IndexContent = () => {
-  const [showWebGL, setShowWebGL] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const { triggerReveal } = useReveal();
-  
+  // Smooth scrolling and scroll-driven animations
   useLenis();
   useGsapScrollTrigger();
-
-  const handlePreloaderComplete = useCallback(() => {
-    setIsLoading(false);
-    setTimeout(() => {
-      triggerReveal();
-    }, 100);
-  }, [triggerReveal]);
-
-  // Refresh ScrollTrigger after fonts load to fix pin position calculations
-  useEffect(() => {
-    document.fonts.ready.then(() => {
-      ScrollTrigger.refresh();
-    });
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowWebGL(true);
-    }, 100);
-
-    const mediaQuery = window.matchMedia('(min-width: 768px)');
-    if (mediaQuery.matches && !('ontouchstart' in window)) {
-      document.body.style.cursor = 'none';
-    }
-
-    return () => {
-      clearTimeout(timer);
-      document.body.style.cursor = 'auto';
-    };
-  }, []);
+  useScrollTriggerRefresh();
+  
+  // Loading and reveal state
+  const { isLoading, handlePreloaderComplete } = usePreloaderState();
+  
+  // Delayed WebGL mount for performance
+  const showWebGL = useWebGLVisibility();
 
   return (
     <>
