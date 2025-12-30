@@ -196,7 +196,7 @@ const DisplacementMesh = ({ scrollProgress, mousePosition }: DisplacementMeshPro
 
   return (
     <mesh ref={meshRef} position={[0, 0, 0]}>
-      <icosahedronGeometry args={[1, 64]} />
+      <icosahedronGeometry args={[1, 32]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
@@ -285,7 +285,7 @@ const PostProcessing = ({ scrollProgress, mousePosition }: PostProcessingProps) 
   // As camera orbits (radius 3.5-6.5), adjust focus to keep object sharp
   const baseFocusDistance = 0;
   const focalLength = 0.05 + scrollProgress * 0.03; // Increase focal length with scroll
-  const bokehScale = 3 + scrollProgress * 4; // More blur as we scroll
+  const bokehScale = 2 + scrollProgress * 2; // Reduced for GPU stability
 
   return (
     <EffectComposer>
