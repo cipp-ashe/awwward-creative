@@ -22,6 +22,7 @@
 
 import { ReactNode, useRef, forwardRef } from 'react';
 import { motion, useInView, Variants } from 'framer-motion';
+import { DURATION, EASING_ARRAY } from '@/constants/animation';
 
 /** Available animation variants for scroll reveal */
 export type RevealVariant = 'fadeUp' | 'fadeDown' | 'fadeLeft' | 'fadeRight' | 'scale' | 'blur' | 'slideUp' | 'rotate';
@@ -186,8 +187,8 @@ export const StaggerItem = forwardRef<HTMLDivElement, StaggerItemProps>(
         ref={ref}
         variants={variants[variant]}
         transition={{
-          duration: 0.5,
-          ease: [0.16, 1, 0.3, 1],
+          duration: DURATION.medium,
+          ease: EASING_ARRAY.smooth,
         }}
         className={className}
       >

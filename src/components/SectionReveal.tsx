@@ -28,6 +28,7 @@
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useReveal } from '@/contexts/RevealContext';
+import { DURATION, EASING_ARRAY } from '@/constants/animation';
 
 export interface SectionRevealProps {
   /** Content to animate on reveal */
@@ -64,9 +65,9 @@ const SectionReveal = ({
       initial={{ opacity: 0, y: 60 }}
       animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
       transition={{
-        duration: 0.8,
+        duration: DURATION.reveal,
         delay,
-        ease: [0.16, 1, 0.3, 1],
+        ease: EASING_ARRAY.smooth,
       }}
     >
       {children}

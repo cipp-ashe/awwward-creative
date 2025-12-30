@@ -19,6 +19,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAssetLoader from '@/hooks/useAssetLoader';
+import { DURATION, EASING_ARRAY } from '@/constants/animation';
 
 export interface PreloaderProps {
   /** Callback fired when loading completes and exit animation finishes */
@@ -54,7 +55,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
           initial={{ opacity: 1 }}
           exit={{ 
             opacity: 0,
-            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+            transition: { duration: DURATION.normal, ease: EASING_ARRAY.smooth }
           }}
         >
           {/* Animated logo */}
@@ -62,7 +63,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
             className="relative mb-12"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: DURATION.normal, ease: EASING_ARRAY.smooth }}
           >
             <svg
               width="80"
@@ -105,8 +106,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 initial={{ pathLength: 0, rotate: -90 }}
                 animate={{ pathLength: 1, rotate: 270 }}
                 transition={{ 
-                  pathLength: { duration: 1.8, ease: [0.16, 1, 0.3, 1] },
-                  rotate: { duration: 1.8, ease: [0.16, 1, 0.3, 1] }
+                  pathLength: { duration: DURATION.xslow, ease: EASING_ARRAY.smooth },
+                  rotate: { duration: DURATION.xslow, ease: EASING_ARRAY.smooth }
                 }}
                 style={{ transformOrigin: 'center' }}
               />
@@ -122,7 +123,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 strokeLinecap="round"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: progress / 100 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
+                transition={{ duration: DURATION.fast, ease: 'easeOut' }}
                 style={{ 
                   transformOrigin: 'center',
                   rotate: '-90deg'
@@ -138,8 +139,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
                 transition={{ 
-                  pathLength: { duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] },
-                  opacity: { duration: 0.3, delay: 0.3 }
+                  pathLength: { duration: DURATION.slow, delay: DURATION.fast, ease: EASING_ARRAY.smooth },
+                  opacity: { duration: DURATION.fast, delay: DURATION.fast }
                 }}
               />
               
@@ -154,8 +155,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                   scale: isComplete ? 1 : [0.8, 1.2, 0.8],
                 }}
                 transition={isComplete 
-                  ? { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }
-                  : { duration: 1, repeat: Infinity, ease: 'easeInOut' }
+                  ? { duration: DURATION.fast, ease: EASING_ARRAY.bounce }
+                  : { duration: DURATION.word, repeat: Infinity, ease: 'easeInOut' }
                 }
               />
             </svg>
@@ -165,7 +166,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
               className="absolute inset-0 -z-10 blur-2xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
+              transition={{ delay: DURATION.medium, duration: DURATION.reveal }}
               style={{
                 background: 'radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%)',
                 transform: 'scale(2)'
@@ -180,7 +181,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
               className="absolute top-0 left-0 h-px bg-primary origin-left"
               initial={{ scaleX: 0 }}
               animate={{ scaleX: progress / 100 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              transition={{ duration: DURATION.fast, ease: 'easeOut' }}
             />
             
             {/* Progress percentage */}
@@ -188,7 +189,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
               className="mt-4 text-mono text-xs text-muted-foreground text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: DURATION.fast }}
             >
               <span className="text-primary">{Math.round(progress)}</span>
               <span className="ml-1">%</span>
@@ -200,7 +201,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
             className="mt-6 text-mono text-[10px] text-muted-foreground/60 tracking-wide"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: DURATION.fast }}
           >
             {currentAsset}
           </motion.p>
@@ -211,7 +212,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
               className="mt-2 text-mono text-[10px] text-muted-foreground/40"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: DURATION.medium }}
             >
               {loadedAssets} / {totalAssets} assets
             </motion.p>
@@ -222,7 +223,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
             className="absolute bottom-12 text-mono text-xs text-muted-foreground tracking-widest uppercase"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
+            transition={{ delay: DURATION.medium, duration: DURATION.normal }}
           >
             {isComplete ? 'Ready' : 'Loading Experience'}
           </motion.p>
@@ -232,25 +233,25 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
             className="absolute top-8 left-8 w-8 h-8 border-l border-t border-border"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
+            transition={{ delay: 0.2, duration: DURATION.normal }}
           />
           <motion.div
             className="absolute top-8 right-8 w-8 h-8 border-r border-t border-border"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
+            transition={{ delay: DURATION.fast, duration: DURATION.normal }}
           />
           <motion.div
             className="absolute bottom-8 left-8 w-8 h-8 border-l border-b border-border"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
+            transition={{ delay: DURATION.fast, duration: DURATION.normal }}
           />
           <motion.div
             className="absolute bottom-8 right-8 w-8 h-8 border-r border-b border-border"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
+            transition={{ delay: DURATION.medium, duration: DURATION.normal }}
           />
         </motion.div>
       )}

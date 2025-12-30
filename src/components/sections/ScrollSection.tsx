@@ -8,6 +8,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { SectionLabel } from '@/components/layout/Section';
+import { DURATION } from '@/constants/animation';
 
 const ScrollSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -26,7 +27,7 @@ const ScrollSection = () => {
       // Entrance fade-in animation
       gsap.to(section, {
         opacity: 1,
-        duration: 0.8,
+        duration: DURATION.reveal,
         ease: 'power2.out',
         scrollTrigger: {
           trigger: section,
