@@ -18,19 +18,20 @@ import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from '@/constan
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
-// Semantic shapes - each embodies its word meaning
+// Semantic shapes - organic forms that subtly embody each word
 // All share identical 6-segment bezier structure: M C C C C C C Z
+// Centered at ~(100, 70) with similar scale for smooth morphing
 const MORPH_PATHS = {
-  // Arrow/chevron pointing right - kinetic, directional
-  motion: "M60,70 C40,50 50,30 80,25 C120,20 160,45 170,70 C160,95 120,120 80,115 C50,110 40,90 60,70 Z",
-  // Vertical capsule - tall, flowing
-  scroll: "M100,15 C120,15 130,30 130,50 C130,80 130,100 130,120 C130,135 120,145 100,145 C80,145 70,135 70,120 C70,100 70,80 70,50 C70,30 80,15 100,15 Z",
-  // Rounded rectangle - horizontal text block
-  type: "M35,55 C35,40 50,35 80,35 C110,35 140,35 165,35 C180,35 185,50 185,70 C185,90 180,105 165,105 C140,105 110,105 80,105 C50,105 35,90 35,70 C35,55 35,55 35,55 Z",
-  // Offset oval suggesting layers
-  depth: "M90,25 C130,20 165,40 175,70 C185,100 165,130 125,135 C85,140 50,120 40,85 C30,50 50,30 90,25 Z",
-  // Near-perfect circle - refined, complete
-  craft: "M100,20 C140,20 175,45 180,75 C185,105 165,135 130,140 C95,145 55,125 45,90 C35,55 60,25 100,20 Z",
+  // Dynamic, forward-leaning - suggests momentum
+  motion: "M55,65 C45,40 70,20 105,22 C140,24 170,45 175,72 C180,99 155,125 115,128 C75,131 50,115 40,88 C30,61 65,90 55,65 Z",
+  // Tall, vertical rhythm - suggests upward flow
+  scroll: "M90,18 C115,15 135,32 145,55 C155,78 150,105 135,125 C120,145 95,148 75,132 C55,116 50,88 55,60 C60,32 65,21 90,18 Z",
+  // Wide, stable baseline - suggests text block
+  type: "M40,62 C38,40 65,28 100,25 C135,22 165,35 172,58 C179,81 168,108 135,118 C102,128 60,122 42,100 C24,78 42,84 40,62 Z",
+  // Layered, asymmetric weight - suggests dimension
+  depth: "M85,22 C125,18 160,38 175,68 C190,98 170,128 130,135 C90,142 55,128 38,98 C21,68 35,35 65,25 C95,15 45,26 85,22 Z",
+  // Balanced, refined circle - suggests completion
+  craft: "M95,20 C135,18 168,42 178,72 C188,102 168,132 132,140 C96,148 58,132 42,100 C26,68 42,35 72,22 C102,9 55,22 95,20 Z",
 };
 
 const WORDS = ['motion', 'scroll', 'type', 'depth', 'craft'] as const;
