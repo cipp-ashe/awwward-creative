@@ -15,19 +15,20 @@ const PerformanceSection = () => {
       const stats = statsRef.current?.querySelectorAll('.stat-value');
       stats?.forEach((stat) => {
         const target = parseInt(stat.getAttribute('data-value') || '0');
-        gsap.from(stat, {
+        
+        // Use a proxy object to animate the counter value
+        const counter = { value: 0 };
+        gsap.to(counter, {
+          value: target,
+          duration: 2,
+          ease: 'power2.out',
           scrollTrigger: {
             trigger: stat,
             start: 'top 80%',
             toggleActions: 'play none none reverse',
           },
-          textContent: 0,
-          duration: 2,
-          ease: 'power2.out',
-          snap: { textContent: 1 },
-          onUpdate: function() {
-            const current = Math.round(gsap.getProperty(stat, 'textContent') as number);
-            stat.textContent = current.toString();
+          onUpdate: () => {
+            stat.textContent = Math.round(counter.value).toString();
           },
         });
       });
@@ -89,7 +90,7 @@ const PerformanceSection = () => {
               </StaggerItem>
               <StaggerItem variant="scale">
                 <div className="text-center p-6 border border-border/30 rounded-lg">
-                  <div className="text-display text-display-sm text-primary">0</div>
+                  <div className="stat-value text-display text-display-sm text-primary" data-value="0">0</div>
                   <div className="text-mono text-xs text-muted-foreground mt-2">Layout Shifts</div>
                 </div>
               </StaggerItem>
