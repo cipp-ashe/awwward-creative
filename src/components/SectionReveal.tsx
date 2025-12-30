@@ -28,7 +28,7 @@
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useReveal } from '@/contexts/RevealContext';
-import { DURATION, EASING_ARRAY } from '@/constants/animation';
+import { DURATION, DELAY, STAGGER, EASING_ARRAY } from '@/constants/animation';
 
 export interface SectionRevealProps {
   /** Content to animate on reveal */
@@ -50,8 +50,8 @@ const MAX_STAGGERED_SECTIONS = 2;
 const SectionReveal = ({ 
   children, 
   index, 
-  baseDelay = 0.1, 
-  staggerDelay = 0.15 
+  baseDelay = DELAY.micro, 
+  staggerDelay = STAGGER.wide 
 }: SectionRevealProps) => {
   const { isRevealed } = useReveal();
   

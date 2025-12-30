@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { motion } from 'framer-motion';
 import { SectionContent } from '@/components/layout/Section';
-import { DURATION, EASING_ARRAY } from '@/constants/animation';
+import { DURATION, DELAY, STAGGER, EASING_ARRAY } from '@/constants/animation';
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -72,7 +72,7 @@ const HeroSection = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: DURATION.pulse, delay: 0.2 }}
+          transition={{ duration: DURATION.pulse, delay: DELAY.xshort }}
           className="mb-8 md:mb-12"
         >
           <span className="text-mono text-xs md:text-sm text-muted-foreground tracking-widest uppercase">
@@ -88,7 +88,7 @@ const HeroSection = () => {
               animate={{ opacity: 1, y: 0, rotateX: 0 }}
               transition={{
                 duration: DURATION.word,
-                delay: 0.3 + index * 0.15,
+                delay: DELAY.short + index * STAGGER.wide,
                 ease: EASING_ARRAY.smooth,
               }}
               className={`inline-block mr-[0.25em] ${
@@ -105,7 +105,7 @@ const HeroSection = () => {
           ref={subtitleRef}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: DURATION.word, delay: 1.2 }}
+          transition={{ duration: DURATION.word, delay: DELAY.xlong }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-balance"
         >
           A synthesis of modern creative web patterns — motion, scroll, typography, 
@@ -121,7 +121,7 @@ const HeroSection = () => {
         ref={scrollIndicatorRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: DURATION.word }}
+        transition={{ delay: DELAY.hero, duration: DURATION.word }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
       >
         <span className="text-mono text-xs text-muted-foreground tracking-widest uppercase">

@@ -99,7 +99,9 @@ export const DURATION = {
 export const DURATION_MS = {
   instant: 150,
   fast: 300,
+  medium: 500,
   normal: 600,
+  reveal: 800,
   slow: 1200,
   xslow: 1800,
 } as const;
@@ -126,14 +128,24 @@ export const STAGGER = {
 export const DELAY = {
   /** No delay */
   none: 0,
+  /** Extra micro delay - 50ms */
+  xmicro: 0.05,
   /** Micro delay - 100ms */
   micro: 0.1,
+  /** Subtle delay - 150ms */
+  subtle: 0.15,
+  /** Extra short delay - 200ms */
+  xshort: 0.2,
   /** Short delay - 300ms */
   short: 0.3,
   /** Medium delay - 500ms */
   medium: 0.5,
   /** Long delay - 1000ms */
   long: 1,
+  /** Extra long delay - 1200ms */
+  xlong: 1.2,
+  /** Hero scroll indicator delay - 2000ms */
+  hero: 2,
 } as const;
 
 // ============================================================================

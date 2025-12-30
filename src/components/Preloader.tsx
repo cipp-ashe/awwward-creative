@@ -19,7 +19,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAssetLoader from '@/hooks/useAssetLoader';
-import { DURATION, EASING_ARRAY } from '@/constants/animation';
+import { DURATION, DURATION_MS, DELAY, EASING_ARRAY } from '@/constants/animation';
 
 export interface PreloaderProps {
   /** Callback fired when loading completes and exit animation finishes */
@@ -37,7 +37,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
 
   const handleComplete = useCallback(() => {
     setIsExiting(true);
-    setTimeout(onComplete, 800);
+    setTimeout(onComplete, DURATION_MS.reveal);
   }, [onComplete]);
 
   // Trigger completion when assets are loaded
@@ -233,7 +233,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
             className="absolute top-8 left-8 w-8 h-8 border-l border-t border-border"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: DURATION.normal }}
+            transition={{ delay: DELAY.xshort, duration: DURATION.normal }}
           />
           <motion.div
             className="absolute top-8 right-8 w-8 h-8 border-r border-t border-border"

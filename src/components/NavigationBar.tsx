@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReveal } from '@/contexts/RevealContext';
 import { NAVIGATION_SECTIONS } from '@/constants/navigation';
-import { SMOOTHING } from '@/constants/animation';
+import { SMOOTHING, DELAY, STAGGER } from '@/constants/animation';
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -167,7 +167,7 @@ const NavigationBar = () => {
                 }`}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + index * 0.05 }}
+                transition={{ delay: DELAY.micro + index * DELAY.xmicro }}
                 whileHover={{ y: -2 }}
               >
                 <span className="opacity-50 mr-1">{section.number}</span>

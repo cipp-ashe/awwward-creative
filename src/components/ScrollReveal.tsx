@@ -22,7 +22,7 @@
 
 import { ReactNode, useRef, forwardRef } from 'react';
 import { motion, useInView, Variants } from 'framer-motion';
-import { DURATION, EASING_ARRAY } from '@/constants/animation';
+import { DURATION, STAGGER, EASING_ARRAY } from '@/constants/animation';
 
 /** Available animation variants for scroll reveal */
 export type RevealVariant = 'fadeUp' | 'fadeDown' | 'fadeLeft' | 'fadeRight' | 'scale' | 'blur' | 'slideUp' | 'rotate';
@@ -133,7 +133,7 @@ export interface StaggerContainerProps {
 
 export const StaggerContainer = ({
   children,
-  staggerDelay = 0.1,
+  staggerDelay = STAGGER.normal,
   className = '',
 }: StaggerContainerProps) => {
   const ref = useRef<HTMLDivElement>(null);
