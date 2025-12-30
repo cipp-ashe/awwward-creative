@@ -1,48 +1,30 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import useAssetLoader from '@/hooks/useAssetLoader';
 
 interface PreloaderProps {
   onComplete: () => void;
   minDuration?: number;
 }
 
-const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
-  const [progress, setProgress] = useState(0);
+const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
   const [isExiting, setIsExiting] = useState(false);
+  const { progress, isComplete, currentAsset, loadedAssets, totalAssets } = useAssetLoader({
+    minDuration,
+    maxTimeout: 8000,
+  });
 
   const handleComplete = useCallback(() => {
     setIsExiting(true);
-    // Allow exit animation to complete before calling onComplete
     setTimeout(onComplete, 800);
   }, [onComplete]);
 
+  // Trigger completion when assets are loaded
   useEffect(() => {
-    const startTime = Date.now();
-    let animationFrame: number;
-    
-    const updateProgress = () => {
-      const elapsed = Date.now() - startTime;
-      const rawProgress = Math.min(elapsed / minDuration, 1);
-      
-      // Eased progress for smoother feel
-      const easedProgress = 1 - Math.pow(1 - rawProgress, 3);
-      setProgress(easedProgress * 100);
-      
-      if (rawProgress < 1) {
-        animationFrame = requestAnimationFrame(updateProgress);
-      } else {
-        handleComplete();
-      }
-    };
-    
-    animationFrame = requestAnimationFrame(updateProgress);
-    
-    return () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
-    };
-  }, [minDuration, handleComplete]);
+    if (isComplete && !isExiting) {
+      handleComplete();
+    }
+  }, [isComplete, isExiting, handleComplete]);
 
   return (
     <AnimatePresence>
@@ -62,7 +44,6 @@ const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            {/* Logo mark - geometric abstract shape */}
             <svg
               width="80"
               height="80"
@@ -70,7 +51,7 @@ const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
               fill="none"
               className="overflow-visible"
             >
-              {/* Outer rotating ring */}
+              {/* Outer ring */}
               <motion.circle
                 cx="40"
                 cy="40"
@@ -87,7 +68,7 @@ const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
                 style={{ transformOrigin: 'center' }}
               />
               
-              {/* Primary accent ring */}
+              {/* Progress ring - now tracks real asset loading */}
               <motion.circle
                 cx="40"
                 cy="40"
@@ -98,7 +79,7 @@ const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
                 strokeLinecap="round"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: progress / 100 }}
-                transition={{ duration: 0.1 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
                 style={{ 
                   transformOrigin: 'center',
                   rotate: '-90deg'
@@ -119,19 +100,24 @@ const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
                 }}
               />
               
-              {/* Center dot */}
+              {/* Center dot - pulses when loading */}
               <motion.circle
                 cx="40"
                 cy="40"
                 r="4"
                 fill="hsl(var(--primary))"
                 initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.8, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+                animate={{ 
+                  scale: isComplete ? 1 : [0.8, 1.2, 0.8],
+                }}
+                transition={isComplete 
+                  ? { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }
+                  : { duration: 1, repeat: Infinity, ease: 'easeInOut' }
+                }
               />
             </svg>
             
-            {/* Glow effect behind logo */}
+            {/* Glow effect */}
             <motion.div
               className="absolute inset-0 -z-10 blur-2xl"
               initial={{ opacity: 0 }}
@@ -144,20 +130,17 @@ const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
             />
           </motion.div>
 
-          {/* Progress bar container */}
+          {/* Progress bar */}
           <div className="w-48 relative">
-            {/* Background track */}
             <div className="h-px bg-border w-full" />
-            
-            {/* Progress fill */}
             <motion.div
               className="absolute top-0 left-0 h-px bg-primary origin-left"
               initial={{ scaleX: 0 }}
               animate={{ scaleX: progress / 100 }}
-              transition={{ duration: 0.1 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
             />
             
-            {/* Progress text */}
+            {/* Progress percentage */}
             <motion.div
               className="mt-4 text-mono text-xs text-muted-foreground text-center"
               initial={{ opacity: 0 }}
@@ -169,6 +152,28 @@ const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
             </motion.div>
           </div>
 
+          {/* Current asset being loaded */}
+          <motion.p
+            className="mt-6 text-mono text-[10px] text-muted-foreground/60 tracking-wide"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            {currentAsset}
+          </motion.p>
+
+          {/* Asset count */}
+          {totalAssets > 0 && (
+            <motion.p
+              className="mt-2 text-mono text-[10px] text-muted-foreground/40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {loadedAssets} / {totalAssets} assets
+            </motion.p>
+          )}
+
           {/* Loading text */}
           <motion.p
             className="absolute bottom-12 text-mono text-xs text-muted-foreground tracking-widest uppercase"
@@ -176,7 +181,7 @@ const Preloader = ({ onComplete, minDuration = 2000 }: PreloaderProps) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
-            Loading Experience
+            {isComplete ? 'Ready' : 'Loading Experience'}
           </motion.p>
 
           {/* Corner decorations */}
