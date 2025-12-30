@@ -157,7 +157,7 @@ interface DisplacementMeshProps {
 
 const DisplacementMesh = ({ scrollProgress, mousePosition }: DisplacementMeshProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  const { viewport } = useThree();
+  const { viewport, invalidate } = useThree();
   
   // Memoize uniforms to prevent recreation
   const uniforms = useMemo(() => ({
@@ -192,6 +192,9 @@ const DisplacementMesh = ({ scrollProgress, mousePosition }: DisplacementMeshPro
     // Scale based on scroll
     const scale = 1.5 + scrollProgress * 0.5;
     meshRef.current.scale.setScalar(scale);
+    
+    // Request next frame (demand mode)
+    invalidate();
   });
 
   return (
@@ -210,6 +213,7 @@ const DisplacementMesh = ({ scrollProgress, mousePosition }: DisplacementMeshPro
 // Floating particles around the main object
 const Particles = ({ scrollProgress }: { scrollProgress: number }) => {
   const pointsRef = useRef<THREE.Points>(null);
+  const { invalidate } = useThree();
   const particleCount = 200;
   
   const positions = useMemo(() => {
@@ -235,6 +239,9 @@ const Particles = ({ scrollProgress }: { scrollProgress: number }) => {
     // Expand particles based on scroll
     const scale = 1 + scrollProgress * 0.5;
     pointsRef.current.scale.setScalar(scale);
+    
+    // Request next frame (demand mode)
+    invalidate();
   });
 
   return (
@@ -267,12 +274,16 @@ interface PostProcessingProps {
 const PostProcessing = ({ scrollProgress, mousePosition }: PostProcessingProps) => {
   const chromaticRef = useRef<any>(null);
   const dofRef = useRef<any>(null);
+  const { invalidate } = useThree();
   
   useFrame(() => {
     if (chromaticRef.current) {
       const offsetX = mousePosition.x * 0.002 * (0.5 + scrollProgress * 0.5);
       const offsetY = mousePosition.y * 0.002 * (0.5 + scrollProgress * 0.5);
       chromaticRef.current.offset.set(offsetX, offsetY);
+      
+      // Request next frame (demand mode)
+      invalidate();
     }
   });
 
@@ -378,7 +389,7 @@ interface CameraControllerProps {
 }
 
 const CameraController = ({ scrollProgress, mousePosition }: CameraControllerProps) => {
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
   const targetPosition = useRef(new THREE.Vector3(0, 0, 5));
   const currentPosition = useRef(new THREE.Vector3(0, 0, 5));
   
@@ -412,6 +423,9 @@ const CameraController = ({ scrollProgress, mousePosition }: CameraControllerPro
     
     camera.position.copy(currentPosition.current);
     camera.lookAt(0, 0, 0);
+    
+    // Request next frame (demand mode)
+    invalidate();
   });
 
   return null;
@@ -485,6 +499,7 @@ const WebGL3DSection = () => {
         trigger: section,
         start: 'top bottom',
         end: 'bottom top',
+        invalidateOnRefresh: true, // Recalculate on resize
         onUpdate: (self) => {
           // Write to RAW value - damping layer handles smoothing
           setRawScrollProgress(self.progress);
@@ -551,6 +566,7 @@ const WebGL3DSection = () => {
               <Canvas
                 camera={{ position: [0, 0, 5], fov: 50 }}
                 dpr={[1, 1.5]}
+                frameloop="demand"
                 gl={{ 
                   antialias: true, 
                   powerPreference: 'high-performance',

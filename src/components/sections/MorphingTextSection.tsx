@@ -142,6 +142,14 @@ const MorphingTextSection = () => {
         start: "top top",
         end: "bottom bottom",
         scrub: true,  // Instant - Lenis already provides smooth scroll input
+        invalidateOnRefresh: true, // Recalculate on resize
+        onRefresh: (self) => {
+          // Resync all refs on layout refresh to prevent "replay" effect
+          const progress = self.progress;
+          smoothedProgressRef.current = progress;
+          rawProgressRef.current = progress;
+          echoProgressRef.current = progress;
+        },
         onUpdate: (self) => {
           const targetProgress = self.progress;
 
