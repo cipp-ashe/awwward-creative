@@ -328,7 +328,27 @@ npm run build
 
 # Preview production build
 npm run preview
+
+# Run Awwwards jury audit
+npm run audit
 ```
+
+## Awwwards Jury Simulation
+
+This project includes a comprehensive code audit tool that simulates the Awwwards jury review process. The tool analyzes the codebase through 7 expert personas and provides brutal, clinical feedback aimed at "Site of the Year" standards.
+
+See [AWWWARDS_AUDIT.md](./AWWWARDS_AUDIT.md) for complete documentation on:
+- The 7 expert personas (Art Direction, Typography, Grid & Composition, Motion, UX/Navigation, Accessibility, Dev/Performance)
+- How to run the audit
+- Understanding the scoring system
+- Interpreting feedback and resolving conflicts
+
+**Run the audit:**
+```sh
+npm run audit
+```
+
+This generates a detailed report in `AUDIT_REPORT.md` and fails CI if the score is below 8.0/10.
 
 ## Project Links
 
