@@ -5,7 +5,7 @@ import { BlendFunction } from 'postprocessing';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import * as THREE from 'three';
-
+import { motion } from 'framer-motion';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -196,7 +196,7 @@ const DisplacementMesh = ({ scrollProgress, mousePosition }: DisplacementMeshPro
 
   return (
     <mesh ref={meshRef} position={[0, 0, 0]}>
-      <icosahedronGeometry args={[1, 32]} />
+      <icosahedronGeometry args={[1, 64]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
@@ -446,13 +446,9 @@ const Scene = ({ scrollProgress, mousePosition }: SceneProps) => {
   );
 };
 
-// Throttle threshold to prevent excessive React state updates
-const SCROLL_THROTTLE = 0.01;
-
 const WebGL3DSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const lastProgressRef = useRef(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -480,11 +476,7 @@ const WebGL3DSection = () => {
         start: 'top bottom',
         end: 'bottom top',
         onUpdate: (self) => {
-          // Only update state if delta exceeds threshold
-          if (Math.abs(self.progress - lastProgressRef.current) > SCROLL_THROTTLE) {
-            lastProgressRef.current = self.progress;
-            setScrollProgress(self.progress);
-          }
+          setScrollProgress(self.progress);
         },
         onEnter: () => setIsVisible(true),
         onLeave: () => setIsVisible(false),
@@ -561,39 +553,46 @@ const WebGL3DSection = () => {
           </div>
         )}
 
-        {/* Overlay content - CSS transitions tied to isVisible state, no Framer overlap */}
+        {/* Overlay content */}
         <div className="section-content relative z-10 pointer-events-none">
           <div className="text-center">
-            <span 
-              className={`text-mono text-xs text-primary tracking-widest uppercase mb-8 block transition-all duration-700 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-              }`}
+            <motion.span 
+              className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
             >
               07 — WebGL
-            </span>
+            </motion.span>
             
-            <h2 
-              className={`text-display text-display-md mb-6 blend-text transition-all duration-700 ease-out delay-100 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
+            <motion.h2 
+              className="text-display text-display-md mb-6 blend-text"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
             >
               Interactive <span className="text-primary">Depth</span>
-            </h2>
+            </motion.h2>
             
-            <p 
-              className={`text-muted-foreground max-w-md mx-auto text-balance mb-8 transition-all duration-700 ease-out delay-200 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-              }`}
+            <motion.p 
+              className="text-muted-foreground max-w-md mx-auto text-balance mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
             >
               Custom GLSL shaders displace geometry in real-time. 
               Scroll and mouse position modulate the noise field.
-            </p>
+            </motion.p>
 
             {/* Stats display */}
-            <div 
-              className={`flex justify-center gap-8 text-mono text-xs transition-all duration-700 ease-out delay-300 ${
-                isVisible ? 'opacity-100' : 'opacity-0'
-              }`}
+            <motion.div 
+              className="flex justify-center gap-8 text-mono text-xs"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
             >
               <div>
                 <span className="text-primary">{Math.round(scrollProgress * 100)}%</span>
@@ -607,7 +606,7 @@ const WebGL3DSection = () => {
                 <span className="text-primary">{mousePosition.y.toFixed(2)}</span>
                 <span className="text-muted-foreground ml-2">mouse.y</span>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
 
