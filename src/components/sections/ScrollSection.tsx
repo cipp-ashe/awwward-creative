@@ -12,19 +12,36 @@ const ScrollSection = () => {
   useEffect(() => {
     const ctx = gsap.context(() => {
       const horizontal = horizontalRef.current;
-      if (!horizontal) return;
+      const section = sectionRef.current;
+      if (!horizontal || !section) return;
+
+      // Set initial state for entrance animation
+      gsap.set(section, { opacity: 0 });
+
+      // Entrance fade-in animation (GSAP-compatible, no Framer Motion conflict)
+      gsap.to(section, {
+        opacity: 1,
+        duration: 0.8,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
 
       // Horizontal scroll animation
       const horizontalScroll = gsap.to(horizontal, {
         x: () => -(horizontal.scrollWidth - window.innerWidth),
         ease: 'none',
         scrollTrigger: {
-          trigger: sectionRef.current,
+          trigger: section,
           start: 'top top',
           end: () => `+=${horizontal.scrollWidth - window.innerWidth}`,
           scrub: 1,
           pin: true,
           anticipatePin: 1,
+          invalidateOnRefresh: true, // Recalculate on resize/refresh
         },
       });
 
@@ -33,10 +50,11 @@ const ScrollSection = () => {
         scaleX: 1,
         ease: 'none',
         scrollTrigger: {
-          trigger: sectionRef.current,
+          trigger: section,
           start: 'top top',
           end: () => `+=${horizontal.scrollWidth - window.innerWidth}`,
           scrub: true,
+          invalidateOnRefresh: true,
         },
       });
 

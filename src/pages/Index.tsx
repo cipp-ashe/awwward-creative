@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useState, useCallback } from 'react';
 import { useLenis } from '@/hooks/useLenis';
 import { useGsapScrollTrigger } from '@/hooks/useGsapScrollTrigger';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { RevealProvider, useReveal } from '@/contexts/RevealContext';
 import CustomCursor from '@/components/CustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
@@ -34,6 +35,13 @@ const IndexContent = () => {
       triggerReveal();
     }, 100);
   }, [triggerReveal]);
+
+  // Refresh ScrollTrigger after fonts load to fix pin position calculations
+  useEffect(() => {
+    document.fonts.ready.then(() => {
+      ScrollTrigger.refresh();
+    });
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -80,11 +88,10 @@ const IndexContent = () => {
           </div>
         </SectionReveal>
         
-        <SectionReveal index={2}>
-          <div id="scroll">
-            <ScrollSection />
-          </div>
-        </SectionReveal>
+        {/* ScrollSection uses GSAP ScrollTrigger with pin - cannot be wrapped in SectionReveal */}
+        <div id="scroll">
+          <ScrollSection />
+        </div>
         
         <SectionReveal index={3}>
           <div id="typography">
