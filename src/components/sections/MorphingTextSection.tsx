@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { interpolate } from 'flubber';
 import { motion } from 'framer-motion';
+import ParticleTrail from '@/components/ParticleTrail';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,6 +29,7 @@ interface MorphState {
 const MorphingTextSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const svgRef = useRef<SVGPathElement>(null);
+  const svgContainerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
   const interpolatorsRef = useRef<Map<string, (t: number) => string>>(new Map());
   
@@ -36,6 +38,8 @@ const MorphingTextSection = () => {
     currentWord: 'motion',
     progress: 0,
   });
+  
+  const [containerSize, setContainerSize] = useState({ width: 512, height: 358 });
 
   // Pre-compute interpolators for all word pairs (memoized)
   const getInterpolator = useCallback((fromWord: WordKey, toWord: WordKey) => {
@@ -47,6 +51,24 @@ const MorphingTextSection = () => {
       );
     }
     return interpolatorsRef.current.get(key)!;
+  }, []);
+
+  // Track container size for particle canvas
+  useEffect(() => {
+    const container = svgContainerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setContainerSize({ width, height });
+        }
+      }
+    });
+
+    resizeObserver.observe(container);
+    return () => resizeObserver.disconnect();
   }, []);
 
   useEffect(() => {
@@ -121,10 +143,20 @@ const MorphingTextSection = () => {
           </span>
           
           {/* SVG Morph Container */}
-          <div className="relative mb-8">
+          <div ref={svgContainerRef} className="relative mb-8">
+            {/* Particle Trail Canvas */}
+            <ParticleTrail
+              pathData={morphState.currentPath}
+              width={containerSize.width}
+              height={containerSize.height}
+              viewBox={{ width: 200, height: 140 }}
+              particleCount={60}
+              color="hsl(32, 45%, 65%)"
+            />
+            
             <svg 
               viewBox="0 0 200 140" 
-              className="w-full max-w-lg mx-auto h-auto"
+              className="w-full max-w-lg mx-auto h-auto relative z-10"
               aria-hidden="true"
             >
               {/* Glow filter */}
