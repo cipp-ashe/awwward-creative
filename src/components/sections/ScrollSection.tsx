@@ -1,0 +1,133 @@
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
+const ScrollSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const horizontalRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const horizontal = horizontalRef.current;
+      if (!horizontal) return;
+
+      // Horizontal scroll animation
+      const horizontalScroll = gsap.to(horizontal, {
+        x: () => -(horizontal.scrollWidth - window.innerWidth),
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: () => `+=${horizontal.scrollWidth - window.innerWidth}`,
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1,
+        },
+      });
+
+      // Progress bar
+      gsap.to(progressRef.current, {
+        scaleX: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: () => `+=${horizontal.scrollWidth - window.innerWidth}`,
+          scrub: true,
+        },
+      });
+
+      return () => {
+        horizontalScroll.kill();
+      };
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  const scrollCards = [
+    {
+      title: 'Scroll as Timeline',
+      content: "Lenis provides the physics. GSAP's ScrollTrigger provides the choreography. Together, scroll becomes an input device, not an afterthought.",
+    },
+    {
+      title: 'Precision Control',
+      content: "Every scroll position maps to a specific state. No guessing, no jank. The user's thumb becomes the playhead of a carefully authored experience.",
+    },
+    {
+      title: 'Progressive Reveal',
+      content: "Content appears as the user earns it. This is not lazy loading — it is narrative pacing. The scroll bar is the story arc.",
+    },
+    {
+      title: 'Inertia & Ease',
+      content: "Smooth scrolling is not just pretty — it buys you time. That extra 200ms of deceleration is 200ms of settled attention.",
+    },
+  ];
+
+  return (
+    <section ref={sectionRef} className="relative min-h-screen overflow-hidden">
+      {/* Progress bar */}
+      <div className="fixed top-0 left-0 right-0 h-px bg-border z-50">
+        <div
+          ref={progressRef}
+          className="h-full bg-primary origin-left"
+          style={{ transform: 'scaleX(0)' }}
+        />
+      </div>
+
+      {/* Section label */}
+      <div className="absolute top-8 left-6 md:left-12 z-10">
+        <span className="text-mono text-xs text-primary tracking-widest uppercase">
+          02 — Scroll
+        </span>
+      </div>
+
+      {/* Horizontal scroll container */}
+      <div ref={horizontalRef} className="flex items-center h-screen">
+        {/* Intro panel */}
+        <div className="flex-shrink-0 w-screen h-full flex items-center justify-center px-6 md:px-24">
+          <div className="max-w-3xl">
+            <h2 className="text-display text-display-md mb-6">
+              Scroll is the <span className="text-primary">timeline</span>,
+              <br />
+              not the event
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Swipe right to experience scroll as a deliberate input →
+            </p>
+          </div>
+        </div>
+
+        {/* Content cards */}
+        {scrollCards.map((card, index) => (
+          <div
+            key={index}
+            className="flex-shrink-0 w-[80vw] md:w-[50vw] h-full flex items-center px-8 md:px-16"
+          >
+            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-8 md:p-12 w-full">
+              <span className="text-mono text-xs text-primary/60 mb-4 block">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3 className="text-display text-display-sm mb-4">{card.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{card.content}</p>
+            </div>
+          </div>
+        ))}
+
+        {/* End panel */}
+        <div className="flex-shrink-0 w-screen h-full flex items-center justify-center px-6 md:px-24">
+          <div className="text-center">
+            <p className="text-mono text-sm text-muted-foreground">
+              Continue scrolling ↓
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default ScrollSection;

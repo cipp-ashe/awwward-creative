@@ -2,95 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Core palette - dark editorial */
+    --background: 0 0% 4%;
+    --foreground: 40 20% 96%;
+    
+    /* Surface layers */
+    --card: 0 0% 6%;
+    --card-foreground: 40 20% 96%;
+    
+    --popover: 0 0% 6%;
+    --popover-foreground: 40 20% 96%;
+    
+    /* Primary - warm amber accent */
+    --primary: 32 45% 65%;
+    --primary-foreground: 0 0% 4%;
+    
+    /* Secondary - subtle warmth */
+    --secondary: 30 10% 12%;
+    --secondary-foreground: 40 15% 85%;
+    
+    /* Muted surfaces */
+    --muted: 0 0% 10%;
+    --muted-foreground: 40 10% 55%;
+    
+    /* Accent - amber glow */
+    --accent: 32 60% 55%;
+    --accent-foreground: 0 0% 4%;
+    
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 32 45% 65%;
+    
+    --radius: 0.25rem;
+    
+    /* Custom tokens */
+    --glow: 32 80% 60%;
+    --grain-opacity: 0.03;
+    --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    /* Typography scale */
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Space Grotesk', system-ui, sans-serif;
+    
+    /* Spacing rhythm */
+    --section-padding: clamp(4rem, 10vh, 8rem);
+    --content-max: 1400px;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  .light {
+    --background: 40 20% 96%;
+    --foreground: 0 0% 6%;
+    
+    --card: 40 15% 92%;
+    --card-foreground: 0 0% 6%;
+    
+    --popover: 40 15% 92%;
+    --popover-foreground: 0 0% 6%;
+    
+    --primary: 32 55% 40%;
+    --primary-foreground: 40 20% 96%;
+    
+    --secondary: 40 10% 88%;
+    --secondary-foreground: 0 0% 15%;
+    
+    --muted: 40 10% 90%;
+    --muted-foreground: 0 0% 40%;
+    
+    --accent: 32 70% 45%;
+    --accent-foreground: 40 20% 96%;
+    
+    --border: 40 10% 85%;
+    --input: 40 10% 85%;
+    --ring: 32 55% 40%;
+    
+    --grain-opacity: 0.02;
   }
 }
 
@@ -98,8 +92,172 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  
+  html {
+    scroll-behavior: auto; /* Lenis handles smooth scroll */
+  }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
+  
+  ::selection {
+    @apply bg-primary/30 text-foreground;
+  }
+}
+
+@layer components {
+  /* Kinetic typography */
+  .text-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+  }
+  
+  .text-mono {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  
+  /* Scroll-driven reveal */
+  .reveal-text {
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 1.2s var(--transition-smooth);
+  }
+  
+  .reveal-text.revealed {
+    clip-path: inset(0 0% 0 0);
+  }
+  
+  /* Grain overlay */
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
+  
+  /* Custom cursor */
+  .cursor-dot {
+    @apply fixed w-2 h-2 bg-primary rounded-full pointer-events-none z-[10000];
+    mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+  }
+  
+  .cursor-ring {
+    @apply fixed w-10 h-10 border border-primary/50 rounded-full pointer-events-none z-[10000];
+    transform: translate(-50%, -50%);
+  }
+  
+  /* Section styling */
+  .section {
+    @apply relative min-h-screen flex items-center;
+    padding: var(--section-padding) 0;
+  }
+  
+  .section-content {
+    @apply w-full max-w-[var(--content-max)] mx-auto px-6 md:px-12;
+  }
+  
+  /* Glow effect */
+  .glow {
+    @apply absolute rounded-full blur-3xl opacity-20;
+    background: hsl(var(--glow));
+  }
+  
+  /* Line decorations */
+  .line-horizontal {
+    @apply h-px bg-gradient-to-r from-transparent via-border to-transparent;
+  }
+  
+  .line-vertical {
+    @apply w-px bg-gradient-to-b from-transparent via-border to-transparent;
+  }
+  
+  /* Hover underline effect */
+  .hover-line {
+    @apply relative;
+  }
+  
+  .hover-line::after {
+    content: '';
+    @apply absolute left-0 bottom-0 w-full h-px bg-primary origin-left scale-x-0;
+    transition: transform 0.6s var(--transition-smooth);
+  }
+  
+  .hover-line:hover::after {
+    @apply scale-x-100;
+  }
+  
+  /* Blend text effect */
+  .blend-text {
+    mix-blend-mode: difference;
+  }
+}
+
+@layer utilities {
+  /* GPU-friendly transforms */
+  .gpu {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* Text balance for better typography */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Fade edges */
+  .fade-y {
+    mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  }
+  
+  .fade-x {
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  }
+}
+
+/* Lenis scroll */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
