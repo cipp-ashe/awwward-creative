@@ -8,7 +8,14 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { motion } from 'framer-motion';
 import { Section, SectionLabel } from '@/components/layout/Section';
-import { DURATION, DELAY, EASING_ARRAY } from '@/constants/animation';
+import { 
+  ANIMATION, 
+  TRANSITION, 
+  DURATION, 
+  DELAY, 
+  withDelay, 
+  withStagger 
+} from '@/constants/animation';
 
 const TypographySection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -81,10 +88,9 @@ const TypographySection = () => {
       {/* Content grid */}
       <div className="grid md:grid-cols-3 gap-8 md:gap-12">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          {...ANIMATION.fadeUp}
+          whileInView={ANIMATION.fadeUp.animate}
           viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: DURATION.reveal }}
           className="space-y-4"
         >
           <h3 className="text-display text-xl">Variable Axes</h3>
@@ -98,10 +104,10 @@ const TypographySection = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          {...ANIMATION.fadeUp}
+          whileInView={ANIMATION.fadeUp.animate}
           viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: DURATION.reveal, delay: DELAY.micro }}
+          transition={withStagger(TRANSITION.reveal, 1)}
           className="space-y-4"
         >
           <h3 className="text-display text-xl">Kinetic Type</h3>
@@ -112,10 +118,10 @@ const TypographySection = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          {...ANIMATION.fadeUp}
+          whileInView={ANIMATION.fadeUp.animate}
           viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: DURATION.reveal, delay: DELAY.xshort }}
+          transition={withStagger(TRANSITION.reveal, 2)}
           className="space-y-4"
         >
           <h3 className="text-display text-xl">Split & Reveal</h3>
@@ -131,7 +137,7 @@ const TypographySection = () => {
         <motion.p
           className="text-display text-display-sm text-center text-muted-foreground/50 hover:text-foreground transition-colors duration-700"
           whileHover={{ letterSpacing: '0.05em' }}
-          transition={{ duration: 0.6, ease: EASING_ARRAY.smooth }}
+          transition={TRANSITION.fast}
         >
           Hover to feel typographic space expand
         </motion.p>

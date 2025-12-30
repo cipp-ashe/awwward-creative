@@ -22,7 +22,7 @@
 
 import { ReactNode, useRef, forwardRef } from 'react';
 import { motion, useInView, Variants } from 'framer-motion';
-import { DURATION, STAGGER, EASING_ARRAY } from '@/constants/animation';
+import { TRANSITION, DURATION, STAGGER, EASING_ARRAY, withDelay } from '@/constants/animation';
 
 /** Available animation variants for scroll reveal */
 export type RevealVariant = 'fadeUp' | 'fadeDown' | 'fadeLeft' | 'fadeRight' | 'scale' | 'blur' | 'slideUp' | 'rotate';
@@ -83,7 +83,7 @@ const ScrollReveal = ({
   children,
   variant = 'fadeUp',
   delay = 0,
-  duration = 0.6,
+  duration = DURATION.normal,
   once = true,
   amount = 0.3,
   className = '',
@@ -97,11 +97,10 @@ const ScrollReveal = ({
       initial="hidden"
       animate={isInView ? 'visible' : 'hidden'}
       variants={variants[variant]}
-      transition={{
-        duration,
-        delay,
-        ease: [0.16, 1, 0.3, 1],
-      }}
+      transition={delay > 0 
+        ? withDelay({ duration, ease: EASING_ARRAY.smooth }, delay)
+        : { duration, ease: EASING_ARRAY.smooth }
+      }
       className={className}
       style={{ transformStyle: 'preserve-3d' }}
     >
