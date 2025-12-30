@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import EasingCurveIndicator from '@/components/EasingCurveIndicator';
-
+import BezierCurveEditor from '@/components/BezierCurveEditor';
 gsap.registerPlugin(ScrollTrigger);
 
 const MotionSection = () => {
@@ -101,9 +101,10 @@ const MotionSection = () => {
           </div>
         </div>
 
-        {/* Easing Curve Indicator */}
-        <div className="mt-16 max-w-sm mx-auto md:mx-0 md:ml-auto">
+        {/* Curve Editors */}
+        <div className="mt-16 grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           <EasingCurveIndicator scrollProgress={scrollProgress} />
+          <BezierCurveEditor />
         </div>
 
         {/* Motion demo */}
