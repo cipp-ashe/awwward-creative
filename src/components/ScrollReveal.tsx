@@ -20,7 +20,7 @@
  * </ScrollReveal>
  */
 
-import { ReactNode, useRef } from 'react';
+import { ReactNode, useRef, forwardRef } from 'react';
 import { motion, useInView, Variants } from 'framer-motion';
 
 /** Available animation variants for scroll reveal */
@@ -163,6 +163,7 @@ export const StaggerContainer = ({
  * 
  * Child element for StaggerContainer that inherits staggered timing.
  * Must be a direct child of StaggerContainer.
+ * Supports ref forwarding for Framer Motion animation orchestration.
  * 
  * @example
  * <StaggerItem variant="scale">
@@ -178,23 +179,24 @@ export interface StaggerItemProps {
   className?: string;
 }
 
-export const StaggerItem = ({
-  children,
-  variant = 'fadeUp',
-  className = '',
-}: StaggerItemProps) => {
-  return (
-    <motion.div
-      variants={variants[variant]}
-      transition={{
-        duration: 0.5,
-        ease: [0.16, 1, 0.3, 1],
-      }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-};
+export const StaggerItem = forwardRef<HTMLDivElement, StaggerItemProps>(
+  ({ children, variant = 'fadeUp', className = '' }, ref) => {
+    return (
+      <motion.div
+        ref={ref}
+        variants={variants[variant]}
+        transition={{
+          duration: 0.5,
+          ease: [0.16, 1, 0.3, 1],
+        }}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+);
+
+StaggerItem.displayName = 'StaggerItem';
 
 export default ScrollReveal;
