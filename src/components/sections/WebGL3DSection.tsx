@@ -304,6 +304,52 @@ const PostProcessing = ({ scrollProgress, mousePosition }: PostProcessingProps) 
   );
 };
 
+// Scroll-driven camera orbit controller
+interface CameraControllerProps {
+  scrollProgress: number;
+  mousePosition: { x: number; y: number };
+}
+
+const CameraController = ({ scrollProgress, mousePosition }: CameraControllerProps) => {
+  const { camera } = useThree();
+  const targetPosition = useRef(new THREE.Vector3(0, 0, 5));
+  const currentPosition = useRef(new THREE.Vector3(0, 0, 5));
+  
+  useFrame(() => {
+    // Orbital path parameters
+    const baseRadius = 5;
+    const radiusVariation = 1.5;
+    const radius = baseRadius + Math.sin(scrollProgress * Math.PI) * radiusVariation;
+    
+    // Scroll drives the main orbital rotation (full 360° + extra)
+    const theta = scrollProgress * Math.PI * 1.5; // Horizontal orbit
+    const phi = Math.PI / 2 + Math.sin(scrollProgress * Math.PI * 2) * 0.4; // Vertical oscillation
+    
+    // Mouse adds subtle offset to the orbit
+    const mouseOffsetX = mousePosition.x * 0.3;
+    const mouseOffsetY = mousePosition.y * 0.2;
+    
+    // Calculate spherical coordinates to cartesian
+    const x = radius * Math.sin(phi) * Math.cos(theta + mouseOffsetX);
+    const y = radius * Math.cos(phi) + mouseOffsetY;
+    const z = radius * Math.sin(phi) * Math.sin(theta + mouseOffsetX);
+    
+    // Set target position
+    targetPosition.current.set(x, y, z);
+    
+    // Smooth interpolation for fluid camera movement
+    currentPosition.current.lerp(targetPosition.current, 0.08);
+    
+    // Update camera position
+    camera.position.copy(currentPosition.current);
+    
+    // Always look at center (the 3D object)
+    camera.lookAt(0, 0, 0);
+  });
+
+  return null;
+};
+
 // Scene wrapper component
 interface SceneProps {
   scrollProgress: number;
@@ -313,8 +359,13 @@ interface SceneProps {
 const Scene = ({ scrollProgress, mousePosition }: SceneProps) => {
   return (
     <>
+      <CameraController 
+        scrollProgress={scrollProgress} 
+        mousePosition={mousePosition} 
+      />
       <ambientLight intensity={0.2} />
       <pointLight position={[10, 10, 10]} intensity={0.5} />
+      <pointLight position={[-10, -5, -10]} intensity={0.3} color="#d4a574" />
       <DisplacementMesh 
         scrollProgress={scrollProgress} 
         mousePosition={mousePosition} 
