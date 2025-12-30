@@ -39,6 +39,8 @@ interface MorphState {
 const MorphingTextSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const svgRef = useRef<SVGPathElement>(null);
+  const shadowPathRef = useRef<SVGPathElement>(null);
+  const outlinePathRef = useRef<SVGPathElement>(null);
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
   const interpolatorsRef = useRef<Map<string, (t: number) => string>>(new Map());
@@ -129,9 +131,15 @@ const MorphingTextSection = () => {
           const easedProgress = EASING_FN.easeInOutCubic(clampedProgress);
           const newPath = interp(easedProgress);
           
-          // Direct DOM update for performance (not via React state)
+          // Direct DOM update for all paths in sync (not via React state)
           if (svgRef.current) {
             svgRef.current.setAttribute('d', newPath);
+          }
+          if (shadowPathRef.current) {
+            shadowPathRef.current.setAttribute('d', newPath);
+          }
+          if (outlinePathRef.current) {
+            outlinePathRef.current.setAttribute('d', newPath);
           }
           
           // Update display word (less frequent, with threshold)
@@ -196,7 +204,8 @@ const MorphingTextSection = () => {
               </defs>
               
               <path
-                d={morphState.currentPath}
+                ref={shadowPathRef}
+                d={MORPH_PATHS.motion}
                 fill="hsl(32, 45%, 65%)"
                 opacity="0.1"
                 transform="translate(4, 4)"
@@ -204,14 +213,15 @@ const MorphingTextSection = () => {
               
               <path
                 ref={svgRef}
-                d={morphState.currentPath}
+                d={MORPH_PATHS.motion}
                 fill="url(#morphGradient)"
                 filter="url(#glow)"
                 className="transition-none"
               />
               
               <path
-                d={morphState.currentPath}
+                ref={outlinePathRef}
+                d={MORPH_PATHS.motion}
                 fill="none"
                 stroke="hsl(32, 45%, 65%)"
                 strokeWidth="0.5"
