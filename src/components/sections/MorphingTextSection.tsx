@@ -17,6 +17,7 @@ import ParticleTrail from "@/components/ParticleTrail";
 import { SectionContent, SectionLabel } from "@/components/layout/Section";
 import { TRANSITION, EASING_FN, DURATION, SMOOTHING } from "@/constants/animation";
 import { useMotionConfigSafe } from "@/contexts/MotionConfigContext";
+import { useIsMobile } from "@/hooks/useMobile";
 
 // 12-point topology invariant paths for artifact-free interpolation
 const MORPH_PATHS = {
@@ -98,6 +99,7 @@ const MorphingTextSection = () => {
   const [containerSize, setContainerSize] = useState({ width: 512, height: 358 });
 
   const { isReducedMotion } = useMotionConfigSafe();
+  const isMobile = useIsMobile();
 
   // Memoized interpolator factory
   const getInterpolator = useCallback((fromWord: WordKey, toWord: WordKey) => {
@@ -141,7 +143,17 @@ const MorphingTextSection = () => {
         trigger: section,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.5,
+        scrub: isMobile ? 0.8 : 0.5,
+        // Snap to each shape's settled position (5 shapes = 4 transitions)
+        snap: {
+          snapTo: 1 / (WORDS.length - 1),
+          duration: {
+            min: isMobile ? 0.3 : 0.2,
+            max: isMobile ? 0.8 : 0.5,
+          },
+          delay: isMobile ? 0.15 : 0.08,
+          ease: "power2.inOut",
+        },
         onUpdate: (self) => {
           const targetProgress = self.progress;
 
@@ -236,7 +248,7 @@ const MorphingTextSection = () => {
       ctx.revert();
       interpolatorsRef.current.clear();
     };
-  }, [getInterpolator, isReducedMotion, currentWord]);
+  }, [getInterpolator, isReducedMotion, currentWord, isMobile]);
 
   return (
     <section
