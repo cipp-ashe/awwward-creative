@@ -6,6 +6,7 @@ import CustomCursor from '@/components/CustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
 import Preloader from '@/components/Preloader';
 import SectionReveal from '@/components/SectionReveal';
+import NavigationBar from '@/components/NavigationBar';
 import HeroSection from '@/components/sections/HeroSection';
 import MotionSection from '@/components/sections/MotionSection';
 import ScrollSection from '@/components/sections/ScrollSection';
@@ -29,19 +30,16 @@ const IndexContent = () => {
 
   const handlePreloaderComplete = useCallback(() => {
     setIsLoading(false);
-    // Small delay to ensure preloader exit animation completes
     setTimeout(() => {
       triggerReveal();
     }, 100);
   }, [triggerReveal]);
 
   useEffect(() => {
-    // Delay WebGL loading for better perceived performance
     const timer = setTimeout(() => {
       setShowWebGL(true);
     }, 100);
 
-    // Hide default cursor on desktop
     const mediaQuery = window.matchMedia('(min-width: 768px)');
     if (mediaQuery.matches && !('ontouchstart' in window)) {
       document.body.style.cursor = 'none';
@@ -55,13 +53,13 @@ const IndexContent = () => {
 
   return (
     <>
-      {/* Preloader */}
       {isLoading && (
         <Preloader onComplete={handlePreloaderComplete} minDuration={2500} />
       )}
 
+      <NavigationBar />
+
       <main className="relative bg-background">
-        {/* Background layers */}
         {showWebGL && (
           <Suspense fallback={null}>
             <WebGLBackground />
@@ -70,37 +68,52 @@ const IndexContent = () => {
         <GrainOverlay />
         <CustomCursor />
 
-        {/* Content sections with staggered reveal */}
         <SectionReveal index={0} baseDelay={0}>
-          <HeroSection />
+          <div id="hero">
+            <HeroSection />
+          </div>
         </SectionReveal>
         
         <SectionReveal index={1}>
-          <MotionSection />
+          <div id="motion">
+            <MotionSection />
+          </div>
         </SectionReveal>
         
         <SectionReveal index={2}>
-          <ScrollSection />
+          <div id="scroll">
+            <ScrollSection />
+          </div>
         </SectionReveal>
         
         <SectionReveal index={3}>
-          <TypographySection />
+          <div id="typography">
+            <TypographySection />
+          </div>
         </SectionReveal>
         
         <SectionReveal index={4}>
-          <MorphingTextSection />
+          <div id="micro">
+            <MicroInteractionsSection />
+          </div>
         </SectionReveal>
         
         <SectionReveal index={5}>
-          <WebGL3DSection />
+          <div id="performance">
+            <PerformanceSection />
+          </div>
         </SectionReveal>
         
         <SectionReveal index={6}>
-          <MicroInteractionsSection />
+          <div id="morphing">
+            <MorphingTextSection />
+          </div>
         </SectionReveal>
         
         <SectionReveal index={7}>
-          <PerformanceSection />
+          <div id="webgl">
+            <WebGL3DSection />
+          </div>
         </SectionReveal>
         
         <SectionReveal index={8}>
