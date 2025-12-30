@@ -119,11 +119,47 @@ const NavigationBar = () => {
           {/* Logo / Brand */}
           <motion.button
             onClick={() => scrollToSection('hero')}
-            className="text-mono text-xs tracking-widest uppercase text-foreground hover:text-primary transition-colors"
+            className="group flex items-center gap-2 text-foreground hover:text-primary transition-colors"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            aria-label="Go to top"
           >
-            <span className="text-primary">●</span> DEMO
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 80 80"
+              fill="none"
+              className="overflow-visible"
+            >
+              {/* Outer ring */}
+              <circle
+                cx="40"
+                cy="40"
+                r="35"
+                stroke="currentColor"
+                strokeWidth="1"
+                fill="none"
+                className="opacity-30 group-hover:opacity-50 transition-opacity"
+              />
+              
+              {/* Inner hexagonal shape */}
+              <path
+                d="M40 20 L55 35 L55 55 L40 70 L25 55 L25 35 Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                fill="none"
+                className="group-hover:stroke-primary transition-colors"
+              />
+              
+              {/* Center dot */}
+              <circle
+                cx="40"
+                cy="40"
+                r="4"
+                fill="currentColor"
+                className="group-hover:fill-primary transition-colors"
+              />
+            </svg>
           </motion.button>
 
           {/* Section links - desktop */}
