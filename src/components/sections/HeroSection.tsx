@@ -15,6 +15,8 @@ import {
   DURATION, 
   DELAY, 
   STAGGER, 
+  SCROLL_TRIGGER,
+  GSAP_ANIMATION,
   withDelay, 
   withStagger 
 } from '@/constants/animation';
@@ -27,41 +29,36 @@ const HeroSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Title animation on scroll
+      // Title animation on scroll with preset
       gsap.to(titleRef.current, {
+        ...GSAP_ANIMATION.heroExit,
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1,
+          ...SCROLL_TRIGGER.heroParallax,
         },
-        y: -100,
-        opacity: 0.3,
-        scale: 0.9,
       });
 
       // Subtitle parallax
       gsap.to(subtitleRef.current, {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1.5,
-        },
         y: -50,
         opacity: 0,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          ...SCROLL_TRIGGER.heroParallax,
+          scrub: 1.5,
+        },
       });
 
       // Scroll indicator fade
       gsap.to(scrollIndicatorRef.current, {
+        opacity: 0,
+        y: 20,
         scrollTrigger: {
           trigger: sectionRef.current,
           start: '10% top',
           end: '30% top',
           scrub: true,
         },
-        opacity: 0,
-        y: 20,
       });
     }, sectionRef);
 

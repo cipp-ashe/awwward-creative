@@ -8,7 +8,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { SectionLabel } from '@/components/layout/Section';
-import { DURATION } from '@/constants/animation';
+import { DURATION, SCROLL_TRIGGER, GSAP_EASE } from '@/constants/animation';
 
 const ScrollSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -28,11 +28,10 @@ const ScrollSection = () => {
       gsap.to(section, {
         opacity: 1,
         duration: DURATION.reveal,
-        ease: 'power2.out',
+        ease: GSAP_EASE.smooth,
         scrollTrigger: {
           trigger: section,
-          start: 'top 80%',
-          toggleActions: 'play none none none',
+          ...SCROLL_TRIGGER.reveal,
         },
       });
 

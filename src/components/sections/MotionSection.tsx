@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { Section, SectionContent, SectionLabel } from '@/components/layout/Section';
 import EasingCurveIndicator from '@/components/EasingCurveIndicator';
-import { SMOOTHING, STAGGER } from '@/constants/animation';
+import { SMOOTHING, STAGGER, SCROLL_TRIGGER, GSAP_ANIMATION, withGsapStagger } from '@/constants/animation';
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 
 const MotionSection = () => {
@@ -28,54 +28,43 @@ const MotionSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Heading reveal
+      // Heading reveal with preset
       gsap.from(headingRef.current, {
+        ...GSAP_ANIMATION.slideUp,
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 80%',
-          end: 'top 30%',
-          scrub: 1,
+          ...SCROLL_TRIGGER.scrubReveal,
         },
-        opacity: 0,
-        y: 100,
-        skewY: 5,
       });
 
-      // Content stagger
+      // Content stagger with preset
       const paragraphs = contentRef.current?.querySelectorAll('p');
       if (paragraphs) {
         gsap.from(paragraphs, {
+          ...withGsapStagger(GSAP_ANIMATION.fadeUp, STAGGER.normal),
           scrollTrigger: {
             trigger: contentRef.current,
+            ...SCROLL_TRIGGER.scrubReveal,
             start: 'top 70%',
-            end: 'top 30%',
-            scrub: 1,
           },
-          opacity: 0,
-          y: 60,
-          stagger: STAGGER.normal,
         });
       }
 
       // Demo animation - continuous motion
       gsap.to(demoRef.current?.querySelectorAll('.motion-box'), {
-        scrollTrigger: {
-          trigger: demoRef.current,
-          start: 'top 80%',
-          end: 'bottom 20%',
-          scrub: 2,
-        },
         x: (i) => (i % 2 === 0 ? 100 : -100),
         rotation: (i) => (i % 2 === 0 ? 15 : -15),
         stagger: STAGGER.normal,
+        scrollTrigger: {
+          trigger: demoRef.current,
+          ...SCROLL_TRIGGER.scrubSlow,
+        },
       });
 
       // Track scroll progress for easing indicator
-      // Writes to raw value - damping layer handles smoothing
       ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: 'top bottom',
-        end: 'bottom top',
+        ...SCROLL_TRIGGER.progress,
         onUpdate: (self) => {
           setRawScrollProgress(self.progress);
         },
