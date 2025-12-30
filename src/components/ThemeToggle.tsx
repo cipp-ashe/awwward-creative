@@ -2,6 +2,7 @@ import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 import { useEffect, useState, forwardRef } from 'react';
+import { TRANSITION } from '@/constants/animation';
 
 const ThemeToggle = forwardRef<HTMLButtonElement>((_, ref) => {
   const { setTheme, resolvedTheme } = useTheme();
@@ -48,7 +49,7 @@ const ThemeToggle = forwardRef<HTMLButtonElement>((_, ref) => {
             initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
             animate={{ rotate: 0, opacity: 1, scale: 1 }}
             exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={TRANSITION.fast}
           >
             <Moon className="w-4 h-4 text-primary" />
           </motion.div>
@@ -58,7 +59,7 @@ const ThemeToggle = forwardRef<HTMLButtonElement>((_, ref) => {
             initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
             animate={{ rotate: 0, opacity: 1, scale: 1 }}
             exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={TRANSITION.fast}
           >
             <Sun className="w-4 h-4 text-primary" />
           </motion.div>
@@ -70,7 +71,7 @@ const ThemeToggle = forwardRef<HTMLButtonElement>((_, ref) => {
         className="absolute inset-0 rounded-full bg-primary/20 blur-md -z-10"
         initial={{ opacity: 0 }}
         whileHover={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        transition={TRANSITION.fast}
       />
     </motion.button>
   );

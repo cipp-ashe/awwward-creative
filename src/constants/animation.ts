@@ -211,3 +211,179 @@ export const SMOOTHING = {
   /** UI elements: snappy feedback like progress bars (0.10) */
   ui: 0.10,
 } as const;
+
+// ============================================================================
+// ANIMATION PRESETS (Framer Motion)
+// ============================================================================
+
+/**
+ * Type for Framer Motion transition configuration.
+ * Presets are spreadable and overridable.
+ */
+export type TransitionPreset = {
+  duration: number;
+  ease: readonly [number, number, number, number];
+  delay?: number;
+};
+
+/**
+ * Type for complete animation preset with initial/animate states.
+ */
+export type AnimationPreset = {
+  initial: Record<string, number | string>;
+  animate: Record<string, number | string>;
+  transition: TransitionPreset;
+};
+
+/**
+ * Framer Motion transition presets.
+ * Spread into transition prop: `transition={{ ...TRANSITION.fadeUp }}`
+ * Override specific values: `transition={{ ...TRANSITION.fadeUp, delay: 0.5 }}`
+ */
+export const TRANSITION = {
+  /** Fast micro-interaction - buttons, toggles */
+  instant: {
+    duration: DURATION.instant,
+    ease: EASING_ARRAY.smooth,
+  },
+  
+  /** Standard UI transition - modals, dropdowns */
+  fast: {
+    duration: DURATION.fast,
+    ease: EASING_ARRAY.smooth,
+  },
+  
+  /** Default reveal animation - content entering viewport */
+  reveal: {
+    duration: DURATION.reveal,
+    ease: EASING_ARRAY.smooth,
+  },
+  
+  /** Hero/title animations - dramatic entrance */
+  hero: {
+    duration: DURATION.word,
+    ease: EASING_ARRAY.smooth,
+  },
+  
+  /** Bouncy spring-like transition */
+  bounce: {
+    duration: DURATION.normal,
+    ease: EASING_ARRAY.bounce,
+  },
+  
+  /** Slow dramatic reveal */
+  dramatic: {
+    duration: DURATION.slow,
+    ease: EASING_ARRAY.smooth,
+  },
+} as const;
+
+/**
+ * Complete animation presets with initial and animate states.
+ * Use with motion components: `<motion.div {...ANIMATION.fadeUp} />`
+ * Override with spread: `<motion.div {...ANIMATION.fadeUp} transition={{ delay: 0.5 }} />`
+ */
+export const ANIMATION = {
+  /** Fade in from below - most common reveal */
+  fadeUp: {
+    initial: { opacity: 0, y: 40 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: DURATION.reveal, ease: EASING_ARRAY.smooth },
+  },
+  
+  /** Fade in from above */
+  fadeDown: {
+    initial: { opacity: 0, y: -40 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: DURATION.reveal, ease: EASING_ARRAY.smooth },
+  },
+  
+  /** Scale up reveal - cards, modals */
+  scaleUp: {
+    initial: { opacity: 0, scale: 0.9 },
+    animate: { opacity: 1, scale: 1 },
+    transition: { duration: DURATION.normal, ease: EASING_ARRAY.smooth },
+  },
+  
+  /** Hero title entrance - dramatic Y offset */
+  heroTitle: {
+    initial: { opacity: 0, y: 80 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: DURATION.word, ease: EASING_ARRAY.smooth },
+  },
+  
+  /** Subtle fade - labels, captions */
+  fadeIn: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    transition: { duration: DURATION.normal, ease: EASING_ARRAY.smooth },
+  },
+  
+  /** Slide in from left */
+  slideLeft: {
+    initial: { opacity: 0, x: -40 },
+    animate: { opacity: 1, x: 0 },
+    transition: { duration: DURATION.reveal, ease: EASING_ARRAY.smooth },
+  },
+  
+  /** Slide in from right */
+  slideRight: {
+    initial: { opacity: 0, x: 40 },
+    animate: { opacity: 1, x: 0 },
+    transition: { duration: DURATION.reveal, ease: EASING_ARRAY.smooth },
+  },
+} as const;
+
+/**
+ * Stagger container variants for orchestrating child animations.
+ * Use with variants prop on parent: `<motion.div variants={STAGGER_VARIANTS.normal}>`
+ */
+export const STAGGER_VARIANTS = {
+  /** Tight stagger for dense lists */
+  tight: {
+    hidden: {},
+    visible: {
+      transition: { staggerChildren: STAGGER.tight },
+    },
+  },
+  /** Standard stagger for content grids */
+  normal: {
+    hidden: {},
+    visible: {
+      transition: { staggerChildren: STAGGER.normal },
+    },
+  },
+  /** Wide stagger for dramatic reveals */
+  wide: {
+    hidden: {},
+    visible: {
+      transition: { staggerChildren: STAGGER.wide },
+    },
+  },
+} as const;
+
+/**
+ * Helper to create delayed transition from preset.
+ * @example transition={{ ...withDelay(TRANSITION.reveal, DELAY.short) }}
+ */
+export const withDelay = <T extends TransitionPreset>(
+  preset: T,
+  delay: number
+): T & { delay: number } => ({
+  ...preset,
+  delay,
+});
+
+/**
+ * Helper to create staggered delay for indexed items.
+ * @example transition={{ ...withStagger(TRANSITION.reveal, index, STAGGER.normal) }}
+ */
+export const withStagger = <T extends TransitionPreset>(
+  preset: T,
+  index: number,
+  stagger: number = STAGGER.normal,
+  baseDelay: number = 0
+): T & { delay: number } => ({
+  ...preset,
+  delay: baseDelay + index * stagger,
+});
