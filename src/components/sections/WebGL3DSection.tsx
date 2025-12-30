@@ -5,6 +5,7 @@ import { BlendFunction } from 'postprocessing';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
+import { SMOOTHING } from '@/constants/animation';
 import { useSmoothValue, useSmoothVec2 } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
@@ -459,16 +460,15 @@ const WebGL3DSection = () => {
   // This prevents visual chaos on fast scroll and creates organic motion
   // ========================================================================
   
-  // Scroll smoothing: lower value = smoother but laggier
-  // 0.06 provides good balance between responsiveness and smoothness
+  // SMOOTHING.scroll for cinematic scroll-driven animations
   const scrollProgress = useSmoothValue(rawScrollProgress, { 
-    smoothing: 0.06,
+    smoothing: SMOOTHING.scroll,
     threshold: 0.0001 
   });
   
-  // Mouse smoothing: slightly more responsive than scroll
+  // SMOOTHING.mouse for balanced mouse tracking responsiveness
   const mousePosition = useSmoothVec2(rawMousePosition, { 
-    smoothing: 0.08,
+    smoothing: SMOOTHING.mouse,
     threshold: 0.0001 
   });
 

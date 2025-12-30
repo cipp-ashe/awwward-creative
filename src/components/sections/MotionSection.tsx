@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { Section, SectionContent, SectionLabel } from '@/components/layout/Section';
 import EasingCurveIndicator from '@/components/EasingCurveIndicator';
+import { SMOOTHING } from '@/constants/animation';
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 
 const MotionSection = () => {
@@ -19,9 +20,9 @@ const MotionSection = () => {
   const [rawScrollProgress, setRawScrollProgress] = useState(0);
   
   // Damping layer: smooth scroll progress for visual indicators
-  // Uses same 0.06 factor as WebGL3DSection for consistency
+  // SMOOTHING.scroll for cinematic scroll-driven animations
   const scrollProgress = useSmoothValue(rawScrollProgress, {
-    smoothing: 0.06,
+    smoothing: SMOOTHING.scroll,
     threshold: 0.0001
   });
 

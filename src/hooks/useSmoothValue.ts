@@ -13,20 +13,23 @@
  * Uses exponential smoothing: `current += (target - current) * factor`
  * Factor is frame-rate independent via deltaTime normalization.
  * 
+ * ## Recommended Smoothing Values
+ * Use centralized constants from `@/constants/animation`:
+ * - `SMOOTHING.scroll` (0.06): Cinematic scroll-driven animations
+ * - `SMOOTHING.mouse` (0.08): Balanced mouse tracking
+ * - `SMOOTHING.ui` (0.10): Snappy UI feedback like progress bars
+ * 
  * @param targetValue - The raw input value to smooth
  * @param options - Smoothing configuration
  * @returns Smoothed value that gradually approaches target
  * 
  * @example
- * // Smooth scroll progress for WebGL
- * const smoothedScroll = useSmoothValue(scrollProgress, { 
- *   smoothing: 0.08,   // Lower = smoother but laggier
- *   threshold: 0.001   // Stop updating when close enough
- * });
+ * import { SMOOTHING } from '@/constants/animation';
  * 
- * // Different smoothing for different speeds
- * const adaptiveScroll = useSmoothValue(scrollProgress, {
- *   smoothing: isScrollingFast ? 0.15 : 0.06
+ * // Smooth scroll progress for WebGL using centralized constant
+ * const smoothedScroll = useSmoothValue(scrollProgress, { 
+ *   smoothing: SMOOTHING.scroll,
+ *   threshold: 0.0001
  * });
  * 
  * @module hooks/useSmoothValue

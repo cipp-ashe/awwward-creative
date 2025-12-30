@@ -14,7 +14,7 @@ import { interpolate } from 'flubber';
 import { motion } from 'framer-motion';
 import ParticleTrail from '@/components/ParticleTrail';
 import { SectionContent, SectionLabel } from '@/components/layout/Section';
-import { EASING_FN } from '@/constants/animation';
+import { EASING_FN, SMOOTHING } from '@/constants/animation';
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
@@ -57,9 +57,9 @@ const MorphingTextSection = () => {
   const { isReducedMotion } = useMotionConfigSafe();
   
   // Damping layer: smooth scroll progress for particles and visual effects
-  // Uses same 0.06 factor as other sections for consistency
+  // SMOOTHING.scroll for cinematic scroll-driven animations
   const smoothProgress = useSmoothValue(rawProgress, {
-    smoothing: 0.06,
+    smoothing: SMOOTHING.scroll,
     threshold: 0.0001
   });
 
