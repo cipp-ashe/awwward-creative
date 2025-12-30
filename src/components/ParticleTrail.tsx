@@ -267,11 +267,12 @@ const ParticleTrail = ({
     const burstParticles = burstParticlesRef.current;
     const currentScroll = scrollProgressRef.current;
 
-    // Draw trail particles
+    // Draw trail particles with smoother lerp
     particles.forEach((particle) => {
-      const lerpFactor = 1 - particle.delay;
-      particle.x += (particle.targetX - particle.x) * lerpFactor;
-      particle.y += (particle.targetY - particle.y) * lerpFactor;
+      // Slower, more intentional movement aligned with cubic easing
+      const smoothFactor = 0.12;
+      particle.x += (particle.targetX - particle.x) * smoothFactor;
+      particle.y += (particle.targetY - particle.y) * smoothFactor;
 
       const particleColor = getGradientColor(particle.pathPosition, currentScroll);
 

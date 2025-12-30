@@ -7,14 +7,27 @@ import ParticleTrail from '@/components/ParticleTrail';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Pre-optimized SVG paths representing abstract word shapes
-// These are simplified geometric interpretations for smooth morphing
+// Morphability-optimized SVG paths with IDENTICAL topology
+// All paths: 12 control points, same command structure (M + 11 L + Z)
+// Single closed path, no holes - ensures smooth Flubber interpolation
 const MORPH_PATHS = {
-  motion: "M20,50 L40,20 L60,50 L80,20 L100,50 L120,20 L140,50 L160,20 L180,50 Q200,80 180,100 L20,100 Q0,80 20,50 Z",
-  scroll: "M30,20 Q100,0 170,20 L170,40 Q100,60 30,40 L30,60 Q100,80 170,60 L170,80 Q100,100 30,80 Z",
-  type: "M20,20 L180,20 L180,40 L110,40 L110,100 L90,100 L90,40 L20,40 Z",
-  depth: "M100,10 L180,50 L180,90 L100,130 L20,90 L20,50 Z M100,30 L150,60 L150,80 L100,110 L50,80 L50,60 Z",
-  craft: "M100,20 Q140,20 160,50 Q180,80 160,100 L40,100 Q20,80 40,50 Q60,20 100,20 M80,50 L120,50 L120,80 L80,80 Z",
+  // Wave pattern - energy/motion
+  motion: "M20,70 L40,40 L60,70 L80,40 L100,70 L120,40 L140,70 L160,40 L180,70 L180,100 L100,110 L20,100 Z",
+  // Horizontal bands - scroll/layers  
+  scroll: "M20,25 L180,25 L180,45 L20,45 L20,65 L180,65 L180,85 L20,85 L20,105 L180,105 L180,115 L20,115 Z",
+  // T-shape - typography
+  type: "M20,25 L180,25 L180,45 L115,45 L115,115 L85,115 L85,45 L20,45 L20,35 L100,30 L180,35 L180,25 Z",
+  // Hexagon - depth/dimension
+  depth: "M100,15 L160,35 L180,70 L160,105 L100,125 L40,105 L20,70 L40,35 L70,25 L100,20 L130,25 L160,35 Z",
+  // Rounded blob - organic craft
+  craft: "M60,30 L140,30 L170,50 L180,80 L160,105 L120,115 L80,115 L40,105 L20,80 L30,50 L50,35 L60,30 Z",
+};
+
+// Cubic ease-in-out for smooth morph transitions
+const easeInOutCubic = (t: number): number => {
+  return t < 0.5 
+    ? 4 * t * t * t 
+    : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
 const WORDS = ['motion', 'scroll', 'type', 'depth', 'craft'] as const;
@@ -47,7 +60,7 @@ const MorphingTextSection = () => {
     if (!interpolatorsRef.current.has(key)) {
       interpolatorsRef.current.set(
         key,
-        interpolate(MORPH_PATHS[fromWord], MORPH_PATHS[toWord], { maxSegmentLength: 5 })
+        interpolate(MORPH_PATHS[fromWord], MORPH_PATHS[toWord], { maxSegmentLength: 1 })
       );
     }
     return interpolatorsRef.current.get(key)!;
@@ -104,7 +117,9 @@ const MorphingTextSection = () => {
           // Get or create interpolator
           const interp = getInterpolator(fromWord, toWord);
           const clampedProgress = Math.max(0, Math.min(1, localProgress));
-          const newPath = interp(clampedProgress);
+          // Apply cubic easing for smooth acceleration/deceleration
+          const easedProgress = easeInOutCubic(clampedProgress);
+          const newPath = interp(easedProgress);
           
           // Batch DOM update
           if (svgRef.current) {
@@ -114,7 +129,8 @@ const MorphingTextSection = () => {
           // Update React state less frequently for display text
           const displayWord = localProgress > 0.5 ? toWord : fromWord;
           setMorphState(prev => {
-            if (prev.currentWord !== displayWord || Math.abs(prev.progress - progress) > 0.01) {
+            // Increased threshold to reduce re-renders while scrolling
+            if (prev.currentWord !== displayWord || Math.abs(prev.progress - progress) > 0.02) {
               return { currentPath: newPath, currentWord: displayWord, progress };
             }
             return prev;
