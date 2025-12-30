@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
+import ScrollReveal, { StaggerContainer, StaggerItem } from '@/components/ScrollReveal';
 
 const MicroInteractionsSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -7,39 +8,55 @@ const MicroInteractionsSection = () => {
   return (
     <section className="section py-32 md:py-48">
       <div className="section-content">
-        <span className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block">
-          04 — Micro-interactions
-        </span>
+        <ScrollReveal variant="fadeUp">
+          <span className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block">
+            04 — Micro-interactions
+          </span>
+        </ScrollReveal>
 
         <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">
           <div>
-            <h2 className="text-display text-display-md mb-6">
-              Details imply <span className="text-primary">depth</span>
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Micro-interactions suggest a world beyond the screen. Hover states, 
-              cursor trails, and subtle physics create the illusion of materiality.
-            </p>
+            <ScrollReveal variant="slideUp" delay={0.1}>
+              <h2 className="text-display text-display-md mb-6">
+                Details imply <span className="text-primary">depth</span>
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal variant="fadeUp" delay={0.2}>
+              <p className="text-lg text-muted-foreground">
+                Micro-interactions suggest a world beyond the screen. Hover states, 
+                cursor trails, and subtle physics create the illusion of materiality.
+              </p>
+            </ScrollReveal>
           </div>
 
-          <div className="text-muted-foreground space-y-6">
-            <p>
-              These small moments of feedback tell users the interface is alive 
-              and listening. They transform clicking into touching, scrolling 
-              into gliding.
-            </p>
-            <p className="text-mono text-sm border-l-2 border-primary/30 pl-4 py-2">
-              "requestAnimationFrame loops for cursor-follow and inertia-based micro-interactions"
-            </p>
-          </div>
+          <StaggerContainer staggerDelay={0.15} className="text-muted-foreground space-y-6">
+            <StaggerItem>
+              <p>
+                These small moments of feedback tell users the interface is alive 
+                and listening. They transform clicking into touching, scrolling 
+                into gliding.
+              </p>
+            </StaggerItem>
+            <StaggerItem>
+              <p className="text-mono text-sm border-l-2 border-primary/30 pl-4 py-2">
+                "requestAnimationFrame loops for cursor-follow and inertia-based micro-interactions"
+              </p>
+            </StaggerItem>
+          </StaggerContainer>
         </div>
 
         {/* Interactive demo area */}
-        <div ref={containerRef} className="grid md:grid-cols-3 gap-6 md:gap-8">
-          <MagneticCard title="Magnetic Pull" description="Elements that follow the cursor create a sense of connection and agency." />
-          <TiltCard title="3D Tilt" description="Perspective transforms suggest depth and physicality in a flat medium." />
-          <SpringCard title="Spring Physics" description="Natural motion curves make interactions feel organic and inevitable." />
-        </div>
+        <StaggerContainer staggerDelay={0.1} className="grid md:grid-cols-3 gap-6 md:gap-8">
+          <StaggerItem variant="scale">
+            <MagneticCard title="Magnetic Pull" description="Elements that follow the cursor create a sense of connection and agency." />
+          </StaggerItem>
+          <StaggerItem variant="scale">
+            <TiltCard title="3D Tilt" description="Perspective transforms suggest depth and physicality in a flat medium." />
+          </StaggerItem>
+          <StaggerItem variant="scale">
+            <SpringCard title="Spring Physics" description="Natural motion curves make interactions feel organic and inevitable." />
+          </StaggerItem>
+        </StaggerContainer>
       </div>
     </section>
   );

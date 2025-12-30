@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { motion } from 'framer-motion';
+import ScrollReveal, { StaggerContainer, StaggerItem } from '@/components/ScrollReveal';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -46,60 +46,71 @@ const PerformanceSection = () => {
   return (
     <section ref={sectionRef} className="section py-32 md:py-48 relative">
       <div className="section-content">
-        <span className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block">
-          05 — Performance
-        </span>
+        <ScrollReveal variant="fadeUp">
+          <span className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block">
+            05 — Performance
+          </span>
+        </ScrollReveal>
 
         <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">
           <div>
-            <h2 className="text-display text-display-md mb-6">
-              Speed is a <span className="text-primary">feature</span>
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Beautiful motion means nothing if it stutters. Performance isn't 
-              a Lighthouse score — it's the feeling of control.
-            </p>
+            <ScrollReveal variant="slideUp" delay={0.1}>
+              <h2 className="text-display text-display-md mb-6">
+                Speed is a <span className="text-primary">feature</span>
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal variant="fadeUp" delay={0.2}>
+              <p className="text-lg text-muted-foreground">
+                Beautiful motion means nothing if it stutters. Performance isn't 
+                a Lighthouse score — it's the feeling of control.
+              </p>
+            </ScrollReveal>
           </div>
 
-          <div ref={statsRef} className="grid grid-cols-2 gap-8">
-            <div className="text-center p-6 border border-border/30 rounded-lg">
-              <div className="stat-value text-display text-display-sm text-primary" data-value="60">0</div>
-              <div className="text-mono text-xs text-muted-foreground mt-2">FPS Target</div>
-            </div>
-            <div className="text-center p-6 border border-border/30 rounded-lg">
-              <div className="stat-value text-display text-display-sm text-primary" data-value="16">0</div>
-              <div className="text-mono text-xs text-muted-foreground mt-2">ms Frame Budget</div>
-            </div>
-            <div className="text-center p-6 border border-border/30 rounded-lg">
-              <div className="stat-value text-display text-display-sm text-primary" data-value="100">0</div>
-              <div className="text-mono text-xs text-muted-foreground mt-2">kb Initial JS</div>
-            </div>
-            <div className="text-center p-6 border border-border/30 rounded-lg">
-              <div className="text-display text-display-sm text-primary">0</div>
-              <div className="text-mono text-xs text-muted-foreground mt-2">Layout Shifts</div>
-            </div>
+          <div ref={statsRef}>
+            <StaggerContainer staggerDelay={0.1} className="grid grid-cols-2 gap-8">
+              <StaggerItem variant="scale">
+                <div className="text-center p-6 border border-border/30 rounded-lg">
+                  <div className="stat-value text-display text-display-sm text-primary" data-value="60">0</div>
+                  <div className="text-mono text-xs text-muted-foreground mt-2">FPS Target</div>
+                </div>
+              </StaggerItem>
+              <StaggerItem variant="scale">
+                <div className="text-center p-6 border border-border/30 rounded-lg">
+                  <div className="stat-value text-display text-display-sm text-primary" data-value="16">0</div>
+                  <div className="text-mono text-xs text-muted-foreground mt-2">ms Frame Budget</div>
+                </div>
+              </StaggerItem>
+              <StaggerItem variant="scale">
+                <div className="text-center p-6 border border-border/30 rounded-lg">
+                  <div className="stat-value text-display text-display-sm text-primary" data-value="100">0</div>
+                  <div className="text-mono text-xs text-muted-foreground mt-2">kb Initial JS</div>
+                </div>
+              </StaggerItem>
+              <StaggerItem variant="scale">
+                <div className="text-center p-6 border border-border/30 rounded-lg">
+                  <div className="text-display text-display-sm text-primary">0</div>
+                  <div className="text-mono text-xs text-muted-foreground mt-2">Layout Shifts</div>
+                </div>
+              </StaggerItem>
+            </StaggerContainer>
           </div>
         </div>
 
         {/* Principles grid */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <StaggerContainer staggerDelay={0.1} className="grid md:grid-cols-2 gap-6">
           {principles.map((principle, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="flex gap-4 p-6 bg-card/20 rounded-lg border border-border/30"
-            >
-              <span className="text-2xl">{principle.icon}</span>
-              <div>
-                <h3 className="text-display text-base mb-2">{principle.title}</h3>
-                <p className="text-sm text-muted-foreground">{principle.desc}</p>
+            <StaggerItem key={index} variant="fadeUp">
+              <div className="flex gap-4 p-6 bg-card/20 rounded-lg border border-border/30">
+                <span className="text-2xl">{principle.icon}</span>
+                <div>
+                  <h3 className="text-display text-base mb-2">{principle.title}</h3>
+                  <p className="text-sm text-muted-foreground">{principle.desc}</p>
+                </div>
               </div>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </section>
   );
