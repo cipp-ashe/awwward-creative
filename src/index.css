@@ -44,7 +44,7 @@
     
     /* Custom tokens */
     --glow: 32 80% 60%;
-    --grain-opacity: 0.03;
+    --grain-opacity: 0.08;
     --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
     
@@ -84,7 +84,7 @@
     --input: 40 10% 85%;
     --ring: 32 55% 40%;
     
-    --grain-opacity: 0.02;
+    --grain-opacity: 0.05;
   }
 }
 
