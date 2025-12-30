@@ -27,6 +27,9 @@ export { useLenis } from './useLenis';
 /** Custom cursor tracking with lerp */
 export { useCursor } from './useCursor';
 
+/** Centralized cursor visibility management */
+export { useCursorVisibility } from './useCursorVisibility';
+
 // ============================================================================
 // SCROLL & LAYOUT
 // ============================================================================

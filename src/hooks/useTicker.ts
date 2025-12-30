@@ -1,34 +1,35 @@
 /**
  * useTicker Hook
  * 
- * Central animation frame coordinator that consolidates all RAF loops
- * into a single, coordinated requestAnimationFrame loop.
+ * Unified animation frame coordinator that wraps GSAP's ticker.
+ * This ensures a SINGLE time authority across the entire application:
+ * - Lenis smooth scroll
+ * - Custom cursor interpolation
+ * - Particle systems
+ * - All GSAP animations
+ * 
+ * ## Why GSAP Ticker?
+ * GSAP's ticker is already the timing authority for all scroll-linked animations.
+ * Using a separate RAF loop creates timing conflicts and micro-jank.
+ * This wrapper provides the same API but delegates to GSAP's ticker.
  * 
  * ## Benefits
- * - Single RAF loop reduces CPU overhead
- * - Coordinated read/write cycles prevent layout thrashing
- * - Automatic pause when document is hidden (Page Visibility API)
- * - Consistent delta time for frame-rate independent animations
- * 
- * ## Architecture
- * Uses a singleton pattern - all subscribers share one RAF loop.
- * Callbacks execute in registration order (FIFO).
+ * - Single RAF loop for entire app
+ * - Automatic sync with GSAP animations
+ * - Consistent deltaTime across all systems
+ * - Respects reduced-motion preferences
  * 
  * @example
- * // Subscribe to ticker
  * const tickerRef = useTicker((deltaTime, elapsedTime) => {
- *   // Animation logic here
  *   position.x += velocity * deltaTime;
  * });
  * 
- * // Pause/resume
  * tickerRef.current?.pause();
  * tickerRef.current?.resume();
- * 
- * @module hooks/useTicker
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
+import { gsap } from '@/lib/gsap';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
 // ============================================================================
@@ -48,160 +49,14 @@ export interface TickerHandle {
   isPaused: () => boolean;
 }
 
-interface Subscriber {
-  callback: TickerCallback;
-  paused: boolean;
-  id: number;
-}
-
-// ============================================================================
-// SINGLETON TICKER
-// ============================================================================
-
-class Ticker {
-  private subscribers: Map<number, Subscriber> = new Map();
-  private rafId: number | null = null;
-  private lastTime: number = 0;
-  private elapsedTime: number = 0;
-  private isRunning: boolean = false;
-  private nextId: number = 0;
-  private isPaused: boolean = false;
-
-  constructor() {
-    // Auto-pause on visibility change
-    if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', this.handleVisibilityChange);
-    }
-  }
-
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.pause();
-    } else {
-      this.resume();
-    }
-  };
-
-  private tick = (currentTime: number) => {
-    if (this.isPaused) return;
-
-    // Calculate delta (cap at 100ms to prevent huge jumps after tab switch)
-    const deltaTime = Math.min((currentTime - this.lastTime) / 1000, 0.1);
-    this.lastTime = currentTime;
-    this.elapsedTime += deltaTime;
-
-    // Execute all active subscribers
-    this.subscribers.forEach((sub) => {
-      if (!sub.paused) {
-        try {
-          sub.callback(deltaTime, this.elapsedTime);
-        } catch (e) {
-          console.error('[Ticker] Subscriber error:', e);
-        }
-      }
-    });
-
-    // Continue loop if we have subscribers
-    if (this.subscribers.size > 0 && !this.isPaused) {
-      this.rafId = requestAnimationFrame(this.tick);
-    } else {
-      this.isRunning = false;
-    }
-  };
-
-  private startLoop() {
-    if (this.isRunning || this.isPaused) return;
-    this.isRunning = true;
-    this.lastTime = performance.now();
-    this.rafId = requestAnimationFrame(this.tick);
-  }
-
-  private stopLoop() {
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
-    this.isRunning = false;
-  }
-
-  subscribe(callback: TickerCallback): { id: number; handle: TickerHandle } {
-    const id = this.nextId++;
-    this.subscribers.set(id, { callback, paused: false, id });
-
-    // Start loop if this is first subscriber
-    if (this.subscribers.size === 1) {
-      this.startLoop();
-    }
-
-    const handle: TickerHandle = {
-      pause: () => {
-        const sub = this.subscribers.get(id);
-        if (sub) sub.paused = true;
-      },
-      resume: () => {
-        const sub = this.subscribers.get(id);
-        if (sub) sub.paused = false;
-      },
-      isPaused: () => this.subscribers.get(id)?.paused ?? true,
-    };
-
-    return { id, handle };
-  }
-
-  unsubscribe(id: number) {
-    this.subscribers.delete(id);
-    
-    // Stop loop if no more subscribers
-    if (this.subscribers.size === 0) {
-      this.stopLoop();
-    }
-  }
-
-  pause() {
-    this.isPaused = true;
-    this.stopLoop();
-  }
-
-  resume() {
-    if (!this.isPaused) return;
-    this.isPaused = false;
-    if (this.subscribers.size > 0) {
-      this.startLoop();
-    }
-  }
-
-  /** Get active subscriber count (for debugging) */
-  getSubscriberCount(): number {
-    return this.subscribers.size;
-  }
-
-  destroy() {
-    this.stopLoop();
-    this.subscribers.clear();
-    if (typeof document !== 'undefined') {
-      document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-    }
-  }
-}
-
-// Singleton instance
-let tickerInstance: Ticker | null = null;
-
-const getTicker = (): Ticker => {
-  if (!tickerInstance) {
-    tickerInstance = new Ticker();
-  }
-  return tickerInstance;
-};
-
 // ============================================================================
 // HOOK
 // ============================================================================
 
 /**
- * Subscribe to the central animation ticker.
+ * Subscribe to the GSAP animation ticker.
  * 
- * @param callback - Function called each frame with deltaTime and elapsedTime
+ * @param callback - Function called each frame with deltaTime (seconds) and elapsedTime (seconds)
  * @param enabled - Whether this subscription is active (default: true)
  * @returns Ref containing control handle (pause/resume)
  */
@@ -211,6 +66,8 @@ export const useTicker = (
 ): React.RefObject<TickerHandle | null> => {
   const handleRef = useRef<TickerHandle | null>(null);
   const callbackRef = useRef(callback);
+  const isPausedRef = useRef(false);
+  const elapsedRef = useRef(0);
   const { isReducedMotion } = useMotionConfigSafe();
 
   // Keep callback ref updated without re-subscribing
@@ -225,15 +82,37 @@ export const useTicker = (
       return;
     }
 
-    const ticker = getTicker();
-    const { id, handle } = ticker.subscribe((dt, et) => {
-      callbackRef.current(dt, et);
-    });
+    // Reset state
+    isPausedRef.current = false;
+    elapsedRef.current = 0;
 
-    handleRef.current = handle;
+    // GSAP ticker callback
+    // time: elapsed time in seconds from GSAP
+    // deltaTime: time since last tick in seconds
+    const gsapCallback = (time: number, deltaTime: number) => {
+      if (isPausedRef.current) return;
+      
+      // Convert deltaTime from ms to seconds and cap at 100ms to prevent huge jumps
+      const dt = Math.min(deltaTime / 1000, 0.1);
+      elapsedRef.current += dt;
+      
+      try {
+        callbackRef.current(dt, elapsedRef.current);
+      } catch (e) {
+        console.error('[useTicker] Callback error:', e);
+      }
+    };
+
+    gsap.ticker.add(gsapCallback);
+
+    handleRef.current = {
+      pause: () => { isPausedRef.current = true; },
+      resume: () => { isPausedRef.current = false; },
+      isPaused: () => isPausedRef.current,
+    };
 
     return () => {
-      ticker.unsubscribe(id);
+      gsap.ticker.remove(gsapCallback);
       handleRef.current = null;
     };
   }, [enabled, isReducedMotion]);
@@ -242,7 +121,10 @@ export const useTicker = (
 };
 
 /**
- * Get the raw ticker instance for advanced use cases.
- * Prefer useTicker hook for most cases.
+ * @deprecated Use useTicker hook instead
+ * Legacy export for backwards compatibility
  */
-export const getTickerInstance = getTicker;
+export const getTickerInstance = () => {
+  console.warn('[useTicker] getTickerInstance is deprecated. Use useTicker hook instead.');
+  return null;
+};

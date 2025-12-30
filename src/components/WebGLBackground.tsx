@@ -1,6 +1,7 @@
 import { useRef, useMemo, Suspense, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
 const fragmentShader = `
   uniform float uTime;
@@ -108,6 +109,7 @@ const WebGLBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(true);
   const [contextLost, setContextLost] = useState(false);
+  const { isReducedMotion } = useMotionConfigSafe();
 
   // Visibility gating: pause when document is hidden or element is not in viewport
   useEffect(() => {
@@ -167,6 +169,19 @@ const WebGLBackground = () => {
     };
   }, []);
 
+  // REDUCED MOTION GATE: No WebGL activity when reduced motion is enabled
+  // This is a hard accessibility requirement - users who request reduced motion
+  // should not have GPU-intensive backgrounds running
+  if (isReducedMotion) {
+    return (
+      <div 
+        ref={containerRef}
+        className="fixed inset-0 -z-10 bg-background"
+        aria-hidden="true"
+      />
+    );
+  }
+
   // Static fallback when context is lost
   if (contextLost) {
     return (
@@ -176,12 +191,13 @@ const WebGLBackground = () => {
         style={{
           background: 'radial-gradient(ellipse at center, hsl(var(--muted)) 0%, hsl(var(--background)) 70%)'
         }}
+        aria-hidden="true"
       />
     );
   }
 
   return (
-    <div ref={containerRef} className="fixed inset-0 -z-10 bg-background">
+    <div ref={containerRef} className="fixed inset-0 -z-10 bg-background" aria-hidden="true">
       <Suspense fallback={<div className="w-full h-full bg-background" />}>
         <Canvas
           camera={{ position: [0, 0, 1], fov: 75 }}
@@ -190,7 +206,9 @@ const WebGLBackground = () => {
           gl={{ 
             antialias: false, 
             powerPreference: 'high-performance',
-            preserveDrawingBuffer: true, // Helps with context recovery
+            // REMOVED: preserveDrawingBuffer: true
+            // Reason: Higher memory usage, slower rendering
+            // Context recovery is handled by contextlost/contextrestored events
           }}
           onCreated={handleCreated}
         >
