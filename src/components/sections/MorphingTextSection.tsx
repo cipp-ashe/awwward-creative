@@ -18,13 +18,19 @@ import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from '@/constan
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
-// Morphability-optimized SVG paths with IDENTICAL topology
+// Organic blob paths - smooth bezier curves for fluid morphing
+// All paths share similar topology (closed curves with ~24 control points)
 const MORPH_PATHS = {
-  motion: "M20,70 L40,40 L60,70 L80,40 L100,70 L120,40 L140,70 L160,40 L180,70 L180,100 L100,110 L20,100 Z",
-  scroll: "M20,25 L180,25 L180,45 L20,45 L20,65 L180,65 L180,85 L20,85 L20,105 L180,105 L180,115 L20,115 Z",
-  type: "M20,25 L180,25 L180,45 L115,45 L115,115 L85,115 L85,45 L20,45 L20,35 L100,30 L180,35 L180,25 Z",
-  depth: "M100,15 L160,35 L180,70 L160,105 L100,125 L40,105 L20,70 L40,35 L70,25 L100,20 L130,25 L160,35 Z",
-  craft: "M60,30 L140,30 L170,50 L180,80 L160,105 L120,115 L80,115 L40,105 L20,80 L30,50 L50,35 L60,30 Z",
+  // Dynamic, asymmetric flowing form
+  motion: "M100,20 C130,15 160,30 175,55 C190,80 180,110 155,120 C130,130 110,125 85,130 C60,135 35,120 25,95 C15,70 25,45 45,30 C65,15 70,25 100,20 Z",
+  // Vertical elongated organic shape  
+  scroll: "M100,10 C125,8 145,20 155,40 C165,60 170,85 165,105 C160,125 145,135 120,138 C95,141 75,135 55,125 C35,115 30,95 32,70 C34,45 50,25 75,15 C90,10 75,12 100,10 Z",
+  // Rounded letterform-inspired blob
+  type: "M90,15 C120,12 150,20 168,45 C186,70 178,100 155,118 C132,136 100,140 70,130 C40,120 22,95 20,65 C18,35 35,18 60,15 C75,13 60,18 90,15 Z",
+  // Layered, dimensional organic form
+  depth: "M100,12 C140,10 170,35 182,65 C194,95 175,125 140,135 C105,145 70,138 42,115 C14,92 12,60 30,35 C48,10 60,14 100,12 Z",
+  // Refined, balanced blob
+  craft: "M100,18 C135,14 165,32 178,60 C191,88 180,118 150,130 C120,142 85,140 55,125 C25,110 15,80 22,52 C29,24 65,22 100,18 Z",
 };
 
 const WORDS = ['motion', 'scroll', 'type', 'depth', 'craft'] as const;
@@ -40,7 +46,7 @@ const MorphingTextSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const svgRef = useRef<SVGPathElement>(null);
   const shadowPathRef = useRef<SVGPathElement>(null);
-  const outlinePathRef = useRef<SVGPathElement>(null);
+  const glowPathRef = useRef<SVGPathElement>(null);
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
   const echoProgressRef = useRef(0); // Lagged progress for outline echo effect
@@ -140,12 +146,12 @@ const MorphingTextSection = () => {
             shadowPathRef.current.setAttribute('d', newPath);
           }
           
-          // Echo effect: outline trails slightly behind for intentional "ghost" aesthetic
-          // Smooth interpolation toward current progress (creates ~5% lag)
-          const echoSmoothing = 0.15;
+          // Glow trail: softer echo that lags behind for intentional "bloom" aesthetic
+          // Slower smoothing (0.08) creates ~15% visible lag - clearly intentional
+          const echoSmoothing = 0.08;
           echoProgressRef.current += (progress - echoProgressRef.current) * echoSmoothing;
           
-          // Calculate lagged morph for outline
+          // Calculate lagged morph for glow trail
           const echoSegmentProgress = echoProgressRef.current * totalTransitions;
           const echoCurrentIndex = Math.min(Math.floor(echoSegmentProgress), totalTransitions - 1);
           const echoNextIndex = Math.min(echoCurrentIndex + 1, WORDS.length - 1);
@@ -158,8 +164,8 @@ const MorphingTextSection = () => {
           const echoEasedProgress = EASING_FN.easeInOutCubic(echoClampedProgress);
           const echoPath = echoInterp(echoEasedProgress);
           
-          if (outlinePathRef.current) {
-            outlinePathRef.current.setAttribute('d', echoPath);
+          if (glowPathRef.current) {
+            glowPathRef.current.setAttribute('d', echoPath);
           }
           
           // Update display word (less frequent, with threshold)
@@ -210,6 +216,7 @@ const MorphingTextSection = () => {
               aria-hidden="true"
             >
               <defs>
+                {/* Main shape glow */}
                 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
                   <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                   <feMerge>
@@ -217,35 +224,46 @@ const MorphingTextSection = () => {
                     <feMergeNode in="SourceGraphic"/>
                   </feMerge>
                 </filter>
+                {/* Soft echo glow trail - larger blur, faded */}
+                <filter id="echoGlow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="6" result="blur"/>
+                  <feColorMatrix 
+                    type="matrix" 
+                    values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.35 0"
+                    in="blur"
+                    result="fadedBlur"
+                  />
+                </filter>
                 <linearGradient id="morphGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="hsl(32, 45%, 65%)" />
                   <stop offset="100%" stopColor="hsl(32, 60%, 55%)" />
                 </linearGradient>
               </defs>
               
+              {/* Glow trail - lagged echo with soft blur */}
+              <path
+                ref={glowPathRef}
+                d={MORPH_PATHS.motion}
+                fill="hsl(32, 45%, 65%)"
+                filter="url(#echoGlow)"
+              />
+              
+              {/* Shadow offset */}
               <path
                 ref={shadowPathRef}
                 d={MORPH_PATHS.motion}
                 fill="hsl(32, 45%, 65%)"
-                opacity="0.1"
-                transform="translate(4, 4)"
+                opacity="0.08"
+                transform="translate(3, 3)"
               />
               
+              {/* Main morphing shape */}
               <path
                 ref={svgRef}
                 d={MORPH_PATHS.motion}
                 fill="url(#morphGradient)"
                 filter="url(#glow)"
                 className="transition-none"
-              />
-              
-              <path
-                ref={outlinePathRef}
-                d={MORPH_PATHS.motion}
-                fill="none"
-                stroke="hsl(32, 45%, 65%)"
-                strokeWidth="0.5"
-                opacity="0.5"
               />
             </svg>
           </div>
