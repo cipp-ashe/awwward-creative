@@ -18,19 +18,19 @@ import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from '@/constan
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
-// Organic blob paths - smooth bezier curves for fluid morphing
-// All paths share similar topology (closed curves with ~24 control points)
+// Truly organic amoeba blobs - asymmetric, irregular, liquid-like
+// Each has unique character with unexpected bulges and indentations
 const MORPH_PATHS = {
-  // Dynamic, asymmetric flowing form
-  motion: "M100,20 C130,15 160,30 175,55 C190,80 180,110 155,120 C130,130 110,125 85,130 C60,135 35,120 25,95 C15,70 25,45 45,30 C65,15 70,25 100,20 Z",
-  // Vertical elongated organic shape  
-  scroll: "M100,10 C125,8 145,20 155,40 C165,60 170,85 165,105 C160,125 145,135 120,138 C95,141 75,135 55,125 C35,115 30,95 32,70 C34,45 50,25 75,15 C90,10 75,12 100,10 Z",
-  // Rounded letterform-inspired blob
-  type: "M90,15 C120,12 150,20 168,45 C186,70 178,100 155,118 C132,136 100,140 70,130 C40,120 22,95 20,65 C18,35 35,18 60,15 C75,13 60,18 90,15 Z",
-  // Layered, dimensional organic form
-  depth: "M100,12 C140,10 170,35 182,65 C194,95 175,125 140,135 C105,145 70,138 42,115 C14,92 12,60 30,35 C48,10 60,14 100,12 Z",
-  // Refined, balanced blob
-  craft: "M100,18 C135,14 165,32 178,60 C191,88 180,118 150,130 C120,142 85,140 55,125 C25,110 15,80 22,52 C29,24 65,22 100,18 Z",
+  // Dynamic, fluid motion - reaching tendrils
+  motion: "M85,18 C110,8 145,22 162,38 C178,54 188,78 175,98 C162,118 138,132 108,128 C78,124 55,138 38,118 C21,98 18,72 28,48 C38,24 60,28 85,18 Z",
+  // Vertical drip with bulge
+  scroll: "M95,8 C118,5 138,18 152,42 C166,66 175,92 162,115 C149,138 118,145 88,138 C58,131 38,118 28,92 C18,66 22,38 42,22 C62,6 72,11 95,8 Z",
+  // Organic T-form with asymmetric lobes  
+  type: "M78,12 C108,6 148,18 172,42 C196,66 182,98 158,115 C134,132 98,142 65,132 C32,122 12,95 18,62 C24,29 48,18 78,12 Z",
+  // Dimensional depth - elongated with pinch
+  depth: "M92,10 C128,5 168,28 185,58 C202,88 188,122 152,135 C116,148 72,145 42,122 C12,99 8,62 28,35 C48,8 56,15 92,10 Z",
+  // Refined craft - balanced but organic
+  craft: "M88,15 C122,8 158,25 178,55 C198,85 185,118 148,132 C111,146 68,142 38,115 C8,88 15,52 42,28 C69,4 54,22 88,15 Z",
 };
 
 const WORDS = ['motion', 'scroll', 'type', 'depth', 'craft'] as const;
