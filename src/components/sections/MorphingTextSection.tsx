@@ -247,8 +247,8 @@ const MorphingTextSection = () => {
               }}
             />
 
-            {/* SVG Container with Particles */}
-            <div ref={svgContainerRef} className="relative">
+            {/* SVG Container with Particles - CENTERED TOGETHER */}
+            <div ref={svgContainerRef} className="relative w-full max-w-lg mx-auto">
               <ParticleTrail
                 pathDataRef={pathDataRef}
                 width={containerSize.width}
@@ -260,7 +260,7 @@ const MorphingTextSection = () => {
 
               <svg
                 viewBox="0 0 200 140"
-                className="w-full max-w-lg mx-auto h-auto relative z-10"
+                className="w-full h-auto relative z-10"
                 aria-hidden="true"
               >
                 <defs>
