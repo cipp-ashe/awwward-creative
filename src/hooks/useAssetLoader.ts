@@ -28,14 +28,14 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
 
   const startTimeRef = useRef<number>(Date.now());
   const hasCompletedRef = useRef(false);
+  const assetsReadyRef = useRef(false);
+  const animationFrameRef = useRef<number>();
 
   const updateProgress = useCallback((loaded: number, total: number, current: string) => {
     if (hasCompletedRef.current) return;
     
-    const rawProgress = total > 0 ? (loaded / total) * 100 : 0;
     setState(prev => ({
       ...prev,
-      progress: Math.max(prev.progress, rawProgress),
       loadedAssets: loaded,
       totalAssets: total,
       currentAsset: current,
@@ -49,23 +49,52 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
     }));
   }, []);
 
-  const markComplete = useCallback(() => {
-    if (hasCompletedRef.current) return;
-    hasCompletedRef.current = true;
-    
-    // Ensure minimum duration has elapsed
-    const elapsed = Date.now() - startTimeRef.current;
-    const remainingTime = Math.max(0, minDuration - elapsed);
-    
-    setTimeout(() => {
+  // Smoothly animate progress over minDuration
+  useEffect(() => {
+    const animate = () => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const rawProgress = Math.min(elapsed / minDuration, 1);
+      
+      // Ease-out curve for natural feeling progress
+      const easedProgress = 1 - Math.pow(1 - rawProgress, 3);
+      
+      // If assets aren't ready yet, cap progress at 90%
+      const cappedProgress = assetsReadyRef.current 
+        ? easedProgress * 100 
+        : Math.min(easedProgress * 100, 90);
+      
       setState(prev => ({
         ...prev,
-        progress: 100,
-        isComplete: true,
-        currentAsset: 'Complete',
+        progress: cappedProgress,
       }));
-    }, remainingTime);
+      
+      // Continue animating until complete
+      if (rawProgress < 1 || !assetsReadyRef.current) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      } else if (!hasCompletedRef.current) {
+        // Both minDuration elapsed AND assets ready
+        hasCompletedRef.current = true;
+        setState(prev => ({
+          ...prev,
+          progress: 100,
+          isComplete: true,
+          currentAsset: 'Complete',
+        }));
+      }
+    };
+    
+    animationFrameRef.current = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, [minDuration]);
+
+  const markAssetsReady = useCallback(() => {
+    assetsReadyRef.current = true;
+  }, []);
 
   useEffect(() => {
     startTimeRef.current = Date.now();
@@ -201,27 +230,28 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
         await trackFonts();
         await trackImages();
         
-        markComplete();
+        // Signal assets are ready - animation will complete when minDuration is reached
+        markAssetsReady();
       } catch (err) {
         console.error('Asset loading error:', err);
-        markComplete(); // Complete anyway to not block the app
+        markAssetsReady(); // Complete anyway to not block the app
       }
     };
 
     loadAssets();
 
-    // Fallback timeout - force complete after maxTimeout
+    // Fallback timeout - force assets ready after maxTimeout
     const timeoutId = setTimeout(() => {
-      if (!hasCompletedRef.current) {
-        console.warn('Asset loader timeout - forcing complete');
-        markComplete();
+      if (!assetsReadyRef.current) {
+        console.warn('Asset loader timeout - forcing ready');
+        markAssetsReady();
       }
     }, maxTimeout);
 
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [updateProgress, addError, markComplete, maxTimeout]);
+  }, [updateProgress, addError, markAssetsReady, maxTimeout]);
 
   return state;
 };
