@@ -141,24 +141,6 @@ const ParticleTrail = ({
     return isLowEnd ? Math.floor(particleCount * 0.5) : particleCount;
   }, [particleCount]);
 
-  const initializeParticles = useCallback(() => {
-    const particles: Particle[] = [];
-    for (let i = 0; i < effectiveParticleCount; i++) {
-      const pathPosition = i / effectiveParticleCount;
-      particles.push({
-        x: 0,
-        y: 0,
-        targetX: 0,
-        targetY: 0,
-        opacity: 0.5 + Math.random() * 0.4,    // Higher base opacity
-        size: 2.5 + Math.random() * 3.5,        // Larger particles (2.5-6)
-        pathPosition,
-        delay: 0.02 + Math.random() * 0.08,
-      });
-    }
-    particlesRef.current = particles;
-  }, [effectiveParticleCount]);
-
   // Use cached path length for performance (avoids getTotalLength() per frame)
   const getPointAtPosition = useCallback((path: SVGPathElement, position: number): { x: number; y: number } => {
     const length = pathLengthRef.current || path.getTotalLength();
@@ -203,6 +185,54 @@ const ParticleTrail = ({
       y: offsetY + svgY * scaleY
     };
   }, [width, height, viewBox]);
+
+  /**
+   * Initialize particles directly on the SVG path.
+   * Requires valid path and container dimensions to calculate positions.
+   */
+  const initializeParticlesOnPath = useCallback((path: SVGPathElement) => {
+    const particles: Particle[] = [];
+    const pathLength = path.getTotalLength();
+    
+    // Guard: need valid dimensions for svgToCanvas
+    if (width <= 0 || height <= 0 || pathLength <= 0) {
+      // Fallback: initialize at center, will snap to path on first frame
+      const centerX = width / 2 || 0;
+      const centerY = height / 2 || 0;
+      for (let i = 0; i < effectiveParticleCount; i++) {
+        particles.push({
+          x: centerX,
+          y: centerY,
+          targetX: centerX,
+          targetY: centerY,
+          opacity: 0.5 + Math.random() * 0.4,
+          size: 2.5 + Math.random() * 3.5,
+          pathPosition: i / effectiveParticleCount,
+          delay: 0.02 + Math.random() * 0.08,
+        });
+      }
+      particlesRef.current = particles;
+      return;
+    }
+    
+    for (let i = 0; i < effectiveParticleCount; i++) {
+      const pathPosition = i / effectiveParticleCount;
+      const point = path.getPointAtLength(pathPosition * pathLength);
+      const canvasPoint = svgToCanvas(point.x, point.y);
+      
+      particles.push({
+        x: canvasPoint.x,
+        y: canvasPoint.y,
+        targetX: canvasPoint.x,
+        targetY: canvasPoint.y,
+        opacity: 0.5 + Math.random() * 0.4,
+        size: 2.5 + Math.random() * 3.5,
+        pathPosition,
+        delay: 0.02 + Math.random() * 0.08,
+      });
+    }
+    particlesRef.current = particles;
+  }, [effectiveParticleCount, width, height, svgToCanvas]);
 
   // Spawn burst particles at high velocity points - intensity scales with scroll speed
   const spawnBurstParticles = useCallback(() => {
@@ -492,11 +522,12 @@ const ParticleTrail = ({
       path.setAttribute('d', initialPath);
       pathLengthRef.current = path.getTotalLength();
       lastPathRef.current = initialPath;
+      // Initialize particles ON the path (not at 0,0)
+      initializeParticlesOnPath(path);
     }
     
-    initializeParticles();
     return () => { pathRef.current = null; };
-  }, [initializeParticles, pathDataRef]);
+  }, [initializeParticlesOnPath, pathDataRef]);
 
   // Use central ticker instead of standalone RAF
   useTicker(animate, shouldAnimate);
