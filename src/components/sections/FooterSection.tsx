@@ -6,17 +6,16 @@
 
 import { motion } from 'framer-motion';
 import { Section, SectionContent } from '@/components/layout/Section';
-import { DURATION, DELAY } from '@/constants/animation';
+import { ANIMATION, TRANSITION, withDelay } from '@/constants/animation';
 
 const FooterSection = () => {
   return (
     <footer className="py-32 md:py-48 relative overflow-hidden">
       <SectionContent>
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          {...ANIMATION.fadeUp}
+          whileInView={ANIMATION.fadeUp.animate}
           viewport={{ once: true }}
-          transition={{ duration: DURATION.word }}
           className="text-center mb-16"
         >
           <h2 className="text-display text-display-lg mb-8">
@@ -29,10 +28,10 @@ const FooterSection = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          {...ANIMATION.fadeIn}
+          whileInView={ANIMATION.fadeIn.animate}
           viewport={{ once: true }}
-          transition={{ duration: DURATION.word, delay: DELAY.short }}
+          transition={withDelay(TRANSITION.hero, 0.3)}
           className="border-t border-border/30 pt-12"
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
