@@ -72,9 +72,12 @@ const main = () => {
   console.log(`${colors.green}✓ Audit report saved to: ${outputPath}${colors.reset}`);
   console.log();
 
+  // Threshold for CI/CD pass
+  const SCORE_THRESHOLD = 8.0;
+
   // Exit with code based on overall score
-  if (result.overallScore < 8) {
-    console.log(`${colors.red}${colors.bright}FAILURE: Score ${result.overallScore}/10 is below threshold (8.0)${colors.reset}`);
+  if (result.overallScore < SCORE_THRESHOLD) {
+    console.log(`${colors.red}${colors.bright}FAILURE: Score ${result.overallScore}/10 is below threshold (${SCORE_THRESHOLD})${colors.reset}`);
     process.exit(1);
   } else {
     console.log(`${colors.green}${colors.bright}PASS: Score ${result.overallScore}/10 meets threshold${colors.reset}`);

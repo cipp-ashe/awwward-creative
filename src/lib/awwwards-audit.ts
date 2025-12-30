@@ -20,10 +20,17 @@ export type ExpertPersona =
 
 export type AuditPillar = 'design' | 'usability' | 'creativity' | 'content';
 
+/**
+ * Represents a single issue identified by an expert persona.
+ */
 export interface FrictionPoint {
+  /** The expert persona that identified this issue */
   persona: ExpertPersona;
+  /** Detailed description of the issue with file:line references */
   issue: string;
+  /** Severity level determining score impact */
   severity: 'critical' | 'high' | 'medium' | 'low';
+  /** Other expert personas whose recommendations conflict with this one */
   conflictsWith?: ExpertPersona[];
 }
 
@@ -409,7 +416,7 @@ const generateSynthesis = (frictionPoints: FrictionPoint[], scores: PillarScore[
   
   // Find highest-impact fix
   const criticalIssues = frictionPoints.filter(p => p.severity === 'critical');
-  const mostImpactfulIssue = criticalIssues.find(i => i.conflictsWith && i.conflictsWith.length > 0) || criticalIssues[0];
+  const mostImpactfulIssue = criticalIssues.find(i => i.conflictsWith && i.conflictsWith.length > 0) || criticalIssues[0] || null;
 
   const avgScore = scores.reduce((sum, s) => sum + s.score, 0) / scores.length;
 
@@ -470,11 +477,20 @@ export const runAwwwardsAudit = (): AuditResult => {
   const synthesis = generateSynthesis(frictionPoints, scores);
 
   // Calculate overall score (weighted average)
+  const designScore = scores.find(s => s.pillar === 'design');
+  const usabilityScore = scores.find(s => s.pillar === 'usability');
+  const creativityScore = scores.find(s => s.pillar === 'creativity');
+  const contentScore = scores.find(s => s.pillar === 'content');
+  
+  if (!designScore || !usabilityScore || !creativityScore || !contentScore) {
+    throw new Error('Missing required pillar scores');
+  }
+  
   const overallScore = Math.round(
-    (scores.find(s => s.pillar === 'design')!.score * 0.3 +
-     scores.find(s => s.pillar === 'usability')!.score * 0.3 +
-     scores.find(s => s.pillar === 'creativity')!.score * 0.25 +
-     scores.find(s => s.pillar === 'content')!.score * 0.15) * 10
+    (designScore.score * 0.3 +
+     usabilityScore.score * 0.3 +
+     creativityScore.score * 0.25 +
+     contentScore.score * 0.15) * 10
   ) / 10;
 
   return {
