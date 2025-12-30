@@ -53,11 +53,21 @@ export const analyzeUXNavigation = (files: FileContents): FrictionPoint[] => {
   });
   
   // Check if navigation links to sections
-  const navContent = Object.values(files).find((content) => 
-    /navigation|navbar/i.test(content) && /href=["']#/i.test(content)
-  );
+  // Look for href="#section", scrollToSection, scrollIntoView, or data-driven navigation
+  const hasNavigationLinks = Object.values(files).some((content) => {
+    // Traditional anchor links
+    const hasAnchorLinks = /href=["']#/i.test(content);
+    // Button-based scroll navigation (scrollToSection, scrollIntoView patterns)
+    const hasScrollNavigation = /scrollTo(Section|Element|Id)|\.scrollIntoView/i.test(content);
+    // Data-driven navigation (NAVIGATION_SECTIONS.map, navItems.map, etc.)
+    const hasMappedNavigation = /NAVIGATION_SECTIONS\.map|navItems\.map|sections\.map/i.test(content);
+    // onClick with section scroll
+    const hasClickScroll = /onClick.*scroll|scroll.*onClick/i.test(content);
+    
+    return hasAnchorLinks || hasScrollNavigation || hasMappedNavigation || hasClickScroll;
+  });
   
-  if (sectionIds.length > 0 && !navContent) {
+  if (sectionIds.length > 0 && !hasNavigationLinks) {
     issues.push({
       persona: 'ux-navigation',
       issue: `${sectionIds.length} sections have IDs (${sectionIds.slice(0, 3).join(', ')}) but no navigation links found. Users cannot navigate via menu.`,

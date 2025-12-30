@@ -85,3 +85,22 @@ export const VIEWPORT = {
   /** Intersection Observer threshold for reveals */
   revealThreshold: 0.1,
 } as const;
+
+// ============================================================================
+// CONTENT WIDTH
+// ============================================================================
+
+/**
+ * Standardized content width tokens.
+ * Use these instead of arbitrary max-w-* values for consistent layouts.
+ */
+export const CONTENT_WIDTH = {
+  /** Narrow width for reading content (672px / 42rem) */
+  narrow: '42rem',
+  /** Default section width (1024px / 64rem) */
+  default: '64rem',
+  /** Wide content width (1280px / 80rem) */
+  wide: '80rem',
+  /** Maximum content width (1400px / 87.5rem) */
+  max: '87.5rem',
+} as const;

@@ -46,6 +46,7 @@ export const analyzeDevPerformance = (files: FileContents): FrictionPoint[] => {
   }
   
   // Check for useState in RAF/animation contexts (anti-pattern)
+  // But exclude files that properly use refs for high-frequency values
   const rafStateFiles: string[] = [];
   Object.entries(files).forEach(([path, content]) => {
     if (path.endsWith('.tsx') || path.endsWith('.ts')) {
@@ -57,7 +58,13 @@ export const analyzeDevPerformance = (files: FileContents): FrictionPoint[] => {
       const hasStateUpdate = /set[A-Z][a-zA-Z]*\s*\(/g.test(content) && USESTATE_PATTERN.test(content);
       USESTATE_PATTERN.lastIndex = 0;
       
-      if (hasRAF && hasStateUpdate) {
+      // Check if refs are used for the high-frequency values (mitigates the issue)
+      const usesRefsForAnimation = /useRef.*\.current\s*=/i.test(content) || 
+                                    /ref\.current\s*=/i.test(content) ||
+                                    /\.current\s*=\s*[^=]/i.test(content);
+      
+      // Only flag if no ref mitigation is present
+      if (hasRAF && hasStateUpdate && !usesRefsForAnimation) {
         rafStateFiles.push(path);
       }
     }
@@ -66,7 +73,7 @@ export const analyzeDevPerformance = (files: FileContents): FrictionPoint[] => {
   if (rafStateFiles.length > 0) {
     issues.push({
       persona: 'dev-performance',
-      issue: `RAF/animation frame state updates in: ${rafStateFiles.map(f => f.split('/').pop()).join(', ')}. State updates trigger re-renders. Use refs for high-frequency values.`,
+      issue: `RAF/animation frame state updates without ref mitigation in: ${rafStateFiles.map(f => f.split('/').pop()).join(', ')}. State updates trigger re-renders. Use refs for high-frequency values.`,
       severity: 'critical',
     });
   }
