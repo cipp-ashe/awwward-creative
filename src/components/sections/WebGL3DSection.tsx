@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing';
+import { EffectComposer, Bloom, ChromaticAberration, Vignette, DepthOfField } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -266,10 +266,10 @@ interface PostProcessingProps {
 
 const PostProcessing = ({ scrollProgress, mousePosition }: PostProcessingProps) => {
   const chromaticRef = useRef<any>(null);
+  const dofRef = useRef<any>(null);
   
   useFrame(() => {
     if (chromaticRef.current) {
-      // Dynamic chromatic aberration based on mouse movement
       const offsetX = mousePosition.x * 0.002 * (0.5 + scrollProgress * 0.5);
       const offsetY = mousePosition.y * 0.002 * (0.5 + scrollProgress * 0.5);
       chromaticRef.current.offset.set(offsetX, offsetY);
@@ -280,8 +280,21 @@ const PostProcessing = ({ scrollProgress, mousePosition }: PostProcessingProps) 
   const bloomIntensity = 0.3 + scrollProgress * 0.7;
   const bloomLuminanceThreshold = 0.4 - scrollProgress * 0.2;
 
+  // DOF parameters - focus on center object, blur particles at distance
+  // focusDistance: 0 = camera, 1 = far plane. Object is at ~0 from camera perspective
+  // As camera orbits (radius 3.5-6.5), adjust focus to keep object sharp
+  const baseFocusDistance = 0;
+  const focalLength = 0.05 + scrollProgress * 0.03; // Increase focal length with scroll
+  const bokehScale = 3 + scrollProgress * 4; // More blur as we scroll
+
   return (
     <EffectComposer>
+      <DepthOfField
+        ref={dofRef}
+        focusDistance={baseFocusDistance}
+        focalLength={focalLength}
+        bokehScale={bokehScale}
+      />
       <Bloom
         intensity={bloomIntensity}
         luminanceThreshold={bloomLuminanceThreshold}
