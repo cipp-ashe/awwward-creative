@@ -30,12 +30,12 @@ interface Particle {
 }
 
 interface ParticleTrailProps {
-  pathData: string;
+  pathDataRef: React.RefObject<string>;
   width: number;
   height: number;
   viewBox: { width: number; height: number };
   particleCount?: number;
-  scrollProgress?: number;
+  scrollProgressRef?: React.RefObject<number>;
   onMouseMove?: (e: React.MouseEvent) => void;
 }
 
@@ -112,12 +112,12 @@ const detectLowEndDevice = (): boolean => {
 };
 
 const ParticleTrail = ({
-  pathData,
+  pathDataRef,
   width,
   height,
   viewBox,
   particleCount = 60,
-  scrollProgress = 0,
+  scrollProgressRef,
 }: ParticleTrailProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
@@ -125,11 +125,11 @@ const ParticleTrail = ({
   const mouseBurstRef = useRef<MouseBurstParticle[]>([]);
   const pathRef = useRef<SVGPathElement | null>(null);
   const pathLengthRef = useRef(0); // Cached path length for performance
-  const scrollProgressRef = useRef(scrollProgress);
-  const prevScrollRef = useRef(scrollProgress);
+  const prevScrollRef = useRef(0);
   const velocityRef = useRef(0);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const isHoveringRef = useRef(false);
+  const lastPathRef = useRef<string>(''); // Track path changes for cache invalidation
   
   const { shouldAnimate } = useMotionConfigSafe();
   
@@ -138,14 +138,6 @@ const ParticleTrail = ({
     const isLowEnd = detectLowEndDevice();
     return isLowEnd ? Math.floor(particleCount * 0.5) : particleCount;
   }, [particleCount]);
-
-  // Track scroll velocity
-  useEffect(() => {
-    const delta = Math.abs(scrollProgress - prevScrollRef.current);
-    velocityRef.current = delta;
-    prevScrollRef.current = scrollProgress;
-    scrollProgressRef.current = scrollProgress;
-  }, [scrollProgress]);
 
   const initializeParticles = useCallback(() => {
     const particles: Particle[] = [];
@@ -292,12 +284,26 @@ const ParticleTrail = ({
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
+    
+    // Update path from ref if changed (cache invalidation)
+    const currentPathData = pathDataRef.current;
+    if (currentPathData && pathRef.current && currentPathData !== lastPathRef.current) {
+      pathRef.current.setAttribute('d', currentPathData);
+      pathLengthRef.current = pathRef.current.getTotalLength();
+      lastPathRef.current = currentPathData;
+      updateParticleTargets();
+    }
+    
+    // Track scroll velocity from ref
+    const currentScroll = scrollProgressRef?.current ?? 0;
+    const delta = Math.abs(currentScroll - prevScrollRef.current);
+    velocityRef.current = delta;
+    prevScrollRef.current = currentScroll;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const particles = particlesRef.current;
     const burstParticles = burstParticlesRef.current;
-    const currentScroll = scrollProgressRef.current;
 
     // Draw trail particles with smoother lerp
     particles.forEach((particle) => {
@@ -415,19 +421,18 @@ const ParticleTrail = ({
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     svg.appendChild(path);
     pathRef.current = path;
+    
+    // Initialize with current path data
+    const initialPath = pathDataRef.current;
+    if (initialPath) {
+      path.setAttribute('d', initialPath);
+      pathLengthRef.current = path.getTotalLength();
+      lastPathRef.current = initialPath;
+    }
+    
     initializeParticles();
     return () => { pathRef.current = null; };
-  }, [initializeParticles]);
-
-  // Update path and cache length when pathData changes
-  useEffect(() => {
-    if (pathRef.current && pathData) {
-      pathRef.current.setAttribute('d', pathData);
-      // Cache path length to avoid per-frame getTotalLength() calls
-      pathLengthRef.current = pathRef.current.getTotalLength();
-      updateParticleTargets();
-    }
-  }, [pathData, updateParticleTargets]);
+  }, [initializeParticles, pathDataRef]);
 
   // Use central ticker instead of standalone RAF
   useTicker(animate, shouldAnimate);
