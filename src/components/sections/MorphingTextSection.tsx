@@ -10,7 +10,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
-import { interpolate } from "flubber";
+import { interpolateString } from "d3-interpolate";
 import { motion } from "framer-motion";
 import ParticleTrail from "@/components/ParticleTrail";
 import { SectionContent, SectionLabel } from "@/components/layout/Section";
@@ -74,7 +74,7 @@ const MorphingTextSection = () => {
     if (!interpolatorsRef.current.has(key)) {
       interpolatorsRef.current.set(
         key,
-        interpolate(MORPH_PATHS[fromWord], MORPH_PATHS[toWord], { maxSegmentLength: 1 }),
+        interpolateString(MORPH_PATHS[fromWord], MORPH_PATHS[toWord]),
       );
     }
     return interpolatorsRef.current.get(key)!;
