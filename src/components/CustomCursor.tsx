@@ -1,5 +1,26 @@
+/**
+ * CustomCursor Component
+ * 
+ * Unified spring physics for dot and ring.
+ * Both elements use identical spring config to move in visual unison.
+ * The ring has slight scale/opacity variation for depth, but same motion.
+ * 
+ * Spring config rationale:
+ * - stiffness: 400 — snappy, magnetic feel
+ * - damping: 25 — minimal overshoot on direction change
+ * - mass: 0.3 — light, responsive
+ */
+
 import { useCursor } from '@/hooks/useCursor';
 import { motion } from 'framer-motion';
+
+// Unified spring config — magnetic tethering, not heavy lag
+const SPRING_CONFIG = {
+  type: 'spring' as const,
+  stiffness: 400,
+  damping: 25,
+  mass: 0.3,
+};
 
 const CustomCursor = () => {
   const { position, isHovering } = useCursor();
@@ -11,6 +32,7 @@ const CustomCursor = () => {
 
   return (
     <>
+      {/* Dot - primary cursor indicator */}
       <motion.div
         className="cursor-dot hidden md:block"
         animate={{
@@ -18,13 +40,10 @@ const CustomCursor = () => {
           y: position.y,
           scale: isHovering ? 2 : 1,
         }}
-        transition={{
-          type: 'spring',
-          stiffness: 500,
-          damping: 28,
-          mass: 0.5,
-        }}
+        transition={SPRING_CONFIG}
       />
+      
+      {/* Ring - secondary indicator, same motion physics */}
       <motion.div
         className="cursor-ring hidden md:block"
         animate={{
@@ -33,12 +52,7 @@ const CustomCursor = () => {
           scale: isHovering ? 1.5 : 1,
           opacity: isHovering ? 0 : 0.5,
         }}
-        transition={{
-          type: 'spring',
-          stiffness: 150,
-          damping: 15,
-          mass: 0.1,
-        }}
+        transition={SPRING_CONFIG}
       />
     </>
   );
