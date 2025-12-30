@@ -294,13 +294,14 @@ const MorphingTextSection = () => {
                   className="transition-none"
                 />
 
-                {/* Echo outline */}
+                {/* Echo outline - subtle trailing edge */}
                 <path
                   ref={outlinePathRef}
                   d={MORPH_PATHS.motion}
                   fill="none"
-                  stroke="hsl(var(--primary) / 0.5)"
-                  strokeWidth="0.5"
+                  stroke="hsl(var(--primary) / 0.12)"
+                  strokeWidth="0.3"
+                  strokeDasharray="2 4"
                 />
               </svg>
             </div>

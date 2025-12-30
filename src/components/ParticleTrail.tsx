@@ -91,11 +91,13 @@ const getGradientColor = (position: number, scrollProgress: number): string => {
   return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
 };
 
-// Constants for velocity-based emission
-const VELOCITY_THRESHOLD = 0.008;
-const MAX_BURST_PARTICLES = 40;
-const BURST_SPAWN_COUNT = 5;
-const BURST_LIFETIME = 60; // frames
+// Constants for velocity-based emission (dynamic scaling)
+const VELOCITY_THRESHOLD = 0.005;  // Lower threshold for earlier trigger
+const MAX_BURST_PARTICLES = 80;    // Increased capacity for drama
+const BURST_SPAWN_COUNT_MIN = 3;
+const BURST_SPAWN_COUNT_MAX = 14;
+const BURST_LIFETIME_BASE = 50;
+const BURST_LIFETIME_MAX = 100;
 
 const MOUSE_BURST_COUNT = 3;
 const MOUSE_BURST_LIFETIME = 45;
@@ -148,8 +150,8 @@ const ParticleTrail = ({
         y: 0,
         targetX: 0,
         targetY: 0,
-        opacity: 0.4 + Math.random() * 0.5,
-        size: 1.5 + Math.random() * 2.5,
+        opacity: 0.5 + Math.random() * 0.4,    // Higher base opacity
+        size: 2.5 + Math.random() * 3.5,        // Larger particles (2.5-6)
         pathPosition,
         delay: 0.02 + Math.random() * 0.08,
       });
@@ -170,36 +172,51 @@ const ParticleTrail = ({
     return { x: svgX * scaleX, y: svgY * scaleY };
   }, [width, height, viewBox]);
 
-  // Spawn burst particles at high velocity points
+  // Spawn burst particles at high velocity points - intensity scales with scroll speed
   const spawnBurstParticles = useCallback(() => {
     if (!pathRef.current) return;
     if (burstParticlesRef.current.length >= MAX_BURST_PARTICLES) return;
 
     const path = pathRef.current;
+    
+    // Velocity-based intensity scaling (0-1 normalized)
+    const velocityIntensity = Math.min(1, velocityRef.current / 0.025);
+    
+    // Dynamic spawn count and lifetime based on velocity
+    const spawnCount = Math.floor(
+      BURST_SPAWN_COUNT_MIN + (BURST_SPAWN_COUNT_MAX - BURST_SPAWN_COUNT_MIN) * velocityIntensity
+    );
+    const lifetime = Math.floor(
+      BURST_LIFETIME_BASE + (BURST_LIFETIME_MAX - BURST_LIFETIME_BASE) * velocityIntensity
+    );
 
-    for (let i = 0; i < BURST_SPAWN_COUNT; i++) {
+    for (let i = 0; i < spawnCount; i++) {
       const pathPos = Math.random();
       const svgPoint = getPointAtPosition(path, pathPos);
       const canvasPoint = svgToCanvas(svgPoint.x, svgPoint.y);
       
-      // Random velocity direction with magnitude based on scroll velocity
+      // Velocity scales burst radius and speed
       const angle = Math.random() * Math.PI * 2;
-      const speed = 1 + velocityRef.current * 100;
+      const baseSpeed = 1.5 + velocityIntensity * 4;  // Faster at high velocity
+      const speed = baseSpeed + Math.random() * 2.5;
+      
+      // Larger particles at higher velocity
+      const sizeMultiplier = 1 + velocityIntensity * 0.8;
       
       burstParticlesRef.current.push({
         x: canvasPoint.x,
         y: canvasPoint.y,
         targetX: canvasPoint.x,
         targetY: canvasPoint.y,
-        opacity: 0.8 + Math.random() * 0.2,
-        size: 2 + Math.random() * 3,
+        opacity: 0.7 + Math.random() * 0.3,
+        size: (2.5 + Math.random() * 3.5) * sizeMultiplier,
         pathPosition: pathPos,
         delay: 0,
         isBurst: true,
         velocityX: Math.cos(angle) * speed,
         velocityY: Math.sin(angle) * speed,
-        life: BURST_LIFETIME,
-        maxLife: BURST_LIFETIME,
+        life: lifetime,
+        maxLife: lifetime,
       });
     }
   }, [getPointAtPosition, svgToCanvas]);
@@ -305,29 +322,44 @@ const ParticleTrail = ({
     const particles = particlesRef.current;
     const burstParticles = burstParticlesRef.current;
 
-    // Draw trail particles with smoother lerp
+    // Draw trail particles with orbital spread for expanded presence
     particles.forEach((particle) => {
-      // Slower, more intentional movement aligned with cubic easing
-      const smoothFactor = 0.12;
-      particle.x += (particle.targetX - particle.x) * smoothFactor;
-      particle.y += (particle.targetY - particle.y) * smoothFactor;
+      // Orbital spread: particles drift away from path in a swirling pattern
+      const spreadAmount = 10 + Math.sin(particle.pathPosition * Math.PI * 4) * 8;
+      const spreadAngle = particle.pathPosition * Math.PI * 2 + currentScroll * 3;
+      const spreadX = Math.cos(spreadAngle) * spreadAmount;
+      const spreadY = Math.sin(spreadAngle) * spreadAmount;
+      
+      // Slower, more intentional movement with orbital offset
+      const smoothFactor = 0.10;
+      particle.x += (particle.targetX + spreadX - particle.x) * smoothFactor;
+      particle.y += (particle.targetY + spreadY - particle.y) * smoothFactor;
 
       const particleColor = getGradientColor(particle.pathPosition, currentScroll);
 
+      // Outer glow - expanded presence
       ctx.fillStyle = particleColor;
+      ctx.globalAlpha = particle.opacity * 0.2;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.size * 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mid glow layer
+      ctx.globalAlpha = particle.opacity * 0.35;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.size * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Core particle
       ctx.globalAlpha = particle.opacity;
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.globalAlpha = particle.opacity * 0.25;
+      // Bright center
+      ctx.globalAlpha = particle.opacity * 0.85;
       ctx.beginPath();
-      ctx.arc(particle.x, particle.y, particle.size * 2.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.globalAlpha = particle.opacity * 0.8;
-      ctx.beginPath();
-      ctx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2);
+      ctx.arc(particle.x, particle.y, particle.size * 0.4, 0, Math.PI * 2);
       ctx.fill();
     });
 
