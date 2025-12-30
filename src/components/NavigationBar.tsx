@@ -2,16 +2,24 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReveal } from '@/contexts/RevealContext';
 import { NAVIGATION_SECTIONS } from '@/constants/navigation';
+import { useSmoothValue } from '@/hooks/useSmoothValue';
 import ThemeToggle from '@/components/ThemeToggle';
 
 const NavigationBar = () => {
   const { isRevealed } = useReveal();
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [rawScrollProgress, setRawScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState('hero');
   const [isVisible, setIsVisible] = useState(true);
   const [isScrollingDown, setIsScrollingDown] = useState(false);
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLElement>(null);
+  
+  // Damping layer: smooth progress for visual bar animation
+  // Uses 0.1 for slightly more responsive feel in nav (less lag than 0.06)
+  const smoothProgress = useSmoothValue(rawScrollProgress, {
+    smoothing: 0.1,
+    threshold: 0.001
+  });
 
   // Track scroll progress and direction
   useEffect(() => {
@@ -19,7 +27,7 @@ const NavigationBar = () => {
       const scrollY = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const progress = docHeight > 0 ? scrollY / docHeight : 0;
-      setScrollProgress(progress);
+      setRawScrollProgress(progress);
 
       // Hide nav when scrolling down, show when scrolling up
       const isDown = scrollY > lastScrollY.current && scrollY > 100;
@@ -90,10 +98,10 @@ const NavigationBar = () => {
         {/* Background blur */}
         <div className="absolute inset-0 bg-background/80 backdrop-blur-md border-b border-border/30" />
 
-        {/* Progress bar */}
+        {/* Progress bar - uses smoothed progress for visual polish */}
         <motion.div
           className="absolute bottom-0 left-0 h-px bg-primary origin-left"
-          style={{ scaleX: scrollProgress }}
+          style={{ scaleX: smoothProgress }}
           transition={{ duration: 0.1 }}
         />
 
@@ -179,8 +187,9 @@ const NavigationBar = () => {
           {/* Right side: Theme toggle + Progress */}
           <div className="flex items-center gap-4">
             <ThemeToggle />
+            {/* Percentage uses raw progress for accuracy */}
             <div className="text-mono text-xs text-muted-foreground">
-              <span className="text-primary">{Math.round(scrollProgress * 100)}</span>
+              <span className="text-primary">{Math.round(rawScrollProgress * 100)}</span>
               <span className="opacity-50">%</span>
             </div>
           </div>
