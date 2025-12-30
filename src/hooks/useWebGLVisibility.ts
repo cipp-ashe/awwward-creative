@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-
 /**
- * Manages WebGL background visibility and cursor state.
+ * useWebGLVisibility Hook
  * 
- * This hook handles the delayed mounting of heavy WebGL components
- * to improve initial page load performance. It also manages the
- * custom cursor visibility based on device capabilities.
+ * Manages delayed mounting of heavy WebGL components
+ * to improve initial page load performance.
+ * 
+ * NOTE: Cursor management has been moved to useCursorVisibility hook
+ * to prevent global DOM side effects and state leaks across routes.
  * 
  * @param {number} delay - Delay in ms before showing WebGL (default: 100)
  * @returns {boolean} Whether the WebGL background should be rendered
@@ -19,6 +19,9 @@ import { useEffect, useState } from 'react';
  *   </>
  * );
  */
+
+import { useEffect, useState } from 'react';
+
 export const useWebGLVisibility = (delay: number = 100): boolean => {
   const [showWebGL, setShowWebGL] = useState(false);
 
@@ -28,15 +31,8 @@ export const useWebGLVisibility = (delay: number = 100): boolean => {
       setShowWebGL(true);
     }, delay);
 
-    // Enable custom cursor only on desktop non-touch devices
-    const mediaQuery = window.matchMedia('(min-width: 768px)');
-    if (mediaQuery.matches && !('ontouchstart' in window)) {
-      document.body.style.cursor = 'none';
-    }
-
     return () => {
       clearTimeout(timer);
-      document.body.style.cursor = 'auto';
     };
   }, [delay]);
 

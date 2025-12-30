@@ -5,6 +5,11 @@
  * Uses GSAP's ticker for RAF coordination to ensure scroll sync.
  * Respects reduced-motion preferences by disabling smooth scrolling.
  * 
+ * ## Critical Integration Points
+ * - Syncs Lenis scroll position to GSAP ScrollTrigger via lenis.on('scroll', ScrollTrigger.update)
+ * - Uses GSAP ticker (not custom RAF) for unified timing authority
+ * - Stores and restores gsap.ticker.lagSmoothing on cleanup to prevent state leaks
+ * 
  * @returns React ref containing the Lenis instance (null if reduced motion)
  * 
  * @example
@@ -22,6 +27,9 @@ import Lenis from '@studio-freight/lenis';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { EASING_FN } from '@/constants/animation';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
+
+// GSAP default lagSmoothing values for restoration
+const GSAP_DEFAULT_LAG_SMOOTHING = { threshold: 500, adjustedLag: 33 };
 
 export const useLenis = () => {
   const lenisRef = useRef<Lenis | null>(null);
@@ -56,10 +64,19 @@ export const useLenis = () => {
     gsap.ticker.add(tickerCallback);
 
     // Disable GSAP's internal lag smoothing (Lenis handles smoothing)
+    // This is intentional for smooth scroll - Lenis provides the smoothing
     gsap.ticker.lagSmoothing(0);
 
     return () => {
       gsap.ticker.remove(tickerCallback);
+      
+      // CRITICAL: Restore GSAP default lagSmoothing to prevent state leaks
+      // Without this, other routes/pages would inherit disabled lag smoothing
+      gsap.ticker.lagSmoothing(
+        GSAP_DEFAULT_LAG_SMOOTHING.threshold,
+        GSAP_DEFAULT_LAG_SMOOTHING.adjustedLag
+      );
+      
       lenis.destroy();
       lenisRef.current = null;
     };
