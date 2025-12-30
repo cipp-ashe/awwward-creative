@@ -24,18 +24,29 @@ const TypographySection = () => {
   const [fontWeight, setFontWeight] = useState(400);
 
   const mainText = 'Text is geometry and interface';
+  const hoverWords = ['Hover', 'to', 'feel', 'typographic', 'space', 'expand'];
 
   useEffect(() => {
+    const charCount = charsRef.current.filter(Boolean).length;
+    
     const ctx = gsap.context(() => {
-      // Character-by-character reveal
+      // Character-by-character reveal with normalized stagger
+      // Distributes all characters across a fixed scroll range (80%→30% start, 50%→20% end)
+      const startRange = { from: 80, to: 30 };
+      const endRange = { from: 50, to: 20 };
+      
       charsRef.current.forEach((char, i) => {
         if (!char) return;
+        
+        const progress = charCount > 1 ? i / (charCount - 1) : 0;
+        const startPercent = startRange.from - progress * (startRange.from - startRange.to);
+        const endPercent = endRange.from - progress * (endRange.from - endRange.to);
         
         gsap.from(char, {
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: `top ${80 - i * 2}%`,
-            end: `top ${50 - i * 2}%`,
+            start: `top ${startPercent}%`,
+            end: `top ${endPercent}%`,
             scrub: 1,
           },
           opacity: 0,
@@ -133,26 +144,43 @@ const TypographySection = () => {
         </motion.div>
       </div>
 
-      {/* Demo: Hover effect on large text */}
+      {/* Demo: Hover effect on large text - per-word cascade */}
       <div className="mt-24 py-12 border-y border-border/30">
-        <motion.p
-          className="text-display text-display-sm text-center"
-          style={{ 
-            color: 'hsl(var(--muted-foreground) / 0.5)',
-            willChange: 'letter-spacing, color'
-          }}
-          initial={{ letterSpacing: '0em' }}
-          whileHover={{ 
-            letterSpacing: '0.05em',
-            color: 'hsl(var(--foreground))'
-          }}
-          transition={{
-            duration: DURATION.normal,
-            ease: EASING_ARRAY.smooth,
-          }}
+        <motion.div
+          className="text-display text-display-sm text-center flex flex-wrap justify-center gap-x-[0.3em]"
+          initial="rest"
+          whileHover="hover"
+          animate="rest"
         >
-          Hover to feel typographic space expand
-        </motion.p>
+          {hoverWords.map((word, i) => (
+            <motion.span
+              key={i}
+              style={{ 
+                color: 'hsl(var(--muted-foreground) / 0.5)',
+                willChange: 'letter-spacing, color, transform'
+              }}
+              variants={{
+                rest: { 
+                  letterSpacing: '0em',
+                  y: 0,
+                  color: 'hsl(var(--muted-foreground) / 0.5)'
+                },
+                hover: { 
+                  letterSpacing: '0.08em',
+                  y: -2,
+                  color: 'hsl(var(--foreground))'
+                }
+              }}
+              transition={{
+                duration: DURATION.normal,
+                ease: EASING_ARRAY.smooth,
+                delay: i * 0.05,
+              }}
+            >
+              {word}
+            </motion.span>
+          ))}
+        </motion.div>
       </div>
     </Section>
   );
