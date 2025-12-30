@@ -120,25 +120,10 @@ const WebGLBackground = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
-
-  // Intersection observer to pause when not visible
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Only set active if document is also visible
-        if (document.visibilityState === 'visible') {
-          setIsActive(entry.isIntersecting);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
+  // NOTE: IntersectionObserver was removed as it's ineffective for this component.
+  // A `fixed inset-0` element is always fully visible in the viewport,
+  // so IO would always report isIntersecting=true. Page Visibility API
+  // (above) is the only meaningful gating mechanism for this background.
 
   // Context loss handlers
   const handleCreated = useCallback(({ gl }: { gl: THREE.WebGLRenderer }) => {
