@@ -15,14 +15,13 @@ import { interpolateString } from "d3-interpolate";
 import { motion, AnimatePresence } from "framer-motion";
 import ParticleTrail from "@/components/ParticleTrail";
 import { SectionContent, SectionLabel } from "@/components/layout/Section";
-import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from "@/constants/animation";
-import { useSmoothValue } from "@/hooks/useSmoothValue";
+import { TRANSITION, EASING_FN, DURATION } from "@/constants/animation";
 import { useMotionConfigSafe } from "@/contexts/MotionConfigContext";
 
 // 12-point topology invariant paths for artifact-free interpolation
 const MORPH_PATHS = {
   motion: "M20,20 L100,20 L120,40 L160,40 L180,60 L160,80 L120,80 L100,100 L20,100 L50,80 L50,40 L20,20 Z",
-  scroll: "M60,20 L140,20 L140,40 L140,50 L140,70 L140,80 L140,100 L60,100 L60,80 L60,70 L60,50 L60,40 Z",
+  scroll: "M60,20 L140,20 L140,40 L60,40 L60,50 L140,50 L140,70 L60,70 L60,80 L140,80 L140,100 L60,100 Z",
   type: "M40,20 L80,20 L80,40 L100,40 L100,20 L160,20 L160,100 L100,100 L100,80 L80,80 L80,100 L40,100 Z",
   depth: "M100,20 L160,40 L160,80 L100,100 L40,80 L40,40 L60,45 L100,35 L140,45 L140,75 L100,85 L60,75 Z",
   craft: "M20,20 L60,20 L60,40 L140,40 L140,20 L180,20 L180,60 L160,60 L160,100 L40,100 L40,60 L20,60 Z",
