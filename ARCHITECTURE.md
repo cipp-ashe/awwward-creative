@@ -280,8 +280,11 @@ Raw Value (scroll progress, mouse position)
 └────────┬────────┘
          │
          ▼
-Damped Value → Shader uniforms, SVG morphing, UI elements
+Damped Value → MorphingText progress, NavigationBar progress, UI elements
 ```
+
+**Note**: WebGLBackground uses direct lerp in its R3F useFrame loop for mouse tracking,
+not useSmoothValue. This is because it runs on R3F's independent render loop.
 
 ---
 

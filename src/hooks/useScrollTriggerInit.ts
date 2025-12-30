@@ -12,10 +12,16 @@
  * ## What This Does NOT Do
  * - Does not create a shared context (components should create their own)
  * - Does not manage individual ScrollTrigger instances
+ * - Does not handle ongoing layout changes (see useScrollTriggerRefresh for that)
+ * 
+ * ## Related Hooks
+ * - `useScrollTriggerRefresh`: Handles ongoing layout coordination (resize, fonts, content)
+ * - `useLenis`: Sets up scrollerProxy for Lenis ↔ ScrollTrigger sync
  * 
  * @example
  * // In main layout/page component
  * useScrollTriggerInit();
+ * useScrollTriggerRefresh(); // Pair with this for full coordination
  * 
  * // In individual section components, create scoped contexts:
  * useEffect(() => {
@@ -24,6 +30,8 @@
  *   }, containerRef);
  *   return () => ctx.revert();
  * }, []);
+ * 
+ * @module hooks/useScrollTriggerInit
  */
 
 import { useEffect } from 'react';
