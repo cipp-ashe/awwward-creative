@@ -384,8 +384,8 @@ export const withGsapStagger = <T extends Record<string, unknown>>(
  * Preloader timing configuration.
  */
 export const PRELOADER = {
-  /** Minimum display time in ms - fast enough for LCP, long enough for brand */
-  minDuration: 1200,
+  /** Minimum display time in ms */
+  minDuration: 2000,
   /** Exit animation duration in ms */
   exitDuration: 800,
   /** Progress interpolation factor (0-1) */
@@ -398,19 +398,12 @@ export const PRELOADER = {
 
 /**
  * Custom cursor configuration.
- * Note: lerpFactor deprecated - Framer Motion springs are now sole smoothing authority.
  */
 export const CURSOR = {
-  /** @deprecated - springs handle smoothing in CustomCursor.tsx */
+  /** Lerp factor for smooth following */
   lerpFactor: 0.15,
   /** Scale when hovering interactive elements */
   hoverScale: 1.5,
-  /** Unified spring config for magnetic cursor */
-  spring: {
-    stiffness: 400,
-    damping: 25,
-    mass: 0.3,
-  },
 } as const;
 
 // ============================================================================
