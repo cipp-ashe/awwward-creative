@@ -1,25 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { useReveal } from '@/contexts/RevealContext';
+import { NAVIGATION_SECTIONS } from '@/constants/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
-
-interface NavSection {
-  id: string;
-  label: string;
-  number: string;
-}
-
-const sections: NavSection[] = [
-  { id: 'hero', label: 'Intro', number: '00' },
-  { id: 'motion', label: 'Motion', number: '01' },
-  { id: 'scroll', label: 'Scroll', number: '02' },
-  { id: 'typography', label: 'Type', number: '03' },
-  { id: 'micro', label: 'Micro', number: '04' },
-  { id: 'performance', label: 'Perf', number: '05' },
-  { id: 'morphing', label: 'Morph', number: '06' },
-  { id: 'webgl', label: 'WebGL', number: '07' },
-];
 
 const NavigationBar = () => {
   const { isRevealed } = useReveal();
@@ -53,7 +36,7 @@ const NavigationBar = () => {
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
 
-    sections.forEach((section) => {
+    NAVIGATION_SECTIONS.forEach((section) => {
       const element = document.getElementById(section.id);
       if (!element) return;
 
@@ -164,7 +147,7 @@ const NavigationBar = () => {
 
           {/* Section links - desktop */}
           <div className="hidden md:flex items-center gap-1">
-            {sections.map((section, index) => (
+            {NAVIGATION_SECTIONS.map((section, index) => (
               <motion.button
                 key={section.id}
                 onClick={() => scrollToSection(section.id)}
@@ -206,7 +189,7 @@ const NavigationBar = () => {
         {/* Mobile section indicator */}
         <div className="md:hidden absolute bottom-0 left-0 right-0 flex justify-center pb-1">
           <div className="flex gap-1">
-            {sections.map((section) => (
+            {NAVIGATION_SECTIONS.map((section) => (
               <button
                 key={section.id}
                 onClick={() => scrollToSection(section.id)}

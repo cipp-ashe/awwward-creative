@@ -1,10 +1,11 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, ComponentType, ReactNode } from 'react';
 import { useLenis } from '@/hooks/useLenis';
 import { useGsapScrollTrigger } from '@/hooks/useGsapScrollTrigger';
 import { usePreloaderState } from '@/hooks/usePreloaderState';
 import { useWebGLVisibility } from '@/hooks/useWebGLVisibility';
 import { useScrollTriggerRefresh } from '@/hooks/useScrollTriggerRefresh';
 import { RevealProvider } from '@/contexts/RevealContext';
+import { NAVIGATION_SECTIONS, SectionConfig } from '@/constants/navigation';
 import CustomCursor from '@/components/CustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
 import Preloader from '@/components/Preloader';
@@ -24,6 +25,75 @@ import FooterSection from '@/components/sections/FooterSection';
 
 /** Lazy load WebGL background for performance */
 const WebGLBackground = lazy(() => import('@/components/WebGLBackground'));
+
+// ============================================================================
+// SECTION COMPONENT MAPPING
+// ============================================================================
+
+/**
+ * Maps section IDs to their React components.
+ * Order is determined by NAVIGATION_SECTIONS, not this object.
+ * 
+ * To add a new section:
+ * 1. Add config to NAVIGATION_SECTIONS in src/constants/navigation.ts
+ * 2. Create component in src/components/sections/
+ * 3. Add mapping here
+ */
+const SECTION_COMPONENTS: Record<string, ComponentType> = {
+  hero: HeroSection,
+  motion: MotionSection,
+  scroll: ScrollSection,
+  typography: TypographySection,
+  micro: MicroInteractionsSection,
+  performance: PerformanceSection,
+  morphing: MorphingTextSection,
+  webgl: WebGL3DSection,
+};
+
+/**
+ * Custom wrappers for sections needing special treatment.
+ * Most sections don't need this — only use for error boundaries, etc.
+ */
+const SECTION_WRAPPERS: Record<string, ComponentType<{ children: ReactNode }>> = {
+  webgl: ({ children }) => (
+    <WebGLErrorBoundary 
+      sectionLabel="07 — WebGL"
+      title={<>Interactive <span className="text-primary">Depth</span></>}
+    >
+      {children}
+    </WebGLErrorBoundary>
+  ),
+};
+
+// ============================================================================
+// SECTION RENDERER
+// ============================================================================
+
+/**
+ * Renders a section with appropriate reveal wrapper based on config.
+ */
+const renderSection = (config: SectionConfig, index: number) => {
+  const Component = SECTION_COMPONENTS[config.id];
+  if (!Component) return null;
+  
+  const Wrapper = SECTION_WRAPPERS[config.id];
+  const content = Wrapper ? <Wrapper><Component /></Wrapper> : <Component />;
+  
+  // Sections with GSAP pin conflicts skip SectionReveal
+  if (config.skipRevealWrapper) {
+    return <div key={config.id}>{content}</div>;
+  }
+  
+  return (
+    <SectionReveal key={config.id} index={index} baseDelay={index === 0 ? 0 : undefined}>
+      {content}
+    </SectionReveal>
+  );
+};
+
+// ============================================================================
+// MAIN COMPONENTS
+// ============================================================================
 
 /**
  * Main page content with all sections and effects.
@@ -60,59 +130,11 @@ const IndexContent = () => {
         <GrainOverlay />
         <CustomCursor />
 
-        <SectionReveal index={0} baseDelay={0}>
-          <div id="hero">
-            <HeroSection />
-          </div>
-        </SectionReveal>
+        {/* Render all sections from config */}
+        {NAVIGATION_SECTIONS.map((section, index) => renderSection(section, index))}
         
-        <SectionReveal index={1}>
-          <div id="motion">
-            <MotionSection />
-          </div>
-        </SectionReveal>
-        
-        {/* ScrollSection uses GSAP ScrollTrigger with pin - cannot be wrapped in SectionReveal */}
-        <div id="scroll">
-          <ScrollSection />
-        </div>
-        
-        <SectionReveal index={3}>
-          <div id="typography">
-            <TypographySection />
-          </div>
-        </SectionReveal>
-        
-        <SectionReveal index={4}>
-          <div id="micro">
-            <MicroInteractionsSection />
-          </div>
-        </SectionReveal>
-        
-        <SectionReveal index={5}>
-          <div id="performance">
-            <PerformanceSection />
-          </div>
-        </SectionReveal>
-        
-        <SectionReveal index={6}>
-          <div id="morphing">
-            <MorphingTextSection />
-          </div>
-        </SectionReveal>
-        
-        <SectionReveal index={7}>
-          <div id="webgl">
-            <WebGLErrorBoundary 
-              sectionLabel="07 — WebGL"
-              title={<>Interactive <span className="text-primary">Depth</span></>}
-            >
-              <WebGL3DSection />
-            </WebGLErrorBoundary>
-          </div>
-        </SectionReveal>
-        
-        <SectionReveal index={8}>
+        {/* Footer is not a navigation section */}
+        <SectionReveal index={NAVIGATION_SECTIONS.length}>
           <FooterSection />
         </SectionReveal>
       </main>
@@ -120,6 +142,9 @@ const IndexContent = () => {
   );
 };
 
+/**
+ * Index page root with providers.
+ */
 const Index = () => {
   return (
     <RevealProvider>
