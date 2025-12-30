@@ -6,8 +6,15 @@ An experimental demonstrator of modern creative web patterns — motion, scroll,
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         App Entry                                │
+│                         App Shell                               │
+│                        (App.tsx)                                │
+│    - useCursorVisibility() ownership                            │
+│    - ThemeProvider, MotionConfigProvider                        │
+├─────────────────────────────────────────────────────────────────┤
+│                         Page Root                               │
 │                      (pages/Index.tsx)                          │
+│    - useLenis(), useScrollTriggerInit()                         │
+│    - useScrollTriggerRefresh()                                  │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
@@ -70,9 +77,13 @@ src/
 ├── hooks/
 │   ├── useAssetLoader.ts    # Preloader asset tracking
 │   ├── useCursor.ts         # Smooth cursor position
-│   ├── useGsapScrollTrigger.ts
+│   ├── useCursorVisibility.ts # Global cursor DOM state
 │   ├── useLenis.ts          # Smooth scroll initialization
 │   ├── useMobile.ts         # Viewport detection
+│   ├── useScrollTriggerInit.ts # ScrollTrigger initialization
+│   ├── useScrollTriggerRefresh.ts # Layout coordination
+│   ├── useTicker.ts         # GSAP ticker wrapper
+│   └── useToast.ts          # Toast notifications
 │   └── useToast.ts          # Toast notifications
 │
 ├── lib/
@@ -133,6 +144,29 @@ User Scrolls
             ┌─────────────┐
             │Framer Motion│  Handles component transitions
             └─────────────┘
+```
+
+## Runtime Model
+
+### Animation Loop Ownership
+
+The application uses two separate animation loops by design:
+
+| System | Loop Owner | Responsibility |
+|--------|------------|----------------|
+| GSAP/Lenis | `gsap.ticker` | Scroll-linked DOM animations, cursor interpolation |
+| WebGL (R3F) | React Three Fiber | 3D scene rendering, shader updates |
+
+This separation is intentional:
+- DOM animations and smooth scrolling share timing via GSAP's ticker
+- WebGL has independent frame budget needs and its own optimized render loop
+- Page Visibility API gates both systems when the tab is backgrounded
+
+### Time Units
+
+- **GSAP ticker deltaTime**: Milliseconds (converted to seconds in `useTicker`)
+- **Consumer callbacks**: Receive seconds for consistency
+
 ```
 
 ### Using the Constants

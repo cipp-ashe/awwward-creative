@@ -1,26 +1,29 @@
 /**
  * useTicker Hook
  * 
- * Unified animation frame coordinator that wraps GSAP's ticker.
- * This ensures a SINGLE time authority across the entire application:
+ * Animation frame coordinator that wraps GSAP's ticker for React components.
+ * 
+ * ## Time Authority Model
+ * This hook provides a React-friendly interface to GSAP's ticker, which serves
+ * as the timing authority for scroll-linked animations. Note that WebGL (R3F)
+ * maintains its own render loop - this is intentional, as 3D rendering has
+ * different frame budget requirements than DOM animations.
+ * 
+ * Systems using GSAP ticker (via this hook):
  * - Lenis smooth scroll
  * - Custom cursor interpolation
- * - Particle systems
- * - All GSAP animations
+ * - Any scroll-linked GSAP animations
  * 
- * ## Why GSAP Ticker?
- * GSAP's ticker is already the timing authority for all scroll-linked animations.
- * Using a separate RAF loop creates timing conflicts and micro-jank.
- * This wrapper provides the same API but delegates to GSAP's ticker.
+ * Systems with independent loops:
+ * - React Three Fiber (WebGL) - uses its own RAF for 3D rendering
  * 
- * ## Benefits
- * - Single RAF loop for entire app
- * - Automatic sync with GSAP animations
- * - Consistent deltaTime across all systems
- * - Respects reduced-motion preferences
+ * ## DeltaTime Contract
+ * GSAP's ticker provides deltaTime in MILLISECONDS (confirmed via source).
+ * This hook converts to seconds for consumer convenience.
  * 
  * @example
  * const tickerRef = useTicker((deltaTime, elapsedTime) => {
+ *   // deltaTime is in seconds (0.016 at 60fps)
  *   position.x += velocity * deltaTime;
  * });
  * 
@@ -118,13 +121,4 @@ export const useTicker = (
   }, [enabled, isReducedMotion]);
 
   return handleRef;
-};
-
-/**
- * @deprecated Use useTicker hook instead
- * Legacy export for backwards compatibility
- */
-export const getTickerInstance = () => {
-  console.warn('[useTicker] getTickerInstance is deprecated. Use useTicker hook instead.');
-  return null;
 };
