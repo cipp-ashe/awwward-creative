@@ -141,7 +141,7 @@ const MorphingTextSection = () => {
         trigger: section,
         start: "top top",
         end: "bottom bottom",
-        scrub: 0.5,
+        scrub: true,  // Instant - Lenis already provides smooth scroll input
         onUpdate: (self) => {
           const targetProgress = self.progress;
 
