@@ -1,30 +1,25 @@
+/**
+ * MorphingTextSection
+ * 
+ * SVG path morphing demonstration using Flubber interpolation.
+ * Uses sticky scroll layout - not wrapped with Section component.
+ */
+
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { interpolate } from 'flubber';
 import { motion } from 'framer-motion';
 import ParticleTrail from '@/components/ParticleTrail';
+import { SectionContent, SectionLabel } from '@/components/layout/Section';
+import { EASING_FN } from '@/constants/animation';
 
 // Morphability-optimized SVG paths with IDENTICAL topology
-// All paths: 12 control points, same command structure (M + 11 L + Z)
-// Single closed path, no holes - ensures smooth Flubber interpolation
 const MORPH_PATHS = {
-  // Wave pattern - energy/motion
   motion: "M20,70 L40,40 L60,70 L80,40 L100,70 L120,40 L140,70 L160,40 L180,70 L180,100 L100,110 L20,100 Z",
-  // Horizontal bands - scroll/layers  
   scroll: "M20,25 L180,25 L180,45 L20,45 L20,65 L180,65 L180,85 L20,85 L20,105 L180,105 L180,115 L20,115 Z",
-  // T-shape - typography
   type: "M20,25 L180,25 L180,45 L115,45 L115,115 L85,115 L85,45 L20,45 L20,35 L100,30 L180,35 L180,25 Z",
-  // Hexagon - depth/dimension
   depth: "M100,15 L160,35 L180,70 L160,105 L100,125 L40,105 L20,70 L40,35 L70,25 L100,20 L130,25 L160,35 Z",
-  // Rounded blob - organic craft
   craft: "M60,30 L140,30 L170,50 L180,80 L160,105 L120,115 L80,115 L40,105 L20,80 L30,50 L50,35 L60,30 Z",
-};
-
-// Cubic ease-in-out for smooth morph transitions
-const easeInOutCubic = (t: number): number => {
-  return t < 0.5 
-    ? 4 * t * t * t 
-    : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
 const WORDS = ['motion', 'scroll', 'type', 'depth', 'craft'] as const;
@@ -51,7 +46,7 @@ const MorphingTextSection = () => {
   
   const [containerSize, setContainerSize] = useState({ width: 512, height: 358 });
 
-  // Pre-compute interpolators for all word pairs (memoized)
+  // Pre-compute interpolators for all word pairs
   const getInterpolator = useCallback((fromWord: WordKey, toWord: WordKey) => {
     const key = `${fromWord}-${toWord}`;
     if (!interpolatorsRef.current.has(key)) {
@@ -82,7 +77,6 @@ const MorphingTextSection = () => {
   }, []);
 
   useEffect(() => {
-    // Bail early for reduced motion preference
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
     }
@@ -100,8 +94,6 @@ const MorphingTextSection = () => {
           const progress = self.progress;
           progressRef.current = progress;
           
-          // Map progress to word transitions
-          // 5 words = 4 transitions, each gets 25% of scroll
           const totalTransitions = WORDS.length - 1;
           const segmentProgress = progress * totalTransitions;
           const currentIndex = Math.min(Math.floor(segmentProgress), totalTransitions - 1);
@@ -111,22 +103,17 @@ const MorphingTextSection = () => {
           const fromWord = WORDS[currentIndex];
           const toWord = WORDS[nextIndex];
           
-          // Get or create interpolator
           const interp = getInterpolator(fromWord, toWord);
           const clampedProgress = Math.max(0, Math.min(1, localProgress));
-          // Apply cubic easing for smooth acceleration/deceleration
-          const easedProgress = easeInOutCubic(clampedProgress);
+          const easedProgress = EASING_FN.easeInOutCubic(clampedProgress);
           const newPath = interp(easedProgress);
           
-          // Batch DOM update
           if (svgRef.current) {
             svgRef.current.setAttribute('d', newPath);
           }
           
-          // Update React state less frequently for display text
           const displayWord = localProgress > 0.5 ? toWord : fromWord;
           setMorphState(prev => {
-            // Increased threshold to reduce re-renders while scrolling
             if (prev.currentWord !== displayWord || Math.abs(prev.progress - progress) > 0.02) {
               return { currentPath: newPath, currentWord: displayWord, progress };
             }
@@ -144,20 +131,18 @@ const MorphingTextSection = () => {
 
   return (
     <section 
-      ref={sectionRef} 
+      ref={sectionRef}
+      id="morphing"
       className="relative min-h-[300vh]"
       aria-label="Morphing text demonstration"
     >
       {/* Sticky container */}
       <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden">
-        <div className="section-content text-center">
-          <span className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block">
-            06 — Morphing
-          </span>
+        <SectionContent className="text-center">
+          <SectionLabel className="mb-8 block">06 — Morphing</SectionLabel>
           
           {/* SVG Morph Container */}
           <div ref={svgContainerRef} className="relative mb-8">
-            {/* Particle Trail Canvas */}
             <ParticleTrail
               pathData={morphState.currentPath}
               width={containerSize.width}
@@ -172,7 +157,6 @@ const MorphingTextSection = () => {
               className="w-full max-w-lg mx-auto h-auto relative z-10"
               aria-hidden="true"
             >
-              {/* Glow filter */}
               <defs>
                 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
                   <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -187,7 +171,6 @@ const MorphingTextSection = () => {
                 </linearGradient>
               </defs>
               
-              {/* Shadow layer */}
               <path
                 d={morphState.currentPath}
                 fill="hsl(32, 45%, 65%)"
@@ -195,7 +178,6 @@ const MorphingTextSection = () => {
                 transform="translate(4, 4)"
               />
               
-              {/* Main morphing path */}
               <path
                 ref={svgRef}
                 d={morphState.currentPath}
@@ -204,7 +186,6 @@ const MorphingTextSection = () => {
                 className="transition-none"
               />
               
-              {/* Stroke outline */}
               <path
                 d={morphState.currentPath}
                 fill="none"
@@ -231,7 +212,7 @@ const MorphingTextSection = () => {
           
           {/* Progress indicator */}
           <div className="flex items-center justify-center gap-3 mb-8">
-            {WORDS.map((word, index) => (
+            {WORDS.map((word) => (
               <div
                 key={word}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
@@ -243,13 +224,11 @@ const MorphingTextSection = () => {
             ))}
           </div>
           
-          {/* Description */}
           <p className="text-muted-foreground max-w-md mx-auto text-balance">
             SVG paths interpolate as you scroll, transforming abstract shapes 
             through mathematical resampling. Each form represents a core principle.
           </p>
           
-          {/* Scroll hint */}
           <motion.div 
             className="mt-12 text-mono text-xs text-muted-foreground/50"
             animate={{ opacity: [0.3, 0.6, 0.3] }}
@@ -257,9 +236,8 @@ const MorphingTextSection = () => {
           >
             Keep scrolling to morph
           </motion.div>
-        </div>
+        </SectionContent>
         
-        {/* Background glow */}
         <div 
           className="glow w-[500px] h-[500px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 animate-pulse-glow"
           style={{ opacity: 0.15 + morphState.progress * 0.1 }}

@@ -1,5 +1,12 @@
+/**
+ * MotionSection
+ * 
+ * Demonstrates scroll-driven animation with GSAP and easing curves.
+ */
+
 import { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
+import { Section, SectionContent, SectionLabel } from '@/components/layout/Section';
 import EasingCurveIndicator from '@/components/EasingCurveIndicator';
 
 const MotionSection = () => {
@@ -68,55 +75,51 @@ const MotionSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="section py-32 md:py-48">
-      <div className="section-content">
-        <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start">
-          <div>
-            <span className="text-mono text-xs text-primary tracking-widest uppercase mb-4 block">
-              01 — Motion
-            </span>
-            <h2 ref={headingRef} className="text-display text-display-md mb-8">
-              Animation is not decoration — it's{' '}
-              <span className="text-primary">interface</span>
-            </h2>
-          </div>
-
-          <div ref={contentRef} className="space-y-6 text-lg text-muted-foreground">
-            <p>
-              GSAP's scripted precision maps motion to scroll position, not time. 
-              Framer Motion handles local, reactive animations. Together, they choreograph 
-              what users feel, not just what they see.
-            </p>
-            <p>
-              The distinction matters: scroll-driven animation treats the viewport as a 
-              timeline. Every pixel of scroll becomes a frame of intent. This is motion 
-              as narrative architecture.
-            </p>
-            <p className="text-mono text-sm border-l-2 border-primary/30 pl-4 py-2">
-              "Animate absence as much as presence — things fade, drift, or dissolve out."
-            </p>
-          </div>
+    <Section ref={sectionRef} id="motion">
+      <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start">
+        <div>
+          <SectionLabel className="mb-4 block">01 — Motion</SectionLabel>
+          <h2 ref={headingRef} className="text-display text-display-md mb-8">
+            Animation is not decoration — it's{' '}
+            <span className="text-primary">interface</span>
+          </h2>
         </div>
 
-        {/* Easing Curve Indicator */}
-        <div className="mt-16 max-w-sm mx-auto md:mx-0 md:ml-auto">
-          <EasingCurveIndicator scrollProgress={scrollProgress} />
-        </div>
-
-        {/* Motion demo */}
-        <div ref={demoRef} className="mt-16 flex justify-center gap-6 overflow-hidden py-12">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="motion-box w-16 h-16 md:w-24 md:h-24 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center"
-              style={{ opacity: 1 - i * 0.15 }}
-            >
-              <span className="text-mono text-xs text-primary/60">{i + 1}</span>
-            </div>
-          ))}
+        <div ref={contentRef} className="space-y-6 text-lg text-muted-foreground">
+          <p>
+            GSAP's scripted precision maps motion to scroll position, not time. 
+            Framer Motion handles local, reactive animations. Together, they choreograph 
+            what users feel, not just what they see.
+          </p>
+          <p>
+            The distinction matters: scroll-driven animation treats the viewport as a 
+            timeline. Every pixel of scroll becomes a frame of intent. This is motion 
+            as narrative architecture.
+          </p>
+          <p className="text-mono text-sm border-l-2 border-primary/30 pl-4 py-2">
+            "Animate absence as much as presence — things fade, drift, or dissolve out."
+          </p>
         </div>
       </div>
-    </section>
+
+      {/* Easing Curve Indicator */}
+      <div className="mt-16 max-w-sm mx-auto md:mx-0 md:ml-auto">
+        <EasingCurveIndicator scrollProgress={scrollProgress} />
+      </div>
+
+      {/* Motion demo */}
+      <div ref={demoRef} className="mt-16 flex justify-center gap-6 overflow-hidden py-12">
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={i}
+            className="motion-box w-16 h-16 md:w-24 md:h-24 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center"
+            style={{ opacity: 1 - i * 0.15 }}
+          >
+            <span className="text-mono text-xs text-primary/60">{i + 1}</span>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 };
 

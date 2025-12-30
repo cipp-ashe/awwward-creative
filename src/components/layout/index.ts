@@ -2,4 +2,13 @@
  * Layout Components
  */
 
-export { Section, SectionHeader, type SectionProps, type SectionHeaderProps } from './Section';
+export { 
+  Section, 
+  SectionLabel,
+  SectionContent,
+  SectionHeader, 
+  type SectionProps, 
+  type SectionHeaderProps,
+  type SectionLabelProps,
+  type SectionContentProps,
+} from './Section';
