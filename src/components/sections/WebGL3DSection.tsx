@@ -5,6 +5,8 @@ import { BlendFunction } from 'postprocessing';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
+import { useSmoothValue, useSmoothVec2 } from '@/hooks/useSmoothValue';
+import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
 // Vertex shader with displacement
 const vertexShader = `
@@ -445,24 +447,35 @@ const Scene = ({ scrollProgress, mousePosition }: SceneProps) => {
 
 const WebGL3DSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [rawScrollProgress, setRawScrollProgress] = useState(0);
+  const [rawMousePosition, setRawMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  // Check for reduced motion preference
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-    
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
-  }, []);
+  
+  // Use centralized motion config instead of local check
+  const { isReducedMotion } = useMotionConfigSafe();
+  
+  // ========================================================================
+  // DAMPING LAYER: Smooth scroll and mouse values before passing to shaders
+  // This prevents visual chaos on fast scroll and creates organic motion
+  // ========================================================================
+  
+  // Scroll smoothing: lower value = smoother but laggier
+  // 0.06 provides good balance between responsiveness and smoothness
+  const scrollProgress = useSmoothValue(rawScrollProgress, { 
+    smoothing: 0.06,
+    threshold: 0.0001 
+  });
+  
+  // Mouse smoothing: slightly more responsive than scroll
+  const mousePosition = useSmoothVec2(rawMousePosition, { 
+    smoothing: 0.08,
+    threshold: 0.0001 
+  });
 
   // Scroll tracking via GSAP ScrollTrigger
+  // Writes to rawScrollProgress which gets smoothed via useSmoothValue
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (isReducedMotion) return;
     
     const section = sectionRef.current;
     if (!section) return;
@@ -473,7 +486,8 @@ const WebGL3DSection = () => {
         start: 'top bottom',
         end: 'bottom top',
         onUpdate: (self) => {
-          setScrollProgress(self.progress);
+          // Write to RAW value - damping layer handles smoothing
+          setRawScrollProgress(self.progress);
         },
         onEnter: () => setIsVisible(true),
         onLeave: () => setIsVisible(false),
@@ -483,25 +497,25 @@ const WebGL3DSection = () => {
     }, section);
 
     return () => ctx.revert();
-  }, [prefersReducedMotion]);
+  }, [isReducedMotion]);
 
-  // Mouse tracking
+  // Mouse tracking - writes to raw value, damping layer smooths it
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (isReducedMotion) return;
     
     const handleMouseMove = (e: MouseEvent) => {
-      // Normalize to [-1, 1]
+      // Normalize to [-1, 1], write to RAW value
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      setMousePosition({ x, y });
+      setRawMousePosition({ x, y });
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [prefersReducedMotion]);
+  }, [isReducedMotion]);
 
   // Reduced motion fallback
-  if (prefersReducedMotion) {
+  if (isReducedMotion) {
     return (
       <section ref={sectionRef} className="section py-32">
         <div className="section-content text-center">
