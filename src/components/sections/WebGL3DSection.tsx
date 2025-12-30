@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing';
+import { BlendFunction } from 'postprocessing';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import * as THREE from 'three';
@@ -256,6 +258,76 @@ const Particles = ({ scrollProgress }: { scrollProgress: number }) => {
   );
 };
 
+// Post-processing effects with scroll-driven intensity
+interface PostProcessingProps {
+  scrollProgress: number;
+  mousePosition: { x: number; y: number };
+}
+
+const PostProcessing = ({ scrollProgress, mousePosition }: PostProcessingProps) => {
+  const chromaticRef = useRef<any>(null);
+  
+  useFrame(() => {
+    if (chromaticRef.current) {
+      // Dynamic chromatic aberration based on mouse movement
+      const offsetX = mousePosition.x * 0.002 * (0.5 + scrollProgress * 0.5);
+      const offsetY = mousePosition.y * 0.002 * (0.5 + scrollProgress * 0.5);
+      chromaticRef.current.offset.set(offsetX, offsetY);
+    }
+  });
+
+  // Scroll-driven bloom intensity
+  const bloomIntensity = 0.3 + scrollProgress * 0.7;
+  const bloomLuminanceThreshold = 0.4 - scrollProgress * 0.2;
+
+  return (
+    <EffectComposer>
+      <Bloom
+        intensity={bloomIntensity}
+        luminanceThreshold={bloomLuminanceThreshold}
+        luminanceSmoothing={0.9}
+        mipmapBlur
+      />
+      <ChromaticAberration
+        ref={chromaticRef}
+        blendFunction={BlendFunction.NORMAL}
+        offset={new THREE.Vector2(0.001, 0.001)}
+        radialModulation={false}
+        modulationOffset={0.5}
+      />
+      <Vignette
+        offset={0.3}
+        darkness={0.5 + scrollProgress * 0.3}
+        blendFunction={BlendFunction.NORMAL}
+      />
+    </EffectComposer>
+  );
+};
+
+// Scene wrapper component
+interface SceneProps {
+  scrollProgress: number;
+  mousePosition: { x: number; y: number };
+}
+
+const Scene = ({ scrollProgress, mousePosition }: SceneProps) => {
+  return (
+    <>
+      <ambientLight intensity={0.2} />
+      <pointLight position={[10, 10, 10]} intensity={0.5} />
+      <DisplacementMesh 
+        scrollProgress={scrollProgress} 
+        mousePosition={mousePosition} 
+      />
+      <Particles scrollProgress={scrollProgress} />
+      <PostProcessing 
+        scrollProgress={scrollProgress} 
+        mousePosition={mousePosition} 
+      />
+    </>
+  );
+};
+
 const WebGL3DSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -354,13 +426,10 @@ const WebGL3DSection = () => {
                 }}
                 style={{ background: 'transparent' }}
               >
-                <ambientLight intensity={0.2} />
-                <pointLight position={[10, 10, 10]} intensity={0.5} />
-                <DisplacementMesh 
+                <Scene 
                   scrollProgress={scrollProgress} 
                   mousePosition={mousePosition} 
                 />
-                <Particles scrollProgress={scrollProgress} />
               </Canvas>
             </Suspense>
           </div>
