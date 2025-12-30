@@ -158,7 +158,7 @@ const MorphingTextSection = () => {
           const toWord = WORDS[nextIndex];
 
           const interp = getInterpolator(fromWord, toWord);
-          const easedProgress = EASING_FN.easeInOutCubic(Math.max(0, Math.min(1, localProgress)));
+          const easedProgress = EASING_FN.easeInOutQuint(Math.max(0, Math.min(1, localProgress)));
           const newPath = interp(easedProgress);
 
           // Direct DOM update (fast - bypasses React)
@@ -178,7 +178,7 @@ const MorphingTextSection = () => {
           const echoLocalProgress = echoSegmentProgress - echoCurrentIndex;
 
           const echoInterp = getInterpolator(WORDS[echoCurrentIndex], WORDS[echoNextIndex]);
-          const echoEasedProgress = EASING_FN.easeInOutCubic(Math.max(0, Math.min(1, echoLocalProgress)));
+          const echoEasedProgress = EASING_FN.easeInOutQuint(Math.max(0, Math.min(1, echoLocalProgress)));
           const echoPath = echoInterp(echoEasedProgress);
 
           if (outlinePathRef.current) outlinePathRef.current.setAttribute("d", echoPath);

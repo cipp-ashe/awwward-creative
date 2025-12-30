@@ -55,6 +55,12 @@ export const EASING_FN = {
   easeOutQuart: (t: number): number => 1 - Math.pow(1 - t, 4),
   easeOutExpo: (t: number): number => 
     t === 1 ? 1 : 1 - Math.pow(2, -10 * t),
+  /** Strong plateau ease - shapes hold ~35% at endpoints */
+  easeInOutQuart: (t: number): number => 
+    t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2,
+  /** Strongest plateau ease - shapes hold ~40% at endpoints */
+  easeInOutQuint: (t: number): number => 
+    t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2,
   /** Elastic overshoot - for playful reveals */
   elastic: (t: number): number => {
     const c4 = (2 * Math.PI) / 3;
