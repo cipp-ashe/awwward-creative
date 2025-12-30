@@ -79,6 +79,36 @@ export const initAnimationRuntime = (config: Partial<AnimationRuntimeConfig> = {
 };
 
 // ============================================================================
+// MOTION BUDGET AUTHORITY
+// ============================================================================
+
+const MOTION_BUDGET = {
+  maxScrollTriggers: 20,
+  maxActiveTweens: 50,
+  warnThreshold: 0.8,
+} as const;
+
+/**
+ * Check current motion budget usage.
+ * Warns in dev mode when thresholds are exceeded.
+ */
+export const checkMotionBudget = () => {
+  const triggers = ScrollTrigger.getAll().length;
+  const tweens = gsap.globalTimeline.getChildren().length;
+  
+  if (import.meta.env.DEV) {
+    if (triggers > MOTION_BUDGET.maxScrollTriggers * MOTION_BUDGET.warnThreshold) {
+      console.warn(`[MotionBudget] ScrollTriggers at ${triggers}/${MOTION_BUDGET.maxScrollTriggers}`);
+    }
+    if (tweens > MOTION_BUDGET.maxActiveTweens * MOTION_BUDGET.warnThreshold) {
+      console.warn(`[MotionBudget] Active tweens at ${tweens}/${MOTION_BUDGET.maxActiveTweens}`);
+    }
+  }
+  
+  return { triggers, tweens, budget: MOTION_BUDGET };
+};
+
+// ============================================================================
 // DEBUGGING UTILITIES
 // ============================================================================
 
@@ -87,10 +117,16 @@ export const initAnimationRuntime = (config: Partial<AnimationRuntimeConfig> = {
  * Useful for debugging timing issues.
  */
 export const getAnimationStatus = () => {
+  const budget = checkMotionBudget();
   return {
-    scrollTriggerCount: ScrollTrigger.getAll().length,
+    scrollTriggerCount: budget.triggers,
+    activeTweens: budget.tweens,
     gsapTimeScale: gsap.globalTimeline.timeScale(),
     isInitialized,
+    budgetUtilization: {
+      triggers: `${budget.triggers}/${MOTION_BUDGET.maxScrollTriggers}`,
+      tweens: `${budget.tweens}/${MOTION_BUDGET.maxActiveTweens}`,
+    },
   };
 };
 
@@ -112,6 +148,7 @@ export const logScrollTriggers = () => {
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   (window as unknown as { __logScrollTriggers: typeof logScrollTriggers }).__logScrollTriggers = logScrollTriggers;
   (window as unknown as { __getAnimationStatus: typeof getAnimationStatus }).__getAnimationStatus = getAnimationStatus;
+  (window as unknown as { __checkMotionBudget: typeof checkMotionBudget }).__checkMotionBudget = checkMotionBudget;
 }
 
 // ============================================================================

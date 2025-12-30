@@ -54,7 +54,27 @@ export const useLenis = () => {
 
     lenisRef.current = lenis;
 
-    // Critical: Sync Lenis scroll position to GSAP ScrollTrigger
+    // Critical: Register Lenis as ScrollTrigger's scroller proxy
+    // This ensures pin calculations use Lenis's virtual scroll position,
+    // preventing pin drift and start/end miscalculations on complex layouts
+    ScrollTrigger.scrollerProxy(document.documentElement, {
+      scrollTop(value) {
+        if (arguments.length && value !== undefined) {
+          lenis.scrollTo(value, { immediate: true });
+        }
+        return lenis.scroll;
+      },
+      getBoundingClientRect() {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight
+        };
+      },
+    });
+
+    // Sync Lenis scroll position to GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
 
     // Use GSAP's ticker for unified RAF loop (prevents timing conflicts)
@@ -64,7 +84,6 @@ export const useLenis = () => {
     gsap.ticker.add(tickerCallback);
 
     // Disable GSAP's internal lag smoothing (Lenis handles smoothing)
-    // This is intentional for smooth scroll - Lenis provides the smoothing
     gsap.ticker.lagSmoothing(0);
 
     return () => {
