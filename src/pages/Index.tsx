@@ -1,9 +1,11 @@
 import { Suspense, lazy, ComponentType, ReactNode } from 'react';
-import { useLenis } from '@/hooks/useLenis';
-import { useGsapScrollTrigger } from '@/hooks/useGsapScrollTrigger';
-import { usePreloaderState } from '@/hooks/usePreloaderState';
-import { useWebGLVisibility } from '@/hooks/useWebGLVisibility';
-import { useScrollTriggerRefresh } from '@/hooks/useScrollTriggerRefresh';
+import {
+  useLenis,
+  useScrollTriggerInit,
+  usePreloaderState,
+  useWebGLVisibility,
+  useScrollTriggerRefresh,
+} from '@/hooks';
 import { RevealProvider } from '@/contexts/RevealContext';
 import { NAVIGATION_SECTIONS, SectionConfig } from '@/constants/navigation';
 import {
@@ -106,7 +108,7 @@ const renderSection = (config: SectionConfig, index: number) => {
 const IndexContent = () => {
   // Smooth scrolling and scroll-driven animations
   useLenis();
-  useGsapScrollTrigger();
+  useScrollTriggerInit();
   useScrollTriggerRefresh();
   
   // Loading and reveal state

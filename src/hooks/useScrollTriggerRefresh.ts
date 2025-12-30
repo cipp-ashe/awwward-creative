@@ -37,7 +37,7 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollTrigger } from '@/lib/gsap';
 
 // ============================================================================
 // TYPES

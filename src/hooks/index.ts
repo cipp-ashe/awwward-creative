@@ -14,8 +14,8 @@
 // ANIMATION & MOTION
 // ============================================================================
 
-/** Central RAF coordinator - consolidates all animation loops */
-export { useTicker, getTickerInstance } from './useTicker';
+/** Animation frame coordinator wrapping GSAP ticker */
+export { useTicker } from './useTicker';
 export type { TickerCallback, TickerHandle } from './useTicker';
 
 /** Damped value interpolation for smooth animations */
@@ -35,7 +35,7 @@ export { useCursorVisibility } from './useCursorVisibility';
 // ============================================================================
 
 /** GSAP ScrollTrigger initialization */
-export { useGsapScrollTrigger } from './useGsapScrollTrigger';
+export { useScrollTriggerInit } from './useScrollTriggerInit';
 
 /** Comprehensive ScrollTrigger refresh coordination */
 export { useScrollTriggerRefresh } from './useScrollTriggerRefresh';
