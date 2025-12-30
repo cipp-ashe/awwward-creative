@@ -1,8 +1,15 @@
-import { useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+/**
+ * useGsapScrollTrigger Hook
+ * 
+ * Initializes GSAP ScrollTrigger and provides access to gsap and ScrollTrigger.
+ * Handles cleanup of all ScrollTrigger instances on unmount.
+ * 
+ * @example
+ * const { gsap, ScrollTrigger } = useGsapScrollTrigger();
+ */
 
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect } from 'react';
+import { gsap, ScrollTrigger } from '@/lib/gsap';
 
 export const useGsapScrollTrigger = () => {
   useEffect(() => {

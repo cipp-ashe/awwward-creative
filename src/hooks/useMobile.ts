@@ -1,6 +1,13 @@
-import * as React from "react";
+/**
+ * useMobile Hook
+ * 
+ * Detects whether the current viewport is mobile-sized.
+ */
 
-const MOBILE_BREAKPOINT = 768;
+import * as React from "react";
+import { BREAKPOINT } from "@/constants/layout";
+
+const MOBILE_BREAKPOINT = BREAKPOINT.md;
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
