@@ -43,6 +43,7 @@ const MorphingTextSection = () => {
   const outlinePathRef = useRef<SVGPathElement>(null);
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
+  const echoProgressRef = useRef(0); // Lagged progress for outline echo effect
   const interpolatorsRef = useRef<Map<string, (t: number) => string>>(new Map());
   
   // Raw scroll progress from ScrollTrigger
@@ -131,15 +132,34 @@ const MorphingTextSection = () => {
           const easedProgress = EASING_FN.easeInOutCubic(clampedProgress);
           const newPath = interp(easedProgress);
           
-          // Direct DOM update for all paths in sync (not via React state)
+          // Direct DOM update for main fill and shadow (in sync)
           if (svgRef.current) {
             svgRef.current.setAttribute('d', newPath);
           }
           if (shadowPathRef.current) {
             shadowPathRef.current.setAttribute('d', newPath);
           }
+          
+          // Echo effect: outline trails slightly behind for intentional "ghost" aesthetic
+          // Smooth interpolation toward current progress (creates ~5% lag)
+          const echoSmoothing = 0.15;
+          echoProgressRef.current += (progress - echoProgressRef.current) * echoSmoothing;
+          
+          // Calculate lagged morph for outline
+          const echoSegmentProgress = echoProgressRef.current * totalTransitions;
+          const echoCurrentIndex = Math.min(Math.floor(echoSegmentProgress), totalTransitions - 1);
+          const echoNextIndex = Math.min(echoCurrentIndex + 1, WORDS.length - 1);
+          const echoLocalProgress = echoSegmentProgress - echoCurrentIndex;
+          
+          const echoFromWord = WORDS[echoCurrentIndex];
+          const echoToWord = WORDS[echoNextIndex];
+          const echoInterp = getInterpolator(echoFromWord, echoToWord);
+          const echoClampedProgress = Math.max(0, Math.min(1, echoLocalProgress));
+          const echoEasedProgress = EASING_FN.easeInOutCubic(echoClampedProgress);
+          const echoPath = echoInterp(echoEasedProgress);
+          
           if (outlinePathRef.current) {
-            outlinePathRef.current.setAttribute('d', newPath);
+            outlinePathRef.current.setAttribute('d', echoPath);
           }
           
           // Update display word (less frequent, with threshold)
