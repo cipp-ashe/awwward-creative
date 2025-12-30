@@ -10,7 +10,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
-import { interpolateString } from "d3-interpolate";
+import { interpolate } from "flubber";
 import { motion } from "framer-motion";
 import ParticleTrail from "@/components/ParticleTrail";
 import { SectionContent, SectionLabel } from "@/components/layout/Section";
@@ -19,21 +19,13 @@ import { useSmoothValue } from "@/hooks/useSmoothValue";
 import { useMotionConfigSafe } from "@/contexts/MotionConfigContext";
 
 // Morphability-optimized SVG paths with IDENTICAL topology
-// Architecturally aligned: 12-point polygons, sharp angles, 90°/45° precision.
 const MORPH_PATHS = {
-  // A sleek, forward-swept chevron (>>) indicating velocity
-  motion: "M20,20 L80,20 L110,50 L80,80 L20,80 L50,50 L80,50 L110,80 L140,80 L170,50 L140,20 L20,20 Z",
-
-  // A vertical "film strip" or scroll track layout
+  // Fixed: A unified "fast forward" structure.
+  // No long return jump. The end point folds naturally into the start.
+  motion: "M20,20 L100,20 L120,40 L160,40 L180,60 L160,80 L120,80 L100,100 L20,100 L50,80 L50,40 L20,20 Z",
   scroll: "M60,20 L140,20 L140,40 L60,40 L60,50 L140,50 L140,70 L60,70 L60,80 L140,80 L140,100 L60,100 Z",
-
-  // A terminal cursor block and bracket (>_)
   type: "M40,20 L80,20 L80,40 L100,40 L100,20 L160,20 L160,100 L100,100 L100,80 L80,80 L80,100 L40,100 Z",
-
-  // An isometric stacked layer view
   depth: "M100,20 L160,40 L160,80 L100,100 L40,80 L40,40 L60,45 L100,35 L140,45 L140,75 L100,85 L60,75 Z",
-
-  // A precise geometric framing reticle
   craft: "M20,20 L60,20 L60,40 L140,40 L140,20 L180,20 L180,60 L160,60 L160,100 L40,100 L40,60 L20,60 Z",
 };
 
@@ -77,13 +69,12 @@ const MorphingTextSection = () => {
   });
 
   // Pre-compute interpolators for all word pairs
-  // Using d3-interpolate's interpolateString for performance (paths have matching topology)
   const getInterpolator = useCallback((fromWord: WordKey, toWord: WordKey) => {
     const key = `${fromWord}-${toWord}`;
     if (!interpolatorsRef.current.has(key)) {
       interpolatorsRef.current.set(
         key,
-        interpolateString(MORPH_PATHS[fromWord], MORPH_PATHS[toWord]),
+        interpolate(MORPH_PATHS[fromWord], MORPH_PATHS[toWord], { maxSegmentLength: 1 }),
       );
     }
     return interpolatorsRef.current.get(key)!;
