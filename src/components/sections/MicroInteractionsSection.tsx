@@ -8,6 +8,7 @@ import { useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { Section, SectionLabel } from '@/components/layout/Section';
 import ScrollReveal, { StaggerContainer, StaggerItem } from '@/components/ScrollReveal';
+import { DELAY, STAGGER } from '@/constants/animation';
 
 const MicroInteractionsSection = () => {
   return (
@@ -18,12 +19,12 @@ const MicroInteractionsSection = () => {
 
       <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">
         <div>
-          <ScrollReveal variant="slideUp" delay={0.1}>
+          <ScrollReveal variant="slideUp" delay={DELAY.micro}>
             <h2 className="text-display text-display-md mb-6">
               Details imply <span className="text-primary">depth</span>
             </h2>
           </ScrollReveal>
-          <ScrollReveal variant="fadeUp" delay={0.2}>
+          <ScrollReveal variant="fadeUp" delay={DELAY.xshort}>
             <p className="text-lg text-muted-foreground">
               Micro-interactions suggest a world beyond the screen. Hover states, 
               cursor trails, and subtle physics create the illusion of materiality.
@@ -31,7 +32,7 @@ const MicroInteractionsSection = () => {
           </ScrollReveal>
         </div>
 
-        <StaggerContainer staggerDelay={0.15} className="text-muted-foreground space-y-6">
+        <StaggerContainer staggerDelay={STAGGER.wide} className="text-muted-foreground space-y-6">
           <StaggerItem>
             <p>
               These small moments of feedback tell users the interface is alive 
@@ -48,7 +49,7 @@ const MicroInteractionsSection = () => {
       </div>
 
       {/* Interactive demo area */}
-      <StaggerContainer staggerDelay={0.1} className="grid md:grid-cols-3 gap-6 md:gap-8">
+      <StaggerContainer staggerDelay={STAGGER.normal} className="grid md:grid-cols-3 gap-6 md:gap-8">
         <StaggerItem variant="scale">
           <MagneticCard 
             title="Magnetic Pull" 

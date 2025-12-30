@@ -6,7 +6,7 @@
 
 import { motion } from 'framer-motion';
 import { Section, SectionContent } from '@/components/layout/Section';
-import { DURATION } from '@/constants/animation';
+import { DURATION, DELAY } from '@/constants/animation';
 
 const FooterSection = () => {
   return (
@@ -32,7 +32,7 @@ const FooterSection = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: DURATION.word, delay: 0.3 }}
+          transition={{ duration: DURATION.word, delay: DELAY.short }}
           className="border-t border-border/30 pt-12"
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">

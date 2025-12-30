@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { Section, SectionContent, SectionLabel } from '@/components/layout/Section';
 import EasingCurveIndicator from '@/components/EasingCurveIndicator';
-import { SMOOTHING } from '@/constants/animation';
+import { SMOOTHING, STAGGER } from '@/constants/animation';
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 
 const MotionSection = () => {
@@ -53,7 +53,7 @@ const MotionSection = () => {
           },
           opacity: 0,
           y: 60,
-          stagger: 0.1,
+          stagger: STAGGER.normal,
         });
       }
 
@@ -67,7 +67,7 @@ const MotionSection = () => {
         },
         x: (i) => (i % 2 === 0 ? 100 : -100),
         rotation: (i) => (i % 2 === 0 ? 15 : -15),
-        stagger: 0.1,
+        stagger: STAGGER.normal,
       });
 
       // Track scroll progress for easing indicator

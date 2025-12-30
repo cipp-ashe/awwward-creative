@@ -5,7 +5,7 @@ import { BlendFunction } from 'postprocessing';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
-import { SMOOTHING } from '@/constants/animation';
+import { SMOOTHING, DELAY } from '@/constants/animation';
 import { useSmoothValue, useSmoothVec2 } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
@@ -581,7 +581,7 @@ const WebGL3DSection = () => {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: DELAY.micro }}
             >
               Interactive <span className="text-primary">Depth</span>
             </motion.h2>
@@ -591,7 +591,7 @@ const WebGL3DSection = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: DELAY.xshort }}
             >
               Custom GLSL shaders displace geometry in real-time. 
               Scroll and mouse position modulate the noise field.
@@ -603,7 +603,7 @@ const WebGL3DSection = () => {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: DELAY.short }}
             >
               <div>
                 <span className="text-primary">{Math.round(scrollProgress * 100)}%</span>

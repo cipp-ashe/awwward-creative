@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { motion } from 'framer-motion';
 import { Section, SectionLabel } from '@/components/layout/Section';
-import { DURATION, EASING_ARRAY } from '@/constants/animation';
+import { DURATION, DELAY, EASING_ARRAY } from '@/constants/animation';
 
 const TypographySection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -101,7 +101,7 @@ const TypographySection = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: DURATION.reveal, delay: 0.1 }}
+          transition={{ duration: DURATION.reveal, delay: DELAY.micro }}
           className="space-y-4"
         >
           <h3 className="text-display text-xl">Kinetic Type</h3>
@@ -115,7 +115,7 @@ const TypographySection = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: DURATION.reveal, delay: 0.2 }}
+          transition={{ duration: DURATION.reveal, delay: DELAY.xshort }}
           className="space-y-4"
         >
           <h3 className="text-display text-xl">Split & Reveal</h3>

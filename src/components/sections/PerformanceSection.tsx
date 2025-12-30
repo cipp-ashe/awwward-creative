@@ -8,6 +8,7 @@ import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { Section, SectionLabel } from '@/components/layout/Section';
 import ScrollReveal, { StaggerContainer, StaggerItem } from '@/components/ScrollReveal';
+import { DELAY, STAGGER } from '@/constants/animation';
 
 const PerformanceSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -71,12 +72,12 @@ const PerformanceSection = () => {
 
       <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">
         <div>
-          <ScrollReveal variant="slideUp" delay={0.1}>
+          <ScrollReveal variant="slideUp" delay={DELAY.micro}>
             <h2 className="text-display text-display-md mb-6">
               Speed is a <span className="text-primary">feature</span>
             </h2>
           </ScrollReveal>
-          <ScrollReveal variant="fadeUp" delay={0.2}>
+          <ScrollReveal variant="fadeUp" delay={DELAY.xshort}>
             <p className="text-lg text-muted-foreground">
               Beautiful motion means nothing if it stutters. Performance isn't 
               a Lighthouse score — it's the feeling of control.
@@ -85,7 +86,7 @@ const PerformanceSection = () => {
         </div>
 
         <div ref={statsRef}>
-          <StaggerContainer staggerDelay={0.1} className="grid grid-cols-2 gap-8">
+          <StaggerContainer staggerDelay={STAGGER.normal} className="grid grid-cols-2 gap-8">
             <StaggerItem variant="scale">
               <div className="text-center p-6 border border-border/30 rounded-lg">
                 <div className="stat-value text-display text-display-sm text-primary" data-value="60">0</div>
@@ -115,7 +116,7 @@ const PerformanceSection = () => {
       </div>
 
       {/* Principles grid */}
-      <StaggerContainer staggerDelay={0.1} className="grid md:grid-cols-2 gap-6">
+      <StaggerContainer staggerDelay={STAGGER.normal} className="grid md:grid-cols-2 gap-6">
         {principles.map((principle, index) => (
           <StaggerItem key={index} variant="fadeUp">
             <div className="flex gap-4 p-6 bg-card/20 rounded-lg border border-border/30">
