@@ -2,19 +2,28 @@
  * MotionSection
  * 
  * Demonstrates scroll-driven animation with GSAP and easing curves.
+ * Uses damped scroll progress for smooth easing indicator updates.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { Section, SectionContent, SectionLabel } from '@/components/layout/Section';
 import EasingCurveIndicator from '@/components/EasingCurveIndicator';
+import { useSmoothValue } from '@/hooks/useSmoothValue';
 
 const MotionSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [rawScrollProgress, setRawScrollProgress] = useState(0);
+  
+  // Damping layer: smooth scroll progress for visual indicators
+  // Uses same 0.06 factor as WebGL3DSection for consistency
+  const scrollProgress = useSmoothValue(rawScrollProgress, {
+    smoothing: 0.06,
+    threshold: 0.0001
+  });
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -61,12 +70,13 @@ const MotionSection = () => {
       });
 
       // Track scroll progress for easing indicator
+      // Writes to raw value - damping layer handles smoothing
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: 'top bottom',
         end: 'bottom top',
         onUpdate: (self) => {
-          setScrollProgress(self.progress);
+          setRawScrollProgress(self.progress);
         },
       });
     }, sectionRef);
