@@ -15,7 +15,7 @@ import { interpolateString } from "d3-interpolate";
 import { motion, AnimatePresence } from "framer-motion";
 import ParticleTrail from "@/components/ParticleTrail";
 import { SectionContent, SectionLabel } from "@/components/layout/Section";
-import { TRANSITION, EASING_FN, DURATION } from "@/constants/animation";
+import { TRANSITION, EASING_FN, DURATION, SMOOTHING } from "@/constants/animation";
 import { useMotionConfigSafe } from "@/contexts/MotionConfigContext";
 
 // 12-point topology invariant paths for artifact-free interpolation
@@ -91,6 +91,7 @@ const MorphingTextSection = () => {
   const pathDataRef = useRef<string>(MORPH_PATHS.motion); // FIX: Ref-based path for ParticleTrail
   const smoothTiltRef = useRef(0); // FIX: Damped rotation to prevent jitter
   const rawProgressRef = useRef(0); // FIX: Ref-based progress for damping input
+  const smoothedProgressRef = useRef(0); // FIX: Temporal decoupling from scroll velocity
 
   // React state for SEMANTIC updates only (text content)
   const [currentWord, setCurrentWord] = useState<WordKey>("motion");
@@ -142,7 +143,12 @@ const MorphingTextSection = () => {
         end: "bottom bottom",
         scrub: 0.5,
         onUpdate: (self) => {
-          const progress = self.progress;
+          const targetProgress = self.progress;
+
+          // Temporal decoupling: morph approaches scroll at fixed rate
+          // Prevents fast scroll from skipping shapes (~200ms minimum visibility per shape)
+          smoothedProgressRef.current += (targetProgress - smoothedProgressRef.current) * SMOOTHING.morph;
+          const progress = smoothedProgressRef.current;
 
           // Update raw progress ref (no React re-render)
           rawProgressRef.current = progress;

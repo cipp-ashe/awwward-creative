@@ -422,6 +422,8 @@ export const SMOOTHING = {
   mouse: 0.08,
   /** UI elements: snappy feedback like progress bars (0.10) */
   ui: 0.10,
+  /** Morph section: temporal decoupling (~25 frames to reach target, ensures ~200ms minimum shape visibility) */
+  morph: 0.04,
 } as const;
 
 // ============================================================================
