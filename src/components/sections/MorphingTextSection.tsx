@@ -15,13 +15,14 @@ import { interpolateString } from "d3-interpolate";
 import { motion, AnimatePresence } from "framer-motion";
 import ParticleTrail from "@/components/ParticleTrail";
 import { SectionContent, SectionLabel } from "@/components/layout/Section";
-import { TRANSITION, EASING_FN, DURATION } from "@/constants/animation";
+import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from "@/constants/animation";
+import { useSmoothValue } from "@/hooks/useSmoothValue";
 import { useMotionConfigSafe } from "@/contexts/MotionConfigContext";
 
 // 12-point topology invariant paths for artifact-free interpolation
 const MORPH_PATHS = {
   motion: "M20,20 L100,20 L120,40 L160,40 L180,60 L160,80 L120,80 L100,100 L20,100 L50,80 L50,40 L20,20 Z",
-  scroll: "M60,20 L140,20 L140,40 L60,40 L60,50 L140,50 L140,70 L60,70 L60,80 L140,80 L140,100 L60,100 Z",
+  scroll: "M60,20 L140,20 L140,40 L140,50 L140,70 L140,80 L140,100 L60,100 L60,80 L60,70 L60,50 L60,40 Z",
   type: "M40,20 L80,20 L80,40 L100,40 L100,20 L160,20 L160,100 L100,100 L100,80 L80,80 L80,100 L40,100 Z",
   depth: "M100,20 L160,40 L160,80 L100,100 L40,80 L40,40 L60,45 L100,35 L140,45 L140,75 L100,85 L60,75 Z",
   craft: "M20,20 L60,20 L60,40 L140,40 L140,20 L180,20 L180,60 L160,60 L160,100 L40,100 L40,60 L20,60 Z",
@@ -85,27 +86,29 @@ const MorphingTextSection = () => {
   const gradientStop2Ref = useRef<SVGStopElement>(null);
   const svgContainerRef = useRef<HTMLDivElement>(null);
 
-  // Logic refs (bypass React render cycle for high-frequency updates)
+  // Logic refs
   const interpolatorsRef = useRef<Map<string, (t: number) => string>>(new Map());
   const echoProgressRef = useRef(0);
-  const pathDataRef = useRef<string>(MORPH_PATHS.motion); // FIX: Ref-based path for ParticleTrail
-  const smoothTiltRef = useRef(0); // FIX: Damped rotation to prevent jitter
-  const rawProgressRef = useRef(0); // FIX: Ref-based progress for damping input
 
   // React state for SEMANTIC updates only (text content)
   const [currentWord, setCurrentWord] = useState<WordKey>("motion");
+  const [currentPath, setCurrentPath] = useState(MORPH_PATHS.motion);
+  const [rawProgress, setRawProgress] = useState(0);
   const [containerSize, setContainerSize] = useState({ width: 512, height: 358 });
 
   const { isReducedMotion } = useMotionConfigSafe();
+
+  // Damped scroll progress for particles
+  const smoothProgress = useSmoothValue(rawProgress, {
+    smoothing: SMOOTHING.scroll,
+    threshold: 0.0001,
+  });
 
   // Memoized interpolator factory
   const getInterpolator = useCallback((fromWord: WordKey, toWord: WordKey) => {
     const key = `${fromWord}-${toWord}`;
     if (!interpolatorsRef.current.has(key)) {
-      interpolatorsRef.current.set(
-        key,
-        interpolateString(MORPH_PATHS[fromWord], MORPH_PATHS[toWord])
-      );
+      interpolatorsRef.current.set(key, interpolateString(MORPH_PATHS[fromWord], MORPH_PATHS[toWord]));
     }
     return interpolatorsRef.current.get(key)!;
   }, []);
@@ -144,8 +147,8 @@ const MorphingTextSection = () => {
         onUpdate: (self) => {
           const progress = self.progress;
 
-          // Update raw progress ref (no React re-render)
-          rawProgressRef.current = progress;
+          // Update raw progress for damping layer
+          setRawProgress(progress);
 
           // --- 1. MORPH LOGIC ---
           const totalTransitions = WORDS.length - 1;
@@ -164,9 +167,6 @@ const MorphingTextSection = () => {
           // Direct DOM update (fast - bypasses React)
           if (svgPathRef.current) svgPathRef.current.setAttribute("d", newPath);
           if (shadowPathRef.current) shadowPathRef.current.setAttribute("d", newPath);
-          
-          // Update path ref for ParticleTrail (no React re-render)
-          pathDataRef.current = newPath;
 
           // Echo effect: outline trails behind
           const echoSmoothing = 0.15;
@@ -183,22 +183,18 @@ const MorphingTextSection = () => {
 
           if (outlinePathRef.current) outlinePathRef.current.setAttribute("d", echoPath);
 
-          // --- 2. ROTATION LOGIC (Refined with damping) ---
+          // --- 2. ROTATION LOGIC (FIX A: Ghost Wiring) ---
+          // Velocity-based tilt for "momentum" feel
           const velocity = self.getVelocity();
-          const maxTilt = 12;
-          const rawTilt = Math.max(-maxTilt, Math.min(maxTilt, velocity / 100));
-
-          // Damping: 0.08 = responsive but smooth
-          const smoothingFactor = 0.08;
-          smoothTiltRef.current += (rawTilt - smoothTiltRef.current) * smoothingFactor;
+          const maxTilt = 8;
+          const tilt = Math.max(-maxTilt, Math.min(maxTilt, velocity / 150));
 
           if (containerRotateRef.current) {
-            // Low threshold to prevent sub-pixel rendering cost when effectively 0
-            const rotation = Math.abs(smoothTiltRef.current) < 0.01 ? 0 : smoothTiltRef.current;
-            gsap.set(containerRotateRef.current, { rotation });
+            gsap.set(containerRotateRef.current, { rotation: tilt });
           }
 
-          // --- 3. GRADIENT LOGIC (Direct DOM update) ---
+          // --- 3. GRADIENT LOGIC (FIX C: Main-Thread Choke) ---
+          // Direct attribute update, no React state
           const colorMain = getGradientColor(progress);
           const colorHighlight = getGradientColor(Math.min(1, progress + 0.15));
 
@@ -210,6 +206,8 @@ const MorphingTextSection = () => {
           if (displayWord !== currentWord) {
             setCurrentWord(displayWord);
           }
+          // Path state for ParticleTrail (needed for particle calculations)
+          setCurrentPath(newPath);
         },
       });
     }, section);
@@ -221,12 +219,7 @@ const MorphingTextSection = () => {
   }, [getInterpolator, isReducedMotion, currentWord]);
 
   return (
-    <section
-      ref={sectionRef}
-      id="morphing"
-      className="relative min-h-[300vh]"
-      aria-label="Morphing text demonstration"
-    >
+    <section ref={sectionRef} id="morphing" className="relative min-h-[300vh]" aria-label="Morphing text demonstration">
       {/* Sticky container */}
       <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden">
         <SectionContent className="text-center">
@@ -247,22 +240,18 @@ const MorphingTextSection = () => {
               }}
             />
 
-            {/* SVG Container with Particles - CENTERED TOGETHER */}
-            <div ref={svgContainerRef} className="relative w-full max-w-lg mx-auto">
+            {/* SVG Container with Particles */}
+            <div ref={svgContainerRef} className="relative">
               <ParticleTrail
-                pathDataRef={pathDataRef}
+                pathData={currentPath}
                 width={containerSize.width}
                 height={containerSize.height}
                 viewBox={{ width: 200, height: 140 }}
                 particleCount={60}
-                scrollProgressRef={rawProgressRef}
+                scrollProgress={smoothProgress}
               />
 
-              <svg
-                viewBox="0 0 200 140"
-                className="w-full h-auto relative z-10"
-                aria-hidden="true"
-              >
+              <svg viewBox="0 0 200 140" className="w-full max-w-lg mx-auto h-auto relative z-10" aria-hidden="true">
                 <defs>
                   <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
                     <feGaussianBlur stdDeviation="3" result="coloredBlur" />
@@ -294,14 +283,13 @@ const MorphingTextSection = () => {
                   className="transition-none"
                 />
 
-                {/* Echo outline - subtle trailing edge */}
+                {/* Echo outline */}
                 <path
                   ref={outlinePathRef}
                   d={MORPH_PATHS.motion}
                   fill="none"
-                  stroke="hsl(var(--primary) / 0.12)"
-                  strokeWidth="0.3"
-                  strokeDasharray="2 4"
+                  stroke="hsl(var(--primary) / 0.5)"
+                  strokeWidth="0.5"
                 />
               </svg>
             </div>
@@ -319,12 +307,8 @@ const MorphingTextSection = () => {
                 transition={TRANSITION.fast}
                 className="absolute inset-0 flex flex-col items-center justify-start"
               >
-                <h2 className="text-display text-display-lg mb-2">
-                  {PRINCIPLES[currentWord].label}
-                </h2>
-                <p className="text-muted-foreground max-w-md text-balance text-sm">
-                  {PRINCIPLES[currentWord].desc}
-                </p>
+                <h2 className="text-display text-display-lg mb-2">{PRINCIPLES[currentWord].label}</h2>
+                <p className="text-muted-foreground max-w-md text-balance text-sm">{PRINCIPLES[currentWord].desc}</p>
               </motion.div>
             </AnimatePresence>
           </div>
@@ -353,7 +337,7 @@ const MorphingTextSection = () => {
         {/* Background glow */}
         <div
           className="glow w-[500px] h-[500px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 animate-pulse-glow"
-          style={{ opacity: 0.2 }}
+          style={{ opacity: 0.15 + smoothProgress * 0.1 }}
         />
       </div>
     </section>
