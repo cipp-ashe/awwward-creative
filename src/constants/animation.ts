@@ -149,20 +149,226 @@ export const DELAY = {
 } as const;
 
 // ============================================================================
-// SCROLL TRIGGER DEFAULTS
+// GSAP SCROLL TRIGGER PRESETS
 // ============================================================================
 
 /**
- * Default ScrollTrigger configuration values.
+ * GSAP easing strings for ScrollTrigger animations.
+ * Use with gsap.to/from: `ease: GSAP_EASE.smooth`
+ */
+export const GSAP_EASE = {
+  /** Smooth deceleration - primary easing */
+  smooth: 'power2.out',
+  /** Standard ease-in-out */
+  inOut: 'power2.inOut',
+  /** Stronger deceleration */
+  out: 'power3.out',
+  /** Elastic overshoot */
+  elastic: 'elastic.out(1, 0.5)',
+  /** Back overshoot */
+  back: 'back.out(1.7)',
+  /** Linear for scrub animations */
+  none: 'none',
+} as const;
+
+/**
+ * Type for ScrollTrigger configuration.
+ * Partial config that can be spread and overridden.
+ */
+export type ScrollTriggerPreset = {
+  start: string;
+  end: string;
+  scrub?: boolean | number;
+  toggleActions?: string;
+  pin?: boolean;
+  anticipatePin?: number;
+  invalidateOnRefresh?: boolean;
+  markers?: boolean;
+};
+
+/**
+ * Type for complete GSAP animation preset with ScrollTrigger.
+ */
+export type GsapAnimationPreset = {
+  from: Record<string, number | string>;
+  to: Record<string, number | string>;
+  scrollTrigger: ScrollTriggerPreset;
+  duration?: number;
+  ease?: string;
+  stagger?: number;
+};
+
+/**
+ * ScrollTrigger configuration presets.
+ * Spread into scrollTrigger prop: `scrollTrigger: { trigger, ...SCROLL_TRIGGER.reveal }`
+ * 
+ * @example
+ * gsap.from(element, {
+ *   ...GSAP_ANIMATION.fadeUp.from,
+ *   scrollTrigger: {
+ *     trigger: sectionRef.current,
+ *     ...SCROLL_TRIGGER.reveal,
+ *   },
+ * });
  */
 export const SCROLL_TRIGGER = {
-  /** Default start position */
-  start: 'top 80%',
-  /** Default end position */
-  end: 'bottom 20%',
-  /** Toggle actions for reveal animations */
-  toggleActions: 'play none none reverse',
+  /** Standard reveal - triggers at 80% viewport, reverses on leave */
+  reveal: {
+    start: 'top 80%',
+    end: 'bottom 20%',
+    toggleActions: 'play none none reverse',
+  },
+  
+  /** Scrub reveal - smooth 1:1 scroll-to-animation mapping */
+  scrubReveal: {
+    start: 'top 80%',
+    end: 'top 30%',
+    scrub: 1,
+  },
+  
+  /** Slow scrub - more gradual scroll-linked animation */
+  scrubSlow: {
+    start: 'top 80%',
+    end: 'bottom 20%',
+    scrub: 2,
+  },
+  
+  /** Fast scrub - tighter scroll response */
+  scrubFast: {
+    start: 'top 70%',
+    end: 'top 40%',
+    scrub: 0.5,
+  },
+  
+  /** Parallax - full section traversal for parallax effects */
+  parallax: {
+    start: 'top bottom',
+    end: 'bottom top',
+    scrub: 1,
+  },
+  
+  /** Hero parallax - starts at top of viewport */
+  heroParallax: {
+    start: 'top top',
+    end: 'bottom top',
+    scrub: 1,
+  },
+  
+  /** Pinned section - pins element during scroll */
+  pinned: {
+    start: 'top top',
+    end: 'bottom bottom',
+    pin: true,
+    anticipatePin: 1,
+    invalidateOnRefresh: true,
+  },
+  
+  /** Horizontal scroll - for horizontal scroll sections */
+  horizontal: {
+    start: 'top top',
+    end: '+=100%',
+    scrub: 1,
+    pin: true,
+    anticipatePin: 1,
+    invalidateOnRefresh: true,
+  },
+  
+  /** Progress tracker - for scroll progress callbacks */
+  progress: {
+    start: 'top bottom',
+    end: 'bottom top',
+    scrub: true,
+  },
+  
+  /** Sticky content - for sticky/pinned reveals */
+  sticky: {
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 0.5,
+  },
 } as const;
+
+/**
+ * GSAP animation presets with from/to values.
+ * Use with gsap.from/to along with SCROLL_TRIGGER presets.
+ * 
+ * @example
+ * gsap.from(element, {
+ *   ...GSAP_ANIMATION.fadeUp,
+ *   scrollTrigger: { trigger, ...SCROLL_TRIGGER.scrubReveal },
+ * });
+ */
+export const GSAP_ANIMATION = {
+  /** Fade in from below */
+  fadeUp: {
+    opacity: 0,
+    y: 60,
+    ease: GSAP_EASE.smooth,
+  },
+  
+  /** Fade in from above */
+  fadeDown: {
+    opacity: 0,
+    y: -60,
+    ease: GSAP_EASE.smooth,
+  },
+  
+  /** Slide up with skew - dramatic entrance */
+  slideUp: {
+    opacity: 0,
+    y: 100,
+    skewY: 5,
+    ease: GSAP_EASE.smooth,
+  },
+  
+  /** Scale up reveal */
+  scaleUp: {
+    opacity: 0,
+    scale: 0.8,
+    ease: GSAP_EASE.smooth,
+  },
+  
+  /** Rotate in from tilted */
+  rotateIn: {
+    opacity: 0,
+    rotateX: -90,
+    y: 40,
+    transformOrigin: 'bottom center',
+    ease: GSAP_EASE.smooth,
+  },
+  
+  /** Simple fade */
+  fadeIn: {
+    opacity: 0,
+    ease: GSAP_EASE.smooth,
+  },
+  
+  /** Parallax offset - for parallax effects */
+  parallaxOffset: {
+    y: -100,
+    ease: GSAP_EASE.none,
+  },
+  
+  /** Hero fade out on scroll */
+  heroExit: {
+    opacity: 0.3,
+    y: -100,
+    scale: 0.9,
+    ease: GSAP_EASE.none,
+  },
+} as const;
+
+/**
+ * Helper to create GSAP animation with stagger.
+ * @example gsap.from(elements, withGsapStagger(GSAP_ANIMATION.fadeUp, STAGGER.normal))
+ */
+export const withGsapStagger = <T extends Record<string, unknown>>(
+  preset: T,
+  stagger: number = STAGGER.normal
+): T & { stagger: number } => ({
+  ...preset,
+  stagger,
+});
 
 // ============================================================================
 // PRELOADER
