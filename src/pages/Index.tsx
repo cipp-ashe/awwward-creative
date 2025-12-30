@@ -8,11 +8,12 @@ import MotionSection from '@/components/sections/MotionSection';
 import ScrollSection from '@/components/sections/ScrollSection';
 import TypographySection from '@/components/sections/TypographySection';
 import MorphingTextSection from '@/components/sections/MorphingTextSection';
+import WebGL3DSection from '@/components/sections/WebGL3DSection';
 import MicroInteractionsSection from '@/components/sections/MicroInteractionsSection';
 import PerformanceSection from '@/components/sections/PerformanceSection';
 import FooterSection from '@/components/sections/FooterSection';
 
-// Lazy load WebGL for performance
+// Lazy load WebGL background for performance
 const WebGLBackground = lazy(() => import('@/components/WebGLBackground'));
 
 const Index = () => {
@@ -56,6 +57,7 @@ const Index = () => {
       <ScrollSection />
       <TypographySection />
       <MorphingTextSection />
+      <WebGL3DSection />
       <MicroInteractionsSection />
       <PerformanceSection />
       <FooterSection />
