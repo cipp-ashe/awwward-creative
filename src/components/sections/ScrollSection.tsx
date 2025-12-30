@@ -1,5 +1,13 @@
+/**
+ * ScrollSection
+ * 
+ * Horizontal scroll demonstration using GSAP ScrollTrigger.
+ * Uses custom layout (pinned horizontal scroll) - not wrapped with Section component.
+ */
+
 import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
+import { SectionLabel } from '@/components/layout/Section';
 
 const ScrollSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -15,7 +23,7 @@ const ScrollSection = () => {
       // Set initial state for entrance animation
       gsap.set(section, { opacity: 0 });
 
-      // Entrance fade-in animation (GSAP-compatible, no Framer Motion conflict)
+      // Entrance fade-in animation
       gsap.to(section, {
         opacity: 1,
         duration: 0.8,
@@ -38,7 +46,7 @@ const ScrollSection = () => {
           scrub: 1,
           pin: true,
           anticipatePin: 1,
-          invalidateOnRefresh: true, // Recalculate on resize/refresh
+          invalidateOnRefresh: true,
         },
       });
 
@@ -83,7 +91,7 @@ const ScrollSection = () => {
   ];
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen overflow-hidden">
+    <section ref={sectionRef} id="scroll" className="relative min-h-screen overflow-hidden">
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 h-px bg-border z-50">
         <div
@@ -95,9 +103,7 @@ const ScrollSection = () => {
 
       {/* Section label */}
       <div className="absolute top-8 left-6 md:left-12 z-10">
-        <span className="text-mono text-xs text-primary tracking-widest uppercase">
-          02 — Scroll
-        </span>
+        <SectionLabel>02 — Scroll</SectionLabel>
       </div>
 
       {/* Horizontal scroll container */}

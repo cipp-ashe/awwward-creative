@@ -1,6 +1,15 @@
+/**
+ * HeroSection
+ * 
+ * Landing hero with animated title and scroll-driven parallax.
+ * Uses custom centered layout - not wrapped with Section component.
+ */
+
 import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { motion } from 'framer-motion';
+import { SectionContent } from '@/components/layout/Section';
+import { EASING_ARRAY } from '@/constants/animation';
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -56,9 +65,10 @@ const HeroSection = () => {
   return (
     <section
       ref={sectionRef}
-      className="section min-h-screen flex flex-col justify-center items-center relative overflow-hidden"
+      id="hero"
+      className="min-h-screen flex flex-col justify-center items-center relative overflow-hidden py-32"
     >
-      <div className="section-content text-center">
+      <SectionContent className="text-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -79,7 +89,7 @@ const HeroSection = () => {
               transition={{
                 duration: 1,
                 delay: 0.3 + index * 0.15,
-                ease: [0.16, 1, 0.3, 1],
+                ease: EASING_ARRAY.smooth,
               }}
               className={`inline-block mr-[0.25em] ${
                 word === 'misuse' ? 'text-primary italic' : ''
@@ -101,7 +111,7 @@ const HeroSection = () => {
           A synthesis of modern creative web patterns — motion, scroll, typography, 
           and performance working together to communicate taste, intent, and technical fluency.
         </motion.p>
-      </div>
+      </SectionContent>
 
       {/* Decorative elements */}
       <div className="glow w-[600px] h-[600px] -bottom-1/2 left-1/2 -translate-x-1/2 animate-pulse-glow" />

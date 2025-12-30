@@ -1,9 +1,16 @@
+/**
+ * FooterSection
+ * 
+ * Site footer with closing statement and marquee animation.
+ */
+
 import { motion } from 'framer-motion';
+import { Section, SectionContent } from '@/components/layout/Section';
 
 const FooterSection = () => {
   return (
     <footer className="py-32 md:py-48 relative overflow-hidden">
-      <div className="section-content">
+      <SectionContent>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -52,7 +59,7 @@ const FooterSection = () => {
             </span>
           </motion.div>
         </div>
-      </div>
+      </SectionContent>
 
       {/* Glow */}
       <div className="glow w-[800px] h-[800px] -bottom-1/2 left-1/2 -translate-x-1/2" />

@@ -1,68 +1,87 @@
+/**
+ * MicroInteractionsSection
+ * 
+ * Demonstrates hover effects, magnetic pulls, and spring physics.
+ */
+
 import { useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { Section, SectionLabel } from '@/components/layout/Section';
 import ScrollReveal, { StaggerContainer, StaggerItem } from '@/components/ScrollReveal';
 
 const MicroInteractionsSection = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   return (
-    <section className="section py-32 md:py-48">
-      <div className="section-content">
-        <ScrollReveal variant="fadeUp">
-          <span className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block">
-            04 — Micro-interactions
-          </span>
-        </ScrollReveal>
+    <Section id="micro">
+      <ScrollReveal variant="fadeUp">
+        <SectionLabel className="mb-8 block">04 — Micro-interactions</SectionLabel>
+      </ScrollReveal>
 
-        <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">
-          <div>
-            <ScrollReveal variant="slideUp" delay={0.1}>
-              <h2 className="text-display text-display-md mb-6">
-                Details imply <span className="text-primary">depth</span>
-              </h2>
-            </ScrollReveal>
-            <ScrollReveal variant="fadeUp" delay={0.2}>
-              <p className="text-lg text-muted-foreground">
-                Micro-interactions suggest a world beyond the screen. Hover states, 
-                cursor trails, and subtle physics create the illusion of materiality.
-              </p>
-            </ScrollReveal>
-          </div>
-
-          <StaggerContainer staggerDelay={0.15} className="text-muted-foreground space-y-6">
-            <StaggerItem>
-              <p>
-                These small moments of feedback tell users the interface is alive 
-                and listening. They transform clicking into touching, scrolling 
-                into gliding.
-              </p>
-            </StaggerItem>
-            <StaggerItem>
-              <p className="text-mono text-sm border-l-2 border-primary/30 pl-4 py-2">
-                "requestAnimationFrame loops for cursor-follow and inertia-based micro-interactions"
-              </p>
-            </StaggerItem>
-          </StaggerContainer>
+      <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">
+        <div>
+          <ScrollReveal variant="slideUp" delay={0.1}>
+            <h2 className="text-display text-display-md mb-6">
+              Details imply <span className="text-primary">depth</span>
+            </h2>
+          </ScrollReveal>
+          <ScrollReveal variant="fadeUp" delay={0.2}>
+            <p className="text-lg text-muted-foreground">
+              Micro-interactions suggest a world beyond the screen. Hover states, 
+              cursor trails, and subtle physics create the illusion of materiality.
+            </p>
+          </ScrollReveal>
         </div>
 
-        {/* Interactive demo area */}
-        <StaggerContainer staggerDelay={0.1} className="grid md:grid-cols-3 gap-6 md:gap-8">
-          <StaggerItem variant="scale">
-            <MagneticCard title="Magnetic Pull" description="Elements that follow the cursor create a sense of connection and agency." />
+        <StaggerContainer staggerDelay={0.15} className="text-muted-foreground space-y-6">
+          <StaggerItem>
+            <p>
+              These small moments of feedback tell users the interface is alive 
+              and listening. They transform clicking into touching, scrolling 
+              into gliding.
+            </p>
           </StaggerItem>
-          <StaggerItem variant="scale">
-            <TiltCard title="3D Tilt" description="Perspective transforms suggest depth and physicality in a flat medium." />
-          </StaggerItem>
-          <StaggerItem variant="scale">
-            <SpringCard title="Spring Physics" description="Natural motion curves make interactions feel organic and inevitable." />
+          <StaggerItem>
+            <p className="text-mono text-sm border-l-2 border-primary/30 pl-4 py-2">
+              "requestAnimationFrame loops for cursor-follow and inertia-based micro-interactions"
+            </p>
           </StaggerItem>
         </StaggerContainer>
       </div>
-    </section>
+
+      {/* Interactive demo area */}
+      <StaggerContainer staggerDelay={0.1} className="grid md:grid-cols-3 gap-6 md:gap-8">
+        <StaggerItem variant="scale">
+          <MagneticCard 
+            title="Magnetic Pull" 
+            description="Elements that follow the cursor create a sense of connection and agency." 
+          />
+        </StaggerItem>
+        <StaggerItem variant="scale">
+          <TiltCard 
+            title="3D Tilt" 
+            description="Perspective transforms suggest depth and physicality in a flat medium." 
+          />
+        </StaggerItem>
+        <StaggerItem variant="scale">
+          <SpringCard 
+            title="Spring Physics" 
+            description="Natural motion curves make interactions feel organic and inevitable." 
+          />
+        </StaggerItem>
+      </StaggerContainer>
+    </Section>
   );
 };
 
-const MagneticCard = ({ title, description }: { title: string; description: string }) => {
+// ============================================================================
+// INTERACTIVE CARD COMPONENTS
+// ============================================================================
+
+interface CardProps {
+  title: string;
+  description: string;
+}
+
+const MagneticCard = ({ title, description }: CardProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -102,7 +121,7 @@ const MagneticCard = ({ title, description }: { title: string; description: stri
   );
 };
 
-const TiltCard = ({ title, description }: { title: string; description: string }) => {
+const TiltCard = ({ title, description }: CardProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -144,7 +163,7 @@ const TiltCard = ({ title, description }: { title: string; description: string }
   );
 };
 
-const SpringCard = ({ title, description }: { title: string; description: string }) => {
+const SpringCard = ({ title, description }: CardProps) => {
   const scale = useMotionValue(1);
   const springScale = useSpring(scale, { stiffness: 400, damping: 17 });
 
