@@ -13,6 +13,7 @@ import {
   TRANSITION, 
   DURATION, 
   DELAY, 
+  EASING_ARRAY,
   withDelay, 
   withStagger 
 } from '@/constants/animation';
@@ -135,9 +136,20 @@ const TypographySection = () => {
       {/* Demo: Hover effect on large text */}
       <div className="mt-24 py-12 border-y border-border/30">
         <motion.p
-          className="text-display text-display-sm text-center text-muted-foreground/50 hover:text-foreground transition-colors duration-700"
-          whileHover={{ letterSpacing: '0.05em' }}
-          transition={TRANSITION.fast}
+          className="text-display text-display-sm text-center"
+          style={{ 
+            color: 'hsl(var(--muted-foreground) / 0.5)',
+            willChange: 'letter-spacing, color'
+          }}
+          initial={{ letterSpacing: '0em' }}
+          whileHover={{ 
+            letterSpacing: '0.05em',
+            color: 'hsl(var(--foreground))'
+          }}
+          transition={{
+            duration: DURATION.normal,
+            ease: EASING_ARRAY.smooth,
+          }}
         >
           Hover to feel typographic space expand
         </motion.p>
