@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import EasingCurveIndicator from '@/components/EasingCurveIndicator';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -9,6 +10,7 @@ const MotionSection = () => {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const demoRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -53,6 +55,16 @@ const MotionSection = () => {
         rotation: (i) => (i % 2 === 0 ? 15 : -15),
         stagger: 0.1,
       });
+
+      // Track scroll progress for easing indicator
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: 'top bottom',
+        end: 'bottom top',
+        onUpdate: (self) => {
+          setScrollProgress(self.progress);
+        },
+      });
     }, sectionRef);
 
     return () => ctx.revert();
@@ -89,8 +101,13 @@ const MotionSection = () => {
           </div>
         </div>
 
+        {/* Easing Curve Indicator */}
+        <div className="mt-16 max-w-sm mx-auto md:mx-0 md:ml-auto">
+          <EasingCurveIndicator scrollProgress={scrollProgress} />
+        </div>
+
         {/* Motion demo */}
-        <div ref={demoRef} className="mt-24 flex justify-center gap-6 overflow-hidden py-12">
+        <div ref={demoRef} className="mt-16 flex justify-center gap-6 overflow-hidden py-12">
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
