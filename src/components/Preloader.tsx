@@ -19,7 +19,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAssetLoader from '@/hooks/useAssetLoader';
-import { DURATION, DURATION_MS, DELAY, EASING_ARRAY } from '@/constants/animation';
+import { 
+  ANIMATION, 
+  TRANSITION, 
+  DURATION, 
+  DURATION_MS, 
+  DELAY, 
+  withDelay, 
+  withStagger 
+} from '@/constants/animation';
 
 export interface PreloaderProps {
   /** Callback fired when loading completes and exit animation finishes */
@@ -55,15 +63,13 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
           initial={{ opacity: 1 }}
           exit={{ 
             opacity: 0,
-            transition: { duration: DURATION.normal, ease: EASING_ARRAY.smooth }
+            transition: TRANSITION.fast
           }}
         >
           {/* Animated logo */}
           <motion.div
             className="relative mb-12"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: DURATION.normal, ease: EASING_ARRAY.smooth }}
+            {...ANIMATION.scaleUp}
           >
             <svg
               width="80"
@@ -106,8 +112,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 initial={{ pathLength: 0, rotate: -90 }}
                 animate={{ pathLength: 1, rotate: 270 }}
                 transition={{ 
-                  pathLength: { duration: DURATION.xslow, ease: EASING_ARRAY.smooth },
-                  rotate: { duration: DURATION.xslow, ease: EASING_ARRAY.smooth }
+                  pathLength: TRANSITION.dramatic,
+                  rotate: TRANSITION.dramatic
                 }}
                 style={{ transformOrigin: 'center' }}
               />
@@ -123,7 +129,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 strokeLinecap="round"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: progress / 100 }}
-                transition={{ duration: DURATION.fast, ease: 'easeOut' }}
+                transition={TRANSITION.fast}
                 style={{ 
                   transformOrigin: 'center',
                   rotate: '-90deg'
@@ -139,8 +145,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
                 transition={{ 
-                  pathLength: { duration: DURATION.slow, delay: DURATION.fast, ease: EASING_ARRAY.smooth },
-                  opacity: { duration: DURATION.fast, delay: DURATION.fast }
+                  pathLength: withDelay(TRANSITION.dramatic, DURATION.fast),
+                  opacity: withDelay(TRANSITION.fast, DURATION.fast)
                 }}
               />
               
@@ -155,7 +161,7 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                   scale: isComplete ? 1 : [0.8, 1.2, 0.8],
                 }}
                 transition={isComplete 
-                  ? { duration: DURATION.fast, ease: EASING_ARRAY.bounce }
+                  ? TRANSITION.bounce
                   : { duration: DURATION.word, repeat: Infinity, ease: 'easeInOut' }
                 }
               />
@@ -164,9 +170,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
             {/* Glow effect */}
             <motion.div
               className="absolute inset-0 -z-10 blur-2xl"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              transition={{ delay: DURATION.medium, duration: DURATION.reveal }}
+              {...ANIMATION.fadeIn}
+              transition={withDelay(TRANSITION.reveal, DURATION.medium)}
               style={{
                 background: 'radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%)',
                 transform: 'scale(2)'
@@ -181,15 +186,14 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
               className="absolute top-0 left-0 h-px bg-primary origin-left"
               initial={{ scaleX: 0 }}
               animate={{ scaleX: progress / 100 }}
-              transition={{ duration: DURATION.fast, ease: 'easeOut' }}
+              transition={TRANSITION.fast}
             />
             
             {/* Progress percentage */}
             <motion.div
               className="mt-4 text-mono text-xs text-muted-foreground text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: DURATION.fast }}
+              {...ANIMATION.fadeIn}
+              transition={withDelay(TRANSITION.fast, DURATION.fast)}
             >
               <span className="text-primary">{Math.round(progress)}</span>
               <span className="ml-1">%</span>
@@ -199,9 +203,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
           {/* Current asset being loaded */}
           <motion.p
             className="mt-6 text-mono text-[10px] text-muted-foreground/60 tracking-wide"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: DURATION.fast }}
+            {...ANIMATION.fadeIn}
+            transition={withDelay(TRANSITION.fast, DURATION.fast)}
           >
             {currentAsset}
           </motion.p>
@@ -210,9 +213,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
           {totalAssets > 0 && (
             <motion.p
               className="mt-2 text-mono text-[10px] text-muted-foreground/40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: DURATION.medium }}
+              {...ANIMATION.fadeIn}
+              transition={withDelay(TRANSITION.fast, DURATION.medium)}
             >
               {loadedAssets} / {totalAssets} assets
             </motion.p>
@@ -221,9 +223,8 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
           {/* Loading text */}
           <motion.p
             className="absolute bottom-12 text-mono text-xs text-muted-foreground tracking-widest uppercase"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: DURATION.medium, duration: DURATION.normal }}
+            {...ANIMATION.fadeUp}
+            transition={withDelay(TRANSITION.fast, DURATION.medium)}
           >
             {isComplete ? 'Ready' : 'Loading Experience'}
           </motion.p>
@@ -231,27 +232,23 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
           {/* Corner decorations */}
           <motion.div
             className="absolute top-8 left-8 w-8 h-8 border-l border-t border-border"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: DELAY.xshort, duration: DURATION.normal }}
+            {...ANIMATION.scaleUp}
+            transition={withStagger(TRANSITION.fast, 0, DELAY.micro, DELAY.xshort)}
           />
           <motion.div
             className="absolute top-8 right-8 w-8 h-8 border-r border-t border-border"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: DURATION.fast, duration: DURATION.normal }}
+            {...ANIMATION.scaleUp}
+            transition={withStagger(TRANSITION.fast, 1, DELAY.micro, DELAY.xshort)}
           />
           <motion.div
             className="absolute bottom-8 left-8 w-8 h-8 border-l border-b border-border"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: DURATION.fast, duration: DURATION.normal }}
+            {...ANIMATION.scaleUp}
+            transition={withStagger(TRANSITION.fast, 2, DELAY.micro, DELAY.xshort)}
           />
           <motion.div
             className="absolute bottom-8 right-8 w-8 h-8 border-r border-b border-border"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: DURATION.medium, duration: DURATION.normal }}
+            {...ANIMATION.scaleUp}
+            transition={withStagger(TRANSITION.fast, 3, DELAY.micro, DELAY.xshort)}
           />
         </motion.div>
       )}

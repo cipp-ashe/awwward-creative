@@ -9,7 +9,15 @@ import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { motion } from 'framer-motion';
 import { SectionContent } from '@/components/layout/Section';
-import { DURATION, DELAY, STAGGER, EASING_ARRAY } from '@/constants/animation';
+import { 
+  ANIMATION, 
+  TRANSITION, 
+  DURATION, 
+  DELAY, 
+  STAGGER, 
+  withDelay, 
+  withStagger 
+} from '@/constants/animation';
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -70,9 +78,8 @@ const HeroSection = () => {
     >
       <SectionContent className="text-center">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: DURATION.pulse, delay: DELAY.xshort }}
+          {...ANIMATION.fadeIn}
+          transition={withDelay(TRANSITION.dramatic, DELAY.xshort)}
           className="mb-8 md:mb-12"
         >
           <span className="text-mono text-xs md:text-sm text-muted-foreground tracking-widest uppercase">
@@ -86,11 +93,7 @@ const HeroSection = () => {
               key={index}
               initial={{ opacity: 0, y: 80, rotateX: -90 }}
               animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={{
-                duration: DURATION.word,
-                delay: DELAY.short + index * STAGGER.wide,
-                ease: EASING_ARRAY.smooth,
-              }}
+              transition={withStagger(TRANSITION.hero, index, STAGGER.wide, DELAY.short)}
               className={`inline-block mr-[0.25em] ${
                 word === 'misuse' ? 'text-primary italic' : ''
               }`}
@@ -103,9 +106,8 @@ const HeroSection = () => {
 
         <motion.p
           ref={subtitleRef}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: DURATION.word, delay: DELAY.xlong }}
+          {...ANIMATION.fadeUp}
+          transition={withDelay(TRANSITION.hero, DELAY.xlong)}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-balance"
         >
           A synthesis of modern creative web patterns — motion, scroll, typography, 
@@ -119,9 +121,8 @@ const HeroSection = () => {
       {/* Scroll indicator */}
       <motion.div
         ref={scrollIndicatorRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: DELAY.hero, duration: DURATION.word }}
+        {...ANIMATION.fadeIn}
+        transition={withDelay(TRANSITION.hero, DELAY.hero)}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
       >
         <span className="text-mono text-xs text-muted-foreground tracking-widest uppercase">
