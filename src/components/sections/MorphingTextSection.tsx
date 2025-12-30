@@ -151,7 +151,7 @@ const MorphingTextSection = () => {
               height={containerSize.height}
               viewBox={{ width: 200, height: 140 }}
               particleCount={60}
-              color="hsl(32, 45%, 65%)"
+              scrollProgress={morphState.progress}
             />
             
             <svg 
