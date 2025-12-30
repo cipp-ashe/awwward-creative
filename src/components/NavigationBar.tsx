@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useReveal } from '@/contexts/RevealContext';
 import { NAVIGATION_SECTIONS } from '@/constants/navigation';
 import { SMOOTHING, DELAY, TRANSITION } from '@/constants/animation';
@@ -85,8 +85,7 @@ const NavigationBar = () => {
   if (!isRevealed) return null;
 
   return (
-    <AnimatePresence>
-      <motion.nav
+    <motion.nav
         ref={navRef}
         initial={{ y: -100, opacity: 0 }}
         animate={{ 
@@ -213,8 +212,7 @@ const NavigationBar = () => {
             ))}
           </div>
         </div>
-      </motion.nav>
-    </AnimatePresence>
+    </motion.nav>
   );
 };
 
