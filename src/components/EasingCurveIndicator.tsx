@@ -230,38 +230,32 @@ const EasingCurveIndicator = ({ scrollProgress }: EasingCurveIndicatorProps) => 
 
       {/* Curve selector pills */}
       <div className="flex gap-1.5 mt-3 flex-wrap">
-        {easingCurves.map((curve, index) => (
-          <motion.div
-            key={curve.name}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-mono"
-            animate={{
-              backgroundColor: index === activeCurve 
-                ? `${curve.color}20`
-                : 'transparent',
-              borderColor: index === activeCurve
-                ? curve.color
-                : 'hsl(var(--border))',
-            }}
-            style={{
-              border: '1px solid',
-            }}
-          >
+        {easingCurves.map((curve, index) => {
+          const isActive = index === activeCurve;
+          return (
             <div
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: curve.color }}
-            />
-            <span
-              className="transition-colors"
+              key={curve.name}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-mono transition-all duration-300"
               style={{
-                color: index === activeCurve
-                  ? curve.color
-                  : 'hsl(var(--muted-foreground))',
+                backgroundColor: isActive ? `${curve.color}20` : 'transparent',
+                border: `1px solid ${isActive ? curve.color : 'hsl(var(--border))'}`,
               }}
             >
-              {curve.label}
-            </span>
-          </motion.div>
-        ))}
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: curve.color }}
+              />
+              <span
+                className="transition-colors duration-300"
+                style={{
+                  color: isActive ? curve.color : 'hsl(var(--muted-foreground))',
+                }}
+              >
+                {curve.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Phase description */}
