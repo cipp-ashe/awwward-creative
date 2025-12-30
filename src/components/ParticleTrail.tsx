@@ -7,8 +7,13 @@ interface Particle {
   targetY: number;
   opacity: number;
   size: number;
-  pathPosition: number; // 0-1 along the path
-  delay: number; // Trail delay factor
+  pathPosition: number;
+  delay: number;
+  isBurst?: boolean;
+  velocityX?: number;
+  velocityY?: number;
+  life?: number;
+  maxLife?: number;
 }
 
 interface ParticleTrailProps {
@@ -20,29 +25,26 @@ interface ParticleTrailProps {
   scrollProgress?: number;
 }
 
-// Color stops for gradient - shifts based on scroll
+// Color stops for gradient
 const colorStops = [
-  { h: 32, s: 45, l: 65 },   // Primary amber
-  { h: 45, s: 60, l: 55 },   // Golden
-  { h: 20, s: 70, l: 50 },   // Orange
-  { h: 350, s: 65, l: 55 },  // Rose
-  { h: 280, s: 50, l: 60 },  // Purple
+  { h: 32, s: 45, l: 65 },
+  { h: 45, s: 60, l: 55 },
+  { h: 20, s: 70, l: 50 },
+  { h: 350, s: 65, l: 55 },
+  { h: 280, s: 50, l: 60 },
 ];
 
-// Interpolate between two HSL colors
 const lerpColor = (
   c1: { h: number; s: number; l: number },
   c2: { h: number; s: number; l: number },
   t: number
 ): { h: number; s: number; l: number } => {
-  // Handle hue wrapping for shortest path
   let h1 = c1.h;
   let h2 = c2.h;
   if (Math.abs(h2 - h1) > 180) {
     if (h2 > h1) h1 += 360;
     else h2 += 360;
   }
-  
   return {
     h: (h1 + (h2 - h1) * t) % 360,
     s: c1.s + (c2.s - c1.s) * t,
@@ -50,24 +52,24 @@ const lerpColor = (
   };
 };
 
-// Get color at position along gradient, shifted by scroll
 const getGradientColor = (position: number, scrollProgress: number): string => {
-  // Scroll shifts the entire gradient palette
-  const scrollOffset = scrollProgress * 2; // Scroll through 2 color cycles
+  const scrollOffset = scrollProgress * 2;
   const shiftedPosition = (position + scrollOffset) % 1;
-  
-  // Map position to color stops
   const numStops = colorStops.length;
   const scaledPos = shiftedPosition * (numStops - 1);
   const stopIndex = Math.floor(scaledPos);
   const t = scaledPos - stopIndex;
-  
   const c1 = colorStops[stopIndex % numStops];
   const c2 = colorStops[(stopIndex + 1) % numStops];
-  
   const color = lerpColor(c1, c2, t);
   return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
 };
+
+// Constants for velocity-based emission
+const VELOCITY_THRESHOLD = 0.008;
+const MAX_BURST_PARTICLES = 40;
+const BURST_SPAWN_COUNT = 5;
+const BURST_LIFETIME = 60; // frames
 
 const ParticleTrail = ({
   pathData,
@@ -79,16 +81,21 @@ const ParticleTrail = ({
 }: ParticleTrailProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const burstParticlesRef = useRef<Particle[]>([]);
   const pathRef = useRef<SVGPathElement | null>(null);
   const rafRef = useRef<number>();
   const scrollProgressRef = useRef(scrollProgress);
+  const prevScrollRef = useRef(scrollProgress);
+  const velocityRef = useRef(0);
 
-  // Keep scroll progress in ref for animation loop
+  // Track scroll velocity
   useEffect(() => {
+    const delta = Math.abs(scrollProgress - prevScrollRef.current);
+    velocityRef.current = delta;
+    prevScrollRef.current = scrollProgress;
     scrollProgressRef.current = scrollProgress;
   }, [scrollProgress]);
 
-  // Initialize particles
   const initializeParticles = useCallback(() => {
     const particles: Particle[] = [];
     for (let i = 0; i < particleCount; i++) {
@@ -107,29 +114,59 @@ const ParticleTrail = ({
     particlesRef.current = particles;
   }, [particleCount]);
 
-  // Sample point from path at given position (0-1)
   const getPointAtPosition = useCallback((path: SVGPathElement, position: number): { x: number; y: number } => {
     const length = path.getTotalLength();
     const point = path.getPointAtLength(position * length);
     return { x: point.x, y: point.y };
   }, []);
 
-  // Convert SVG coordinates to canvas coordinates
   const svgToCanvas = useCallback((svgX: number, svgY: number): { x: number; y: number } => {
     const scaleX = width / viewBox.width;
     const scaleY = height / viewBox.height;
-    return {
-      x: svgX * scaleX,
-      y: svgY * scaleY,
-    };
+    return { x: svgX * scaleX, y: svgY * scaleY };
   }, [width, height, viewBox]);
 
-  // Update particle targets when path changes
+  // Spawn burst particles at high velocity points
+  const spawnBurstParticles = useCallback(() => {
+    if (!pathRef.current) return;
+    if (burstParticlesRef.current.length >= MAX_BURST_PARTICLES) return;
+
+    const path = pathRef.current;
+    const currentScroll = scrollProgressRef.current;
+
+    for (let i = 0; i < BURST_SPAWN_COUNT; i++) {
+      const pathPos = Math.random();
+      const svgPoint = getPointAtPosition(path, pathPos);
+      const canvasPoint = svgToCanvas(svgPoint.x, svgPoint.y);
+      
+      // Random velocity direction with magnitude based on scroll velocity
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 1 + velocityRef.current * 100;
+      
+      burstParticlesRef.current.push({
+        x: canvasPoint.x,
+        y: canvasPoint.y,
+        targetX: canvasPoint.x,
+        targetY: canvasPoint.y,
+        opacity: 0.8 + Math.random() * 0.2,
+        size: 2 + Math.random() * 3,
+        pathPosition: pathPos,
+        delay: 0,
+        isBurst: true,
+        velocityX: Math.cos(angle) * speed,
+        velocityY: Math.sin(angle) * speed,
+        life: BURST_LIFETIME,
+        maxLife: BURST_LIFETIME,
+      });
+    }
+  }, [getPointAtPosition, svgToCanvas]);
+
   const updateParticleTargets = useCallback(() => {
     if (!pathRef.current) return;
     
     const path = pathRef.current;
     const particles = particlesRef.current;
+    const velocity = velocityRef.current;
 
     particles.forEach((particle) => {
       const svgPoint = getPointAtPosition(path, particle.pathPosition);
@@ -137,68 +174,99 @@ const ParticleTrail = ({
       particle.targetX = canvasPoint.x;
       particle.targetY = canvasPoint.y;
     });
-  }, [getPointAtPosition, svgToCanvas]);
 
-  // Animation loop
+    // Spawn burst particles when velocity exceeds threshold
+    if (velocity > VELOCITY_THRESHOLD) {
+      spawnBurstParticles();
+    }
+  }, [getPointAtPosition, svgToCanvas, spawnBurstParticles]);
+
   const animate = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const particles = particlesRef.current;
+    const burstParticles = burstParticlesRef.current;
     const currentScroll = scrollProgressRef.current;
 
+    // Draw trail particles
     particles.forEach((particle) => {
-      // Lerp towards target with delay-based easing (trail effect)
       const lerpFactor = 1 - particle.delay;
       particle.x += (particle.targetX - particle.x) * lerpFactor;
       particle.y += (particle.targetY - particle.y) * lerpFactor;
 
-      // Get scroll-shifted gradient color based on particle's path position
       const particleColor = getGradientColor(particle.pathPosition, currentScroll);
 
-      // Draw particle core
       ctx.fillStyle = particleColor;
       ctx.globalAlpha = particle.opacity;
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw outer glow with same color
       ctx.globalAlpha = particle.opacity * 0.25;
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.size * 2.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw inner bright core
       ctx.globalAlpha = particle.opacity * 0.8;
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2);
       ctx.fill();
     });
 
+    // Update and draw burst particles
+    for (let i = burstParticles.length - 1; i >= 0; i--) {
+      const p = burstParticles[i];
+      
+      // Update position with velocity and friction
+      p.x += p.velocityX!;
+      p.y += p.velocityY!;
+      p.velocityX! *= 0.96;
+      p.velocityY! *= 0.96;
+      p.life!--;
+
+      // Calculate life ratio for fade out
+      const lifeRatio = p.life! / p.maxLife!;
+      const fadeOpacity = p.opacity * lifeRatio;
+      const fadeSize = p.size * (0.5 + lifeRatio * 0.5);
+
+      const particleColor = getGradientColor(p.pathPosition, currentScroll);
+
+      // Draw with fade
+      ctx.fillStyle = particleColor;
+      ctx.globalAlpha = fadeOpacity;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, fadeSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Glow
+      ctx.globalAlpha = fadeOpacity * 0.4;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, fadeSize * 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Remove dead particles
+      if (p.life! <= 0) {
+        burstParticles.splice(i, 1);
+      }
+    }
+
     ctx.globalAlpha = 1;
     rafRef.current = requestAnimationFrame(animate);
   }, []);
 
-  // Create offscreen SVG path element
   useEffect(() => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     svg.appendChild(path);
     pathRef.current = path;
-
     initializeParticles();
-
-    return () => {
-      pathRef.current = null;
-    };
+    return () => { pathRef.current = null; };
   }, [initializeParticles]);
 
-  // Update path data
   useEffect(() => {
     if (pathRef.current && pathData) {
       pathRef.current.setAttribute('d', pathData);
@@ -206,22 +274,12 @@ const ParticleTrail = ({
     }
   }, [pathData, updateParticleTargets]);
 
-  // Start animation loop
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
-
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     rafRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [animate]);
 
-  // Handle canvas resize
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
