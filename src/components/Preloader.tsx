@@ -109,9 +109,9 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 }}
               />
               
-              {/* Inner pentagon/house shape - flat top, pointed bottom */}
+              {/* Inner geometric shape */}
               <motion.path
-                d="M25 30 L55 30 L55 50 L40 68 L25 50 Z"
+                d="M40 20 L55 35 L55 55 L40 70 L25 55 L25 35 Z"
                 stroke="hsl(var(--primary))"
                 strokeWidth="1.5"
                 fill="none"
@@ -123,10 +123,10 @@ const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
                 }}
               />
               
-              {/* Center dot */}
+              {/* Center dot - pulses when loading */}
               <motion.circle
                 cx="40"
-                cy="42"
+                cy="40"
                 r="4"
                 fill="hsl(var(--primary))"
                 initial={{ scale: 0 }}
