@@ -1,9 +1,29 @@
+/**
+ * Preloader Component
+ * 
+ * Full-screen loading overlay shown during initial asset loading.
+ * Displays an animated logo, progress bar, and asset loading status.
+ * 
+ * The preloader:
+ * 1. Tracks font and critical asset loading via useAssetLoader
+ * 2. Shows progress with animated SVG and progress bar
+ * 3. Calls onComplete when ready, triggering section reveals
+ * 
+ * @example
+ * <Preloader 
+ *   onComplete={() => setIsLoading(false)} 
+ *   minDuration={2500} 
+ * />
+ */
+
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAssetLoader from '@/hooks/useAssetLoader';
 
-interface PreloaderProps {
+export interface PreloaderProps {
+  /** Callback fired when loading completes and exit animation finishes */
   onComplete: () => void;
+  /** Minimum time to show preloader in ms (default: 1500) */
   minDuration?: number;
 }
 
