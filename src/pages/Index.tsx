@@ -136,6 +136,9 @@ const IndexContent = () => {
         <GrainOverlay />
         <CustomCursor />
 
+        {/* Main content landmark for skip link */}
+        <div id="main-content" tabIndex={-1} className="outline-none" />
+
         {/* Render all sections from config */}
         {NAVIGATION_SECTIONS.map((section, index) => renderSection(section, index))}
         

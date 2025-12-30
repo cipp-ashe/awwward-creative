@@ -65,16 +65,27 @@ export const analyzeMotion = (files: FileContents): FrictionPoint[] => {
   });
   
   if (infiniteAnimationFiles.length > 0) {
-    // Check if these also have scroll-driven animations
+    // Check if infinite animations are on non-decorative elements with scroll triggers
+    // Decorative patterns: glow, pulse, bg-, overlay, decoration, gradient, shimmer
+    const decorativePattern = /(glow|pulse|bg-|overlay|decoration|gradient|shimmer|loading|spinner)/i;
+    
     const conflictFiles = infiniteAnimationFiles.filter(file => {
       const content = files[file] || '';
-      return SCROLL_TRIGGER.test(content) || /scrub:/i.test(content);
+      const hasScrollTrigger = SCROLL_TRIGGER.test(content) || /scrub:/i.test(content);
+      SCROLL_TRIGGER.lastIndex = 0;
+      
+      // If the infinite animation is on a decorative element, it's not a conflict
+      // Check if animate-* classes are near decorative classnames
+      const infiniteMatches = content.match(/animate-[a-z-]+/gi) || [];
+      const allDecorative = infiniteMatches.every(match => decorativePattern.test(match));
+      
+      return hasScrollTrigger && !allDecorative;
     });
     
     if (conflictFiles.length > 0) {
       issues.push({
         persona: 'motion',
-        issue: `Infinite loop animations conflict with scroll-driven effects in: ${conflictFiles.map(f => f.split('/').pop()).join(', ')}. User unsure if motion is physics-based or timed.`,
+        issue: `Non-decorative infinite animations conflict with scroll-driven effects in: ${conflictFiles.map(f => f.split('/').pop()).join(', ')}. User unsure if motion is physics-based or timed.`,
         severity: 'high',
       });
     }
