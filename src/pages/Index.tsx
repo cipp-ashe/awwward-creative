@@ -1,8 +1,9 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState, useCallback } from 'react';
 import { useLenis } from '@/hooks/useLenis';
 import { useGsapScrollTrigger } from '@/hooks/useGsapScrollTrigger';
 import CustomCursor from '@/components/CustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
+import Preloader from '@/components/Preloader';
 import HeroSection from '@/components/sections/HeroSection';
 import MotionSection from '@/components/sections/MotionSection';
 import ScrollSection from '@/components/sections/ScrollSection';
@@ -18,9 +19,14 @@ const WebGLBackground = lazy(() => import('@/components/WebGLBackground'));
 
 const Index = () => {
   const [showWebGL, setShowWebGL] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   useLenis();
   useGsapScrollTrigger();
+
+  const handlePreloaderComplete = useCallback(() => {
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     // Delay WebGL loading for better perceived performance
@@ -41,27 +47,34 @@ const Index = () => {
   }, []);
 
   return (
-    <main className="relative bg-background">
-      {/* Background layers */}
-      {showWebGL && (
-        <Suspense fallback={null}>
-          <WebGLBackground />
-        </Suspense>
+    <>
+      {/* Preloader */}
+      {isLoading && (
+        <Preloader onComplete={handlePreloaderComplete} minDuration={2500} />
       )}
-      <GrainOverlay />
-      <CustomCursor />
 
-      {/* Content sections */}
-      <HeroSection />
-      <MotionSection />
-      <ScrollSection />
-      <TypographySection />
-      <MorphingTextSection />
-      <WebGL3DSection />
-      <MicroInteractionsSection />
-      <PerformanceSection />
-      <FooterSection />
-    </main>
+      <main className="relative bg-background">
+        {/* Background layers */}
+        {showWebGL && (
+          <Suspense fallback={null}>
+            <WebGLBackground />
+          </Suspense>
+        )}
+        <GrainOverlay />
+        <CustomCursor />
+
+        {/* Content sections */}
+        <HeroSection />
+        <MotionSection />
+        <ScrollSection />
+        <TypographySection />
+        <MorphingTextSection />
+        <WebGL3DSection />
+        <MicroInteractionsSection />
+        <PerformanceSection />
+        <FooterSection />
+      </main>
+    </>
   );
 };
 
