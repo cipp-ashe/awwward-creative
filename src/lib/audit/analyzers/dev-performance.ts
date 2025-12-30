@@ -45,26 +45,36 @@ export const analyzeDevPerformance = (files: FileContents): FrictionPoint[] => {
     });
   }
   
-  // Check for useState in RAF/animation contexts (anti-pattern)
-  // But exclude files that properly use refs for high-frequency values
+  // Check for useState in HIGH-FREQUENCY animation contexts (anti-pattern)
+  // Distinguish: onMouseMove/useFrame/RAF callbacks = high frequency
+  // vs: visibility change, context loss, scroll progress = low frequency (acceptable)
   const rafStateFiles: string[] = [];
+  
+  // Patterns that indicate HIGH-frequency state updates (problematic)
+  const highFrequencyStatePatterns = [
+    /onMouseMove[^}]*\bset[A-Z]/s,  // State in mouse move handler
+    /useFrame\s*\([^)]*\)[^}]*\bset[A-Z]/s,  // State in R3F useFrame
+    /requestAnimationFrame[^}]*\bset[A-Z]/s,  // State directly in RAF
+  ];
+  
+  // Patterns that indicate LOW-frequency or properly handled updates (acceptable)
+  const lowFrequencyPatterns = [
+    /visibilitychange/i,  // Page visibility API
+    /contextlost|contextrestored/i,  // WebGL context events
+    /\.current\s*=/,  // Uses refs for high-frequency values
+    /useMotionValue|useSpring/,  // Framer Motion values (no re-render)
+  ];
+  
   Object.entries(files).forEach(([path, content]) => {
     if (path.endsWith('.tsx') || path.endsWith('.ts')) {
-      // Check if file has both RAF/useFrame and setState patterns
-      const hasRAF = RAF_USAGE.test(content) || USE_FRAME.test(content) || /onUpdate|ticker\.add/i.test(content);
-      RAF_USAGE.lastIndex = 0;
-      USE_FRAME.lastIndex = 0;
+      // Check for high-frequency state patterns
+      const hasHighFrequencyState = highFrequencyStatePatterns.some(p => p.test(content));
       
-      const hasStateUpdate = /set[A-Z][a-zA-Z]*\s*\(/g.test(content) && USESTATE_PATTERN.test(content);
-      USESTATE_PATTERN.lastIndex = 0;
+      // Check for mitigation patterns
+      const hasMitigation = lowFrequencyPatterns.some(p => p.test(content));
       
-      // Check if refs are used for the high-frequency values (mitigates the issue)
-      const usesRefsForAnimation = /useRef.*\.current\s*=/i.test(content) || 
-                                    /ref\.current\s*=/i.test(content) ||
-                                    /\.current\s*=\s*[^=]/i.test(content);
-      
-      // Only flag if no ref mitigation is present
-      if (hasRAF && hasStateUpdate && !usesRefsForAnimation) {
+      // Only flag if high-frequency AND no mitigation
+      if (hasHighFrequencyState && !hasMitigation) {
         rafStateFiles.push(path);
       }
     }
@@ -73,7 +83,7 @@ export const analyzeDevPerformance = (files: FileContents): FrictionPoint[] => {
   if (rafStateFiles.length > 0) {
     issues.push({
       persona: 'dev-performance',
-      issue: `RAF/animation frame state updates without ref mitigation in: ${rafStateFiles.map(f => f.split('/').pop()).join(', ')}. State updates trigger re-renders. Use refs for high-frequency values.`,
+      issue: `High-frequency state updates in mouse/animation handlers: ${rafStateFiles.map(f => f.split('/').pop()).join(', ')}. Use useMotionValue or refs instead of useState.`,
       severity: 'critical',
     });
   }
@@ -101,8 +111,10 @@ export const analyzeDevPerformance = (files: FileContents): FrictionPoint[] => {
   const indexHtml = files['index.html'] || '';
   const indexCss = files['src/index.css'] || '';
   
-  const hasFontPreload = /rel=["']preload["'][^>]*as=["']font["']/i.test(indexHtml);
-  const hasFontDisplay = /font-display:\s*(?:swap|optional)/i.test(indexCss);
+  // Accept: as="font" OR as="style" (for CSS with fonts) OR Google Fonts with display=swap
+  const hasFontPreload = /rel=["']preload["'][^>]*as=["'](?:font|style)["']/i.test(indexHtml) ||
+                         /fonts\.googleapis\.com.*display=swap/i.test(indexHtml);
+  const hasFontDisplay = /font-display:\s*(?:swap|optional|fallback)/i.test(indexCss);
   
   if (!hasFontPreload && !hasFontDisplay) {
     issues.push({

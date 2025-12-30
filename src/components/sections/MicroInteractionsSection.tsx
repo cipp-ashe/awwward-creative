@@ -4,8 +4,8 @@
  * Demonstrates hover effects, magnetic pulls, and spring physics.
  */
 
-import { useRef, useState } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Section, SectionLabel } from '@/components/layout/Section';
 import ScrollReveal, { StaggerContainer, StaggerItem } from '@/components/ScrollReveal';
 import { DELAY, STAGGER, TRANSITION, DURATION } from '@/constants/animation';
@@ -124,8 +124,12 @@ const MagneticCard = ({ title, description }: CardProps) => {
 
 const TiltCard = ({ title, description }: CardProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
+  
+  // Use motion values instead of useState to avoid re-renders on mouse move
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const springRotateX = useSpring(rotateX, { stiffness: 300, damping: 30 });
+  const springRotateY = useSpring(rotateY, { stiffness: 300, damping: 30 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!ref.current) return;
@@ -136,13 +140,13 @@ const TiltCard = ({ title, description }: CardProps) => {
     const centerY = rect.height / 2;
     const rotX = ((y - centerY) / centerY) * -10;
     const rotY = ((x - centerX) / centerX) * 10;
-    setRotateX(rotX);
-    setRotateY(rotY);
+    rotateX.set(rotX);
+    rotateY.set(rotY);
   };
 
   const handleMouseLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
+    rotateX.set(0);
+    rotateY.set(0);
   };
 
   return (
@@ -150,9 +154,12 @@ const TiltCard = ({ title, description }: CardProps) => {
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      animate={{ rotateX, rotateY }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      style={{ transformStyle: 'preserve-3d', perspective: 1000 }}
+      style={{ 
+        rotateX: springRotateX, 
+        rotateY: springRotateY,
+        transformStyle: 'preserve-3d', 
+        perspective: 1000 
+      }}
       className="group p-8 bg-card/30 border border-border/50 rounded-lg hover:border-primary/30 transition-colors duration-500 cursor-pointer"
     >
       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
