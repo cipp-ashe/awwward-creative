@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReveal } from '@/contexts/RevealContext';
 import { NAVIGATION_SECTIONS } from '@/constants/navigation';
-import { SMOOTHING, DELAY, STAGGER } from '@/constants/animation';
+import { SMOOTHING, DELAY, TRANSITION } from '@/constants/animation';
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -93,7 +93,7 @@ const NavigationBar = () => {
           y: isVisible ? 0 : -100, 
           opacity: isVisible ? 1 : 0 
         }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        transition={TRANSITION.fast}
         className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
       >
         {/* Background blur */}
@@ -103,7 +103,7 @@ const NavigationBar = () => {
         <motion.div
           className="absolute bottom-0 left-0 h-px bg-primary origin-left"
           style={{ scaleX: smoothProgress }}
-          transition={{ duration: 0.1 }}
+          transition={TRANSITION.instant}
         />
 
         {/* Nav content */}
