@@ -8,11 +8,25 @@ interface CursorPosition {
 export const useCursor = () => {
   const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const targetRef = useRef<CursorPosition>({ x: 0, y: 0 });
   const currentRef = useRef<CursorPosition>({ x: 0, y: 0 });
   const rafRef = useRef<number>();
 
+  // Check reduced motion preference
   useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => {
+    // Skip cursor animation for reduced motion users
+    if (prefersReducedMotion) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       targetRef.current = { x: e.clientX, y: e.clientY };
     };
@@ -51,7 +65,7 @@ export const useCursor = () => {
       document.removeEventListener('mouseout', handleMouseOut);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, []);
+  }, [prefersReducedMotion]);
 
-  return { position, isHovering };
+  return { position, isHovering, prefersReducedMotion };
 };

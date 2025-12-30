@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState, useCallback } from 'react';
 import { useLenis } from '@/hooks/useLenis';
 import { useGsapScrollTrigger } from '@/hooks/useGsapScrollTrigger';
 import { RevealProvider, useReveal } from '@/contexts/RevealContext';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import CustomCursor from '@/components/CustomCursor';
 import GrainOverlay from '@/components/GrainOverlay';
 import Preloader from '@/components/Preloader';
@@ -34,6 +35,13 @@ const IndexContent = () => {
       triggerReveal();
     }, 100);
   }, [triggerReveal]);
+
+  // Refresh ScrollTrigger after fonts are loaded to fix layout-dependent animations
+  useEffect(() => {
+    document.fonts.ready.then(() => {
+      ScrollTrigger.refresh();
+    });
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {

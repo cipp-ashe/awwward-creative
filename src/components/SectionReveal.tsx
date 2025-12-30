@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useReveal } from '@/contexts/RevealContext';
 
@@ -16,7 +16,22 @@ const SectionReveal = ({
   staggerDelay = 0.15 
 }: SectionRevealProps) => {
   const { isRevealed } = useReveal();
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
   
+  // Skip animation for reduced motion users
+  if (prefersReducedMotion) {
+    return <div>{children}</div>;
+  }
+
   // Calculate delay based on index - only first few sections get stagger
   // Beyond viewport, sections reveal via scroll (no artificial delay)
   const maxStaggeredSections = 2;
