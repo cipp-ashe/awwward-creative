@@ -317,6 +317,60 @@ const PostProcessing = ({ scrollProgress, mousePosition }: PostProcessingProps) 
   );
 };
 
+// Easing functions for camera path
+const easingFunctions = {
+  // Standard curves
+  linear: (t: number) => t,
+  easeInOut: (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
+  easeInOutCubic: (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  easeOutQuart: (t: number) => 1 - Math.pow(1 - t, 4),
+  
+  // Elastic - bouncy overshoot
+  elastic: (t: number) => {
+    const c4 = (2 * Math.PI) / 3;
+    return t === 0 ? 0 : t === 1 ? 1 :
+      Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+  },
+  
+  // Spring - settle with oscillation
+  spring: (t: number) => {
+    const c5 = (2 * Math.PI) / 4.5;
+    return t === 0 ? 0 : t === 1 ? 1 :
+      t < 0.5
+        ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
+        : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5)) / 2 + 1;
+  },
+  
+  // Smooth step - extra smooth
+  smoothStep: (t: number) => t * t * (3 - 2 * t),
+  
+  // Exponential
+  expoInOut: (t: number) => t === 0 ? 0 : t === 1 ? 1 :
+    t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2,
+};
+
+// Segment-based easing - different curves for different scroll phases
+const getSegmentedEasing = (progress: number): number => {
+  // Phase 1: 0-25% - Smooth start with easeInOut
+  if (progress < 0.25) {
+    const t = progress / 0.25;
+    return easingFunctions.easeInOutCubic(t) * 0.25;
+  }
+  // Phase 2: 25-50% - Elastic feel for dramatic reveal
+  if (progress < 0.5) {
+    const t = (progress - 0.25) / 0.25;
+    return 0.25 + easingFunctions.elastic(t) * 0.25;
+  }
+  // Phase 3: 50-75% - Spring for dynamic movement
+  if (progress < 0.75) {
+    const t = (progress - 0.5) / 0.25;
+    return 0.5 + easingFunctions.spring(t) * 0.25;
+  }
+  // Phase 4: 75-100% - Smooth settle
+  const t = (progress - 0.75) / 0.25;
+  return 0.75 + easingFunctions.smoothStep(t) * 0.25;
+};
+
 // Scroll-driven camera orbit controller
 interface CameraControllerProps {
   scrollProgress: number;
@@ -329,34 +383,34 @@ const CameraController = ({ scrollProgress, mousePosition }: CameraControllerPro
   const currentPosition = useRef(new THREE.Vector3(0, 0, 5));
   
   useFrame(() => {
-    // Orbital path parameters
+    // Apply segmented easing to scroll progress
+    const easedProgress = getSegmentedEasing(scrollProgress);
+    
+    // Orbital path parameters with eased progress
     const baseRadius = 5;
     const radiusVariation = 1.5;
-    const radius = baseRadius + Math.sin(scrollProgress * Math.PI) * radiusVariation;
+    const radius = baseRadius + Math.sin(easedProgress * Math.PI) * radiusVariation;
     
-    // Scroll drives the main orbital rotation (full 360° + extra)
-    const theta = scrollProgress * Math.PI * 1.5; // Horizontal orbit
-    const phi = Math.PI / 2 + Math.sin(scrollProgress * Math.PI * 2) * 0.4; // Vertical oscillation
+    // Eased orbit rotation
+    const theta = easedProgress * Math.PI * 1.5;
+    const phi = Math.PI / 2 + Math.sin(easedProgress * Math.PI * 2) * 0.4;
     
-    // Mouse adds subtle offset to the orbit
+    // Mouse adds subtle offset
     const mouseOffsetX = mousePosition.x * 0.3;
     const mouseOffsetY = mousePosition.y * 0.2;
     
-    // Calculate spherical coordinates to cartesian
+    // Spherical to cartesian
     const x = radius * Math.sin(phi) * Math.cos(theta + mouseOffsetX);
     const y = radius * Math.cos(phi) + mouseOffsetY;
     const z = radius * Math.sin(phi) * Math.sin(theta + mouseOffsetX);
     
-    // Set target position
     targetPosition.current.set(x, y, z);
     
-    // Smooth interpolation for fluid camera movement
-    currentPosition.current.lerp(targetPosition.current, 0.08);
+    // Adaptive lerp factor - faster during elastic/spring phases
+    const lerpSpeed = scrollProgress > 0.25 && scrollProgress < 0.75 ? 0.12 : 0.08;
+    currentPosition.current.lerp(targetPosition.current, lerpSpeed);
     
-    // Update camera position
     camera.position.copy(currentPosition.current);
-    
-    // Always look at center (the 3D object)
     camera.lookAt(0, 0, 0);
   });
 
