@@ -150,6 +150,47 @@ const MorphingTextSection = () => {
           rawProgressRef.current = progress;
           echoProgressRef.current = progress;
         },
+        onLeaveBack: () => {
+          // Snap to initial state when scrolling above section
+          smoothedProgressRef.current = 0;
+          rawProgressRef.current = 0;
+          echoProgressRef.current = 0;
+          
+          const initialPath = MORPH_PATHS.motion;
+          pathDataRef.current = initialPath;
+          
+          if (svgPathRef.current) svgPathRef.current.setAttribute("d", initialPath);
+          if (shadowPathRef.current) shadowPathRef.current.setAttribute("d", initialPath);
+          if (outlinePathRef.current) outlinePathRef.current.setAttribute("d", initialPath);
+          
+          if (gradientStop1Ref.current) gradientStop1Ref.current.setAttribute("stop-color", "hsl(40, 50%, 75%)");
+          if (gradientStop2Ref.current) gradientStop2Ref.current.setAttribute("stop-color", "hsl(35, 60%, 65%)");
+          
+          if (containerRotateRef.current) gsap.set(containerRotateRef.current, { scale: 1 });
+          
+          setCurrentWord("motion");
+        },
+        onLeave: () => {
+          // Snap to final state when scrolling past section
+          smoothedProgressRef.current = 1;
+          rawProgressRef.current = 1;
+          echoProgressRef.current = 1;
+          
+          const finalPath = MORPH_PATHS.craft;
+          pathDataRef.current = finalPath;
+          
+          if (svgPathRef.current) svgPathRef.current.setAttribute("d", finalPath);
+          if (shadowPathRef.current) shadowPathRef.current.setAttribute("d", finalPath);
+          if (outlinePathRef.current) outlinePathRef.current.setAttribute("d", finalPath);
+          
+          const finalColor = getGradientColor(1);
+          if (gradientStop1Ref.current) gradientStop1Ref.current.setAttribute("stop-color", finalColor);
+          if (gradientStop2Ref.current) gradientStop2Ref.current.setAttribute("stop-color", finalColor);
+          
+          if (containerRotateRef.current) gsap.set(containerRotateRef.current, { scale: 1 });
+          
+          setCurrentWord("craft");
+        },
         onUpdate: (self) => {
           const targetProgress = self.progress;
 
