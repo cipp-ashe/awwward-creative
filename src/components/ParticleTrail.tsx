@@ -1,4 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { useTicker } from '@/hooks/useTicker';
+import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
 interface Particle {
   x: number;
@@ -101,12 +103,13 @@ const ParticleTrail = ({
   const burstParticlesRef = useRef<Particle[]>([]);
   const mouseBurstRef = useRef<MouseBurstParticle[]>([]);
   const pathRef = useRef<SVGPathElement | null>(null);
-  const rafRef = useRef<number>();
   const scrollProgressRef = useRef(scrollProgress);
   const prevScrollRef = useRef(scrollProgress);
   const velocityRef = useRef(0);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const isHoveringRef = useRef(false);
+  
+  const { shouldAnimate } = useMotionConfigSafe();
 
   // Track scroll velocity
   useEffect(() => {
@@ -376,7 +379,6 @@ const ParticleTrail = ({
     }
 
     ctx.globalAlpha = 1;
-    rafRef.current = requestAnimationFrame(animate);
   }, []);
 
   useEffect(() => {
@@ -395,11 +397,8 @@ const ParticleTrail = ({
     }
   }, [pathData, updateParticleTargets]);
 
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    rafRef.current = requestAnimationFrame(animate);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [animate]);
+  // Use central ticker instead of standalone RAF
+  useTicker(animate, shouldAnimate);
 
   useEffect(() => {
     const canvas = canvasRef.current;

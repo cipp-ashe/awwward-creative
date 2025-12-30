@@ -2,6 +2,7 @@
  * useLenis Hook
  * 
  * Initializes Lenis smooth scrolling with optimized settings.
+ * Uses central ticker for RAF coordination.
  * Respects reduced-motion preferences by disabling smooth scrolling.
  * 
  * @returns React ref containing the Lenis instance (null if reduced motion)
@@ -20,14 +21,14 @@ import { useEffect, useRef } from 'react';
 import Lenis from '@studio-freight/lenis';
 import { EASING_FN } from '@/constants/animation';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
+import { useTicker } from './useTicker';
 
 export const useLenis = () => {
   const lenisRef = useRef<Lenis | null>(null);
   const { isReducedMotion } = useMotionConfigSafe();
 
+  // Initialize Lenis instance
   useEffect(() => {
-    // Skip smooth scrolling if reduced motion preferred
-    // This eliminates the RAF loop entirely for a11y
     if (isReducedMotion) {
       lenisRef.current = null;
       return;
@@ -45,18 +46,16 @@ export const useLenis = () => {
 
     lenisRef.current = lenis;
 
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
     return () => {
       lenis.destroy();
       lenisRef.current = null;
     };
   }, [isReducedMotion]);
+
+  // Use central ticker instead of standalone RAF
+  useTicker(() => {
+    lenisRef.current?.raf(performance.now());
+  }, !isReducedMotion && lenisRef.current !== null);
 
   return lenisRef;
 };
