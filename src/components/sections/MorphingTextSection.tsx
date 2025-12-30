@@ -183,7 +183,20 @@ const MorphingTextSection = () => {
 
           if (outlinePathRef.current) outlinePathRef.current.setAttribute("d", echoPath);
 
-          // Rotation tilt removed - was causing rock-back during morph transitions
+          // --- 2. PLATEAU PULSE (subtle breathing when shape is at rest) ---
+          // Plateau = when easedProgress is near 0 or 1 (shape fully formed)
+          const distanceFromPure = Math.min(easedProgress, 1 - easedProgress);
+          const plateauThreshold = 0.12; // ~24% of segment is "at rest"
+          const inPlateau = distanceFromPure < plateauThreshold;
+          
+          // Scroll-driven oscillation (micro-scroll creates breathing)
+          const breathPhase = Math.sin(progress * 60); // High freq for subtle movement
+          const plateauDepth = inPlateau ? 1 - (distanceFromPure / plateauThreshold) : 0;
+          const pulseScale = 1 + 0.02 * plateauDepth * (0.5 + 0.5 * breathPhase);
+          
+          if (containerRotateRef.current && !isReducedMotion) {
+            gsap.set(containerRotateRef.current, { scale: pulseScale });
+          }
 
           // --- 3. GRADIENT LOGIC (Direct DOM update) ---
           const colorMain = getGradientColor(progress);
