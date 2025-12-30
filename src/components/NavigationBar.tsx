@@ -142,9 +142,9 @@ const NavigationBar = () => {
                 className="opacity-30 group-hover:opacity-50 transition-opacity"
               />
               
-              {/* Inner hexagonal shape */}
+              {/* Inner pentagon/house shape - flat top, pointed bottom */}
               <path
-                d="M40 20 L55 35 L55 55 L40 70 L25 55 L25 35 Z"
+                d="M25 30 L55 30 L55 50 L40 68 L25 50 Z"
                 stroke="currentColor"
                 strokeWidth="1.5"
                 fill="none"
@@ -154,7 +154,7 @@ const NavigationBar = () => {
               {/* Center dot */}
               <circle
                 cx="40"
-                cy="40"
+                cy="42"
                 r="4"
                 fill="currentColor"
                 className="group-hover:fill-primary transition-colors"
