@@ -18,19 +18,19 @@ import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from '@/constan
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
-// Truly organic amoeba blobs - asymmetric, irregular, liquid-like
-// Each has unique character with unexpected bulges and indentations
+// Semantic shapes - each embodies its word meaning
+// All share identical 6-segment bezier structure: M C C C C C C Z
 const MORPH_PATHS = {
-  // Dynamic, fluid motion - reaching tendrils
-  motion: "M85,18 C110,8 145,22 162,38 C178,54 188,78 175,98 C162,118 138,132 108,128 C78,124 55,138 38,118 C21,98 18,72 28,48 C38,24 60,28 85,18 Z",
-  // Vertical drip with bulge
-  scroll: "M95,8 C118,5 138,18 152,42 C166,66 175,92 162,115 C149,138 118,145 88,138 C58,131 38,118 28,92 C18,66 22,38 42,22 C62,6 72,11 95,8 Z",
-  // Organic T-form with asymmetric lobes  
-  type: "M78,12 C108,6 148,18 172,42 C196,66 182,98 158,115 C134,132 98,142 65,132 C32,122 12,95 18,62 C24,29 48,18 78,12 Z",
-  // Dimensional depth - elongated with pinch
-  depth: "M92,10 C128,5 168,28 185,58 C202,88 188,122 152,135 C116,148 72,145 42,122 C12,99 8,62 28,35 C48,8 56,15 92,10 Z",
-  // Refined craft - balanced but organic
-  craft: "M88,15 C122,8 158,25 178,55 C198,85 185,118 148,132 C111,146 68,142 38,115 C8,88 15,52 42,28 C69,4 54,22 88,15 Z",
+  // Arrow/chevron pointing right - kinetic, directional
+  motion: "M60,70 C40,50 50,30 80,25 C120,20 160,45 170,70 C160,95 120,120 80,115 C50,110 40,90 60,70 Z",
+  // Vertical capsule - tall, flowing
+  scroll: "M100,15 C120,15 130,30 130,50 C130,80 130,100 130,120 C130,135 120,145 100,145 C80,145 70,135 70,120 C70,100 70,80 70,50 C70,30 80,15 100,15 Z",
+  // Rounded rectangle - horizontal text block
+  type: "M35,55 C35,40 50,35 80,35 C110,35 140,35 165,35 C180,35 185,50 185,70 C185,90 180,105 165,105 C140,105 110,105 80,105 C50,105 35,90 35,70 C35,55 35,55 35,55 Z",
+  // Offset oval suggesting layers
+  depth: "M90,25 C130,20 165,40 175,70 C185,100 165,130 125,135 C85,140 50,120 40,85 C30,50 50,30 90,25 Z",
+  // Near-perfect circle - refined, complete
+  craft: "M100,20 C140,20 175,45 180,75 C185,105 165,135 130,140 C95,145 55,125 45,90 C35,55 60,25 100,20 Z",
 };
 
 const WORDS = ['motion', 'scroll', 'type', 'depth', 'craft'] as const;
