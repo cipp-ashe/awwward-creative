@@ -4,7 +4,6 @@ import { useGsapScrollTrigger } from '@/hooks/useGsapScrollTrigger';
 import { usePreloaderState } from '@/hooks/usePreloaderState';
 import { useWebGLVisibility } from '@/hooks/useWebGLVisibility';
 import { useScrollTriggerRefresh } from '@/hooks/useScrollTriggerRefresh';
-import { useCursorVisibility } from '@/hooks/useCursorVisibility';
 import { RevealProvider } from '@/contexts/RevealContext';
 import { NAVIGATION_SECTIONS, SectionConfig } from '@/constants/navigation';
 import {
@@ -109,9 +108,6 @@ const IndexContent = () => {
   useLenis();
   useGsapScrollTrigger();
   useScrollTriggerRefresh();
-  
-  // Centralized cursor visibility (app shell level)
-  useCursorVisibility();
   
   // Loading and reveal state
   const { isLoading, handlePreloaderComplete } = usePreloaderState();

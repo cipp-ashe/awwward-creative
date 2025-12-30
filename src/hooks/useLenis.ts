@@ -28,8 +28,11 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { EASING_FN } from '@/constants/animation';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
-// GSAP default lagSmoothing values for restoration
-const GSAP_DEFAULT_LAG_SMOOTHING = { threshold: 500, adjustedLag: 33 };
+// NOTE: GSAP doesn't expose a getter for current lagSmoothing values.
+// We restore to GSAP's documented defaults (500, 33) which is correct
+// for a fresh GSAP instance. If another system modifies lagSmoothing
+// before Lenis initializes, that state will be lost on cleanup.
+const GSAP_DEFAULT_LAG_SMOOTHING = { threshold: 500, adjustedLag: 33 } as const;
 
 export const useLenis = () => {
   const lenisRef = useRef<Lenis | null>(null);
@@ -89,8 +92,26 @@ export const useLenis = () => {
     return () => {
       gsap.ticker.remove(tickerCallback);
       
-      // CRITICAL: Restore GSAP default lagSmoothing to prevent state leaks
-      // Without this, other routes/pages would inherit disabled lag smoothing
+      // CRITICAL: Reset scrollerProxy to native scroll behavior
+      // Without this, stale proxy persists after route change causing pin drift
+      ScrollTrigger.scrollerProxy(document.documentElement, {
+        scrollTop(value) {
+          if (arguments.length && value !== undefined) {
+            window.scrollTo(0, value);
+          }
+          return window.scrollY;
+        },
+        getBoundingClientRect() {
+          return {
+            top: 0,
+            left: 0,
+            width: window.innerWidth,
+            height: window.innerHeight
+          };
+        },
+      });
+      
+      // Restore GSAP default lagSmoothing to prevent state leaks
       gsap.ticker.lagSmoothing(
         GSAP_DEFAULT_LAG_SMOOTHING.threshold,
         GSAP_DEFAULT_LAG_SMOOTHING.adjustedLag
