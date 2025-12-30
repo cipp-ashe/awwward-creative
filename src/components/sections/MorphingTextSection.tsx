@@ -2,21 +2,20 @@
  * MorphingTextSection
  *
  * SVG path morphing with three critical architectural fixes:
- * 1. Ghost Wiring Fix: Parent container rotates BOTH SVG and ParticleTrail
+ * 1. Ghost Wiring Fix: Parent container rotates BOTH SVG and Canvas particles
  * 2. Layout Thrashing Fix: Fixed-height text container prevents CLS
  * 3. Main-Thread Choke Fix: Direct DOM manipulation bypasses React render cycle
  *
  * Uses d3-interpolate for matched-topology path interpolation.
+ * Canvas-based particles for zero React state overhead.
  */
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, RefObject } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { interpolateString } from "d3-interpolate";
 import { motion, AnimatePresence } from "framer-motion";
-import ParticleTrail from "@/components/ParticleTrail";
 import { SectionContent, SectionLabel } from "@/components/layout/Section";
-import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from "@/constants/animation";
-import { useSmoothValue } from "@/hooks/useSmoothValue";
+import { TRANSITION, EASING_FN, DURATION } from "@/constants/animation";
 import { useMotionConfigSafe } from "@/contexts/MotionConfigContext";
 
 // 12-point topology invariant paths for artifact-free interpolation
@@ -55,23 +54,128 @@ const PRINCIPLES = {
 const WORDS = ["motion", "scroll", "type", "depth", "craft"] as const;
 type WordKey = (typeof WORDS)[number];
 
-// Color interpolation: Champagne -> Rose -> Amber (outside component to avoid reallocation)
-const getGradientColor = (progress: number): string => {
-  if (progress < 0.5) {
-    const t = progress * 2;
-    // Champagne: hsl(40, 50%, 75%) -> Rose: hsl(350, 60%, 70%)
-    const h = 40 + (-10 - 40) * t; // 350 as -10 for smooth wrap
+// Color interpolation: Champagne -> Rose -> Amber
+const getGradientColor = (progress: number, offset = 0): string => {
+  const p = Math.max(0, Math.min(1, progress + offset));
+  if (p < 0.5) {
+    const t = p * 2;
+    const h = 40 + (-10 - 40) * t;
     const s = 50 + (60 - 50) * t;
     const l = 75 + (70 - 75) * t;
     return `hsl(${h < 0 ? 360 + h : h}, ${s}%, ${l}%)`;
   } else {
-    const t = (progress - 0.5) * 2;
-    // Rose: hsl(350, 60%, 70%) -> Amber: hsl(35, 80%, 60%)
+    const t = (p - 0.5) * 2;
     const h = -10 + (35 - -10) * t;
     const s = 60 + (80 - 60) * t;
     const l = 70 + (60 - 70) * t;
     return `hsl(${h < 0 ? 360 + h : h}, ${s}%, ${l}%)`;
   }
+};
+
+// Canvas-based particle system - zero React state overhead
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  hue: number;
+}
+
+const useEdgeParticles = (
+  canvasRef: RefObject<HTMLCanvasElement>,
+  pathRef: RefObject<SVGPathElement>
+) => {
+  const particlesRef = useRef<Particle[]>([]);
+  const rafRef = useRef<number>(0);
+  const emitRef = useRef<(velocity: number, progress: number) => void>(() => {});
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Resize canvas to match display size
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    // Emit particles along path edges
+    emitRef.current = (velocity: number, progress: number) => {
+      const path = pathRef.current;
+      if (!path || Math.abs(velocity) < 50) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const pathLength = path.getTotalLength();
+      const emitCount = Math.min(3, Math.floor(Math.abs(velocity) / 200));
+
+      for (let i = 0; i < emitCount; i++) {
+        const point = path.getPointAtLength(Math.random() * pathLength);
+        // Convert SVG coords (0-200) to canvas coords
+        const scaleX = rect.width / 200;
+        const scaleY = rect.height / 140;
+
+        particlesRef.current.push({
+          x: point.x * scaleX,
+          y: point.y * scaleY,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2 + velocity * 0.001,
+          life: 1,
+          maxLife: 1,
+          size: 1 + Math.random() * 2,
+          hue: 35 + progress * 15, // Shift hue with progress
+        });
+      }
+
+      // Cap particles
+      if (particlesRef.current.length > 100) {
+        particlesRef.current = particlesRef.current.slice(-100);
+      }
+    };
+
+    // Animation loop
+    const animate = () => {
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      particlesRef.current = particlesRef.current.filter((p) => {
+        p.life -= 0.02;
+        if (p.life <= 0) return false;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.02; // Gravity
+
+        const alpha = p.life * 0.6;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${alpha})`;
+        ctx.fill();
+
+        return true;
+      });
+
+      rafRef.current = requestAnimationFrame(animate);
+    };
+
+    rafRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", resizeCanvas);
+    };
+  }, [canvasRef, pathRef]);
+
+  return emitRef;
 };
 
 const MorphingTextSection = () => {
@@ -80,29 +184,27 @@ const MorphingTextSection = () => {
   // Refs for Direct DOM Manipulation (bypasses React render cycle)
   const svgPathRef = useRef<SVGPathElement>(null);
   const shadowPathRef = useRef<SVGPathElement>(null);
-  const outlinePathRef = useRef<SVGPathElement>(null);
-  const containerRotateRef = useRef<HTMLDivElement>(null); // FIX A: Rotates BOTH particles and SVG
-  const gradientStop1Ref = useRef<SVGStopElement>(null); // FIX C: Direct gradient update
+  const containerRotateRef = useRef<HTMLDivElement>(null);
+  const gradientStop1Ref = useRef<SVGStopElement>(null);
   const gradientStop2Ref = useRef<SVGStopElement>(null);
-  const svgContainerRef = useRef<HTMLDivElement>(null);
+
+  // Echo refs for trailing ghost shapes
+  const echo1Ref = useRef<SVGPathElement>(null);
+  const echo2Ref = useRef<SVGPathElement>(null);
+  const echo3Ref = useRef<SVGPathElement>(null);
+  const laggedProgressRef = useRef({ p1: 0, p2: 0, p3: 0 });
+
+  // Canvas particle refs
+  const edgeCanvasRef = useRef<HTMLCanvasElement>(null);
+  const emitParticles = useEdgeParticles(edgeCanvasRef, svgPathRef);
 
   // Logic refs
   const interpolatorsRef = useRef<Map<string, (t: number) => string>>(new Map());
-  const echoProgressRef = useRef(0);
 
-  // React state for SEMANTIC updates only (text content)
+  // React state for SEMANTIC updates only (text content) - updates ~5 times total
   const [currentWord, setCurrentWord] = useState<WordKey>("motion");
-  const [currentPath, setCurrentPath] = useState(MORPH_PATHS.motion);
-  const [rawProgress, setRawProgress] = useState(0);
-  const [containerSize, setContainerSize] = useState({ width: 512, height: 358 });
 
   const { isReducedMotion } = useMotionConfigSafe();
-
-  // Damped scroll progress for particles
-  const smoothProgress = useSmoothValue(rawProgress, {
-    smoothing: SMOOTHING.scroll,
-    threshold: 0.0001,
-  });
 
   // Memoized interpolator factory
   const getInterpolator = useCallback((fromWord: WordKey, toWord: WordKey) => {
@@ -116,23 +218,19 @@ const MorphingTextSection = () => {
     return interpolatorsRef.current.get(key)!;
   }, []);
 
-  // Track container size for particle canvas
-  useEffect(() => {
-    const container = svgContainerRef.current;
-    if (!container) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        if (width > 0 && height > 0) {
-          setContainerSize({ width, height });
-        }
-      }
-    });
-
-    resizeObserver.observe(container);
-    return () => resizeObserver.disconnect();
-  }, []);
+  // Get path for a given progress (for echoes)
+  const getPathForProgress = useCallback(
+    (progress: number) => {
+      const totalTransitions = WORDS.length - 1;
+      const segmentProgress = Math.max(0, Math.min(totalTransitions, progress * totalTransitions));
+      const currentIndex = Math.min(Math.floor(segmentProgress), totalTransitions - 1);
+      const nextIndex = Math.min(currentIndex + 1, WORDS.length - 1);
+      const localProgress = segmentProgress - currentIndex;
+      const easedLocal = EASING_FN.easeInOutCubic(Math.max(0, Math.min(1, localProgress)));
+      return getInterpolator(WORDS[currentIndex], WORDS[nextIndex])(easedLocal);
+    },
+    [getInterpolator]
+  );
 
   // Main scroll-driven animation
   useEffect(() => {
@@ -149,9 +247,7 @@ const MorphingTextSection = () => {
         scrub: 0.5,
         onUpdate: (self) => {
           const progress = self.progress;
-
-          // Update raw progress for damping layer
-          setRawProgress(progress);
+          const velocity = self.getVelocity();
 
           // --- 1. MORPH LOGIC ---
           const totalTransitions = WORDS.length - 1;
@@ -171,46 +267,36 @@ const MorphingTextSection = () => {
           if (svgPathRef.current) svgPathRef.current.setAttribute("d", newPath);
           if (shadowPathRef.current) shadowPathRef.current.setAttribute("d", newPath);
 
-          // Echo effect: outline trails behind
-          const echoSmoothing = 0.15;
-          echoProgressRef.current += (progress - echoProgressRef.current) * echoSmoothing;
+          // --- 2. ECHOES (lagged ghost shapes) ---
+          const lagFactor = 0.08;
+          laggedProgressRef.current.p1 += (progress - laggedProgressRef.current.p1) * lagFactor * 3;
+          laggedProgressRef.current.p2 += (progress - laggedProgressRef.current.p2) * lagFactor * 2;
+          laggedProgressRef.current.p3 += (progress - laggedProgressRef.current.p3) * lagFactor * 1;
 
-          const echoSegmentProgress = echoProgressRef.current * totalTransitions;
-          const echoCurrentIndex = Math.min(Math.floor(echoSegmentProgress), totalTransitions - 1);
-          const echoNextIndex = Math.min(echoCurrentIndex + 1, WORDS.length - 1);
-          const echoLocalProgress = echoSegmentProgress - echoCurrentIndex;
+          if (echo1Ref.current) echo1Ref.current.setAttribute("d", getPathForProgress(laggedProgressRef.current.p1));
+          if (echo2Ref.current) echo2Ref.current.setAttribute("d", getPathForProgress(laggedProgressRef.current.p2));
+          if (echo3Ref.current) echo3Ref.current.setAttribute("d", getPathForProgress(laggedProgressRef.current.p3));
 
-          const echoInterp = getInterpolator(WORDS[echoCurrentIndex], WORDS[echoNextIndex]);
-          const echoEasedProgress = EASING_FN.easeInOutCubic(Math.max(0, Math.min(1, echoLocalProgress)));
-          const echoPath = echoInterp(echoEasedProgress);
+          // --- 3. PARTICLES (Canvas-based, no React state) ---
+          if (emitParticles.current) emitParticles.current(velocity, progress);
 
-          if (outlinePathRef.current) outlinePathRef.current.setAttribute("d", echoPath);
-
-          // --- 2. ROTATION LOGIC (FIX A: Ghost Wiring) ---
-          // Velocity-based tilt for "momentum" feel
-          const velocity = self.getVelocity();
-          const maxTilt = 8;
-          const tilt = Math.max(-maxTilt, Math.min(maxTilt, velocity / 150));
-
+          // --- 4. ROTATION LOGIC (velocity-based tilt) ---
+          const maxTilt = 12;
+          const tilt = Math.max(-maxTilt, Math.min(maxTilt, velocity / 80));
           if (containerRotateRef.current) {
-            gsap.set(containerRotateRef.current, { rotation: tilt });
+            gsap.set(containerRotateRef.current, { rotation: tilt, transformOrigin: "center center" });
           }
 
-          // --- 3. GRADIENT LOGIC (FIX C: Main-Thread Choke) ---
-          // Direct attribute update, no React state
-          const colorMain = getGradientColor(progress);
-          const colorHighlight = getGradientColor(Math.min(1, progress + 0.15));
+          // --- 5. GRADIENT LOGIC (direct attribute update) ---
+          if (gradientStop1Ref.current) gradientStop1Ref.current.setAttribute("stop-color", getGradientColor(progress));
+          if (gradientStop2Ref.current) gradientStop2Ref.current.setAttribute("stop-color", getGradientColor(progress, 0.2));
 
-          if (gradientStop1Ref.current) gradientStop1Ref.current.setAttribute("stop-color", colorMain);
-          if (gradientStop2Ref.current) gradientStop2Ref.current.setAttribute("stop-color", colorHighlight);
-
-          // --- React state for text (throttled by conditional) ---
+          // --- React state for text (ONLY when word changes) ---
           const displayWord = localProgress > 0.5 ? toWord : fromWord;
           if (displayWord !== currentWord) {
             setCurrentWord(displayWord);
           }
-          // Path state for ParticleTrail (needed for particle calculations)
-          setCurrentPath(newPath);
+          // ❌ REMOVED: setCurrentPath(newPath) - this was the "earthquake" generator
         },
       });
     }, section);
@@ -219,7 +305,7 @@ const MorphingTextSection = () => {
       ctx.revert();
       interpolatorsRef.current.clear();
     };
-  }, [getInterpolator, isReducedMotion, currentWord]);
+  }, [getInterpolator, getPathForProgress, isReducedMotion, currentWord, emitParticles]);
 
   return (
     <section
@@ -233,8 +319,7 @@ const MorphingTextSection = () => {
         <SectionContent className="text-center">
           <SectionLabel className="mb-8 block">06 — Principles</SectionLabel>
 
-          {/* ROTATION CONTAINER (FIX A: Ghost Wiring)
-              Rotates BOTH the SVG and ParticleTrail together to prevent desync */}
+          {/* ROTATION CONTAINER - Rotates BOTH SVG and Canvas particles together */}
           <div
             ref={containerRotateRef}
             className="relative mb-8 will-change-transform"
@@ -248,15 +333,12 @@ const MorphingTextSection = () => {
               }}
             />
 
-            {/* SVG Container with Particles */}
-            <div ref={svgContainerRef} className="relative">
-              <ParticleTrail
-                pathData={currentPath}
-                width={containerSize.width}
-                height={containerSize.height}
-                viewBox={{ width: 200, height: 140 }}
-                particleCount={60}
-                scrollProgress={smoothProgress}
+            {/* SVG Container with Canvas Particles */}
+            <div className="relative">
+              {/* Canvas for particles - positioned over SVG */}
+              <canvas
+                ref={edgeCanvasRef}
+                className="absolute inset-0 w-full h-full pointer-events-none z-20"
               />
 
               <svg
@@ -278,6 +360,29 @@ const MorphingTextSection = () => {
                   </linearGradient>
                 </defs>
 
+                {/* Echo trails (lagged ghost shapes) */}
+                <path
+                  ref={echo3Ref}
+                  d={MORPH_PATHS.motion}
+                  fill="none"
+                  stroke="hsl(var(--primary) / 0.1)"
+                  strokeWidth="0.3"
+                />
+                <path
+                  ref={echo2Ref}
+                  d={MORPH_PATHS.motion}
+                  fill="none"
+                  stroke="hsl(var(--primary) / 0.2)"
+                  strokeWidth="0.4"
+                />
+                <path
+                  ref={echo1Ref}
+                  d={MORPH_PATHS.motion}
+                  fill="none"
+                  stroke="hsl(var(--primary) / 0.35)"
+                  strokeWidth="0.5"
+                />
+
                 {/* Shadow */}
                 <path
                   ref={shadowPathRef}
@@ -294,21 +399,11 @@ const MorphingTextSection = () => {
                   filter="url(#glow)"
                   className="transition-none"
                 />
-
-                {/* Echo outline */}
-                <path
-                  ref={outlinePathRef}
-                  d={MORPH_PATHS.motion}
-                  fill="none"
-                  stroke="hsl(var(--primary) / 0.5)"
-                  strokeWidth="0.5"
-                />
               </svg>
             </div>
           </div>
 
-          {/* TEXT CONTAINER (FIX B: Layout Thrashing)
-              Fixed height prevents CLS during text changes */}
+          {/* TEXT CONTAINER - Fixed height prevents CLS during text changes */}
           <div className="relative h-32 mb-6">
             <AnimatePresence mode="wait">
               <motion.div
@@ -351,10 +446,7 @@ const MorphingTextSection = () => {
         </SectionContent>
 
         {/* Background glow */}
-        <div
-          className="glow w-[500px] h-[500px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 animate-pulse-glow"
-          style={{ opacity: 0.15 + smoothProgress * 0.1 }}
-        />
+        <div className="glow w-[500px] h-[500px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 opacity-15 animate-pulse-glow" />
       </div>
     </section>
   );
