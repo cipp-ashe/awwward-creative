@@ -137,7 +137,7 @@ const MorphingTextSection = () => {
     if (!section) return;
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.create({
+      const trigger = ScrollTrigger.create({
         trigger: section,
         start: "top top",
         end: "bottom bottom",
@@ -218,6 +218,18 @@ const MorphingTextSection = () => {
           }
         },
       });
+
+      // SYNC-ON-MOUNT: Initialize refs to current scroll position
+      // Prevents "replay" effect when component remounts mid-scroll
+      const initialProgress = trigger.progress;
+      if (initialProgress > 0) {
+        smoothedProgressRef.current = initialProgress;
+        rawProgressRef.current = initialProgress;
+        echoProgressRef.current = initialProgress;
+        
+        // Force immediate visual sync (bypass smooth transition on mount)
+        trigger.update(); // Triggers onUpdate with correct progress
+      }
     }, section);
 
     return () => {
