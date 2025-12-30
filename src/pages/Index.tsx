@@ -7,6 +7,7 @@ import HeroSection from '@/components/sections/HeroSection';
 import MotionSection from '@/components/sections/MotionSection';
 import ScrollSection from '@/components/sections/ScrollSection';
 import TypographySection from '@/components/sections/TypographySection';
+import MorphingTextSection from '@/components/sections/MorphingTextSection';
 import MicroInteractionsSection from '@/components/sections/MicroInteractionsSection';
 import PerformanceSection from '@/components/sections/PerformanceSection';
 import FooterSection from '@/components/sections/FooterSection';
@@ -54,6 +55,7 @@ const Index = () => {
       <MotionSection />
       <ScrollSection />
       <TypographySection />
+      <MorphingTextSection />
       <MicroInteractionsSection />
       <PerformanceSection />
       <FooterSection />
