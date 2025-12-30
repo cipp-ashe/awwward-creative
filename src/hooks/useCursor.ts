@@ -1,24 +1,20 @@
 /**
  * useCursor Hook
  * 
- * Provides smooth cursor tracking with lerp interpolation.
- * Uses central ticker for RAF coordination.
- * Detects hover states on interactive elements.
- * Respects reduced-motion by using direct position (no lerp).
+ * Provides cursor position tracking with hover state detection.
+ * Position is passed directly to consumers; Framer Motion springs
+ * handle all smoothing (single authority, no lerp).
  * 
  * @returns Object containing cursor position and hover state
  * 
  * @example
  * const { position, isHovering } = useCursor();
- * // position.x, position.y are lerp-interpolated screen coordinates
- * // isHovering is true when over links/buttons
+ * // position.x, position.y are raw screen coordinates
+ * // Apply Framer Motion springs in your component for smoothing
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { lerp } from '@/lib/math';
-import { CURSOR } from '@/constants/animation';
+import { useEffect, useState } from 'react';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
-import { useTicker } from './useTicker';
 
 interface CursorPosition {
   x: number;
@@ -28,21 +24,13 @@ interface CursorPosition {
 export const useCursor = () => {
   const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
-  const targetRef = useRef<CursorPosition>({ x: 0, y: 0 });
-  const currentRef = useRef<CursorPosition>({ x: 0, y: 0 });
   
   const { isReducedMotion } = useMotionConfigSafe();
 
-  // Event listeners for mouse tracking
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      targetRef.current = { x: e.clientX, y: e.clientY };
-      
-      // If reduced motion, update position directly (no lerp animation)
-      if (isReducedMotion) {
-        currentRef.current = { ...targetRef.current };
-        setPosition({ ...targetRef.current });
-      }
+      // Direct position update - springs handle smoothing
+      setPosition({ x: e.clientX, y: e.clientY });
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -65,14 +53,7 @@ export const useCursor = () => {
       document.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseout', handleMouseOut);
     };
-  }, [isReducedMotion]);
+  }, []);
 
-  // Use central ticker for smooth lerp animation
-  useTicker(() => {
-    currentRef.current.x = lerp(currentRef.current.x, targetRef.current.x, CURSOR.lerpFactor);
-    currentRef.current.y = lerp(currentRef.current.y, targetRef.current.y, CURSOR.lerpFactor);
-    setPosition({ ...currentRef.current });
-  }, !isReducedMotion);
-
-  return { position, isHovering };
+  return { position, isHovering, isReducedMotion };
 };
