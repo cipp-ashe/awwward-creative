@@ -4,6 +4,16 @@
  * Tracks loading progress of fonts, images, and document resources.
  * Provides smooth animated progress for preloader displays.
  * 
+ * ## RAF Exception Notice
+ * This hook uses a **standalone requestAnimationFrame loop** instead of the
+ * central `useTicker` system. This is an intentional, documented exception:
+ * 
+ * 1. **Lifecycle**: Preloader runs BEFORE the main app fully mounts, meaning
+ *    the central ticker may not be available or stable during initial load.
+ * 2. **Short-lived**: The animation runs for max ~2-3 seconds, then self-terminates.
+ * 3. **Isolation**: Progress animation is decoupled from the rest of the app
+ *    to avoid initialization race conditions.
+ * 
  * @param options.minDuration - Minimum display time in ms (default: 1000)
  * @param options.maxTimeout - Maximum wait time before forcing complete (default: 8000)
  * @returns Loading state with progress, completion status, and error tracking

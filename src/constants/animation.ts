@@ -76,10 +76,18 @@ export const DURATION = {
   instant: 0.15,
   /** Fast transitions - 300ms */
   fast: 0.3,
+  /** Medium transitions (stagger items) - 500ms */
+  medium: 0.5,
   /** Standard transitions - 600ms */
   normal: 0.6,
+  /** Section reveal animations - 800ms */
+  reveal: 0.8,
+  /** Word reveal / hero title - 1000ms */
+  word: 1.0,
   /** Slow, dramatic reveals - 1200ms */
   slow: 1.2,
+  /** Breathing/pulsing animations - 1500ms */
+  pulse: 1.5,
   /** Extra slow for hero animations - 1800ms */
   xslow: 1.8,
 } as const;
@@ -172,4 +180,22 @@ export const CURSOR = {
   lerpFactor: 0.15,
   /** Scale when hovering interactive elements */
   hoverScale: 1.5,
+} as const;
+
+// ============================================================================
+// SMOOTHING FACTORS
+// ============================================================================
+
+/**
+ * Smoothing factors for useSmoothValue/useSmoothVec2 hooks.
+ * Lower values = smoother but laggier, higher = more responsive.
+ * All values are frame-rate independent via delta-time normalization.
+ */
+export const SMOOTHING = {
+  /** Scroll-driven animations: slow, cinematic (0.06) */
+  scroll: 0.06,
+  /** Mouse tracking: balanced responsiveness (0.08) */
+  mouse: 0.08,
+  /** UI elements: snappy feedback like progress bars (0.10) */
+  ui: 0.10,
 } as const;

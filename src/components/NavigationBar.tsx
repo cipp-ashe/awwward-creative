@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReveal } from '@/contexts/RevealContext';
 import { NAVIGATION_SECTIONS } from '@/constants/navigation';
+import { SMOOTHING } from '@/constants/animation';
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -15,9 +16,9 @@ const NavigationBar = () => {
   const navRef = useRef<HTMLElement>(null);
   
   // Damping layer: smooth progress for visual bar animation
-  // Uses 0.1 for slightly more responsive feel in nav (less lag than 0.06)
+  // SMOOTHING.ui for snappy UI feedback
   const smoothProgress = useSmoothValue(rawScrollProgress, {
-    smoothing: 0.1,
+    smoothing: SMOOTHING.ui,
     threshold: 0.001
   });
 
