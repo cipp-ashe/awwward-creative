@@ -55,11 +55,16 @@ const main = () => {
   console.log(colors.reset);
   console.log();
 
-  console.log(`${colors.cyan}Running audit...${colors.reset}`);
+console.log(`${colors.cyan}Scanning codebase...${colors.reset}`);
   console.log();
 
   // Run audit
   const result = runAwwwardsAudit();
+  
+  console.log(`${colors.green}✓ Analyzed ${result.filesAnalyzed} files${colors.reset}`);
+  console.log(`${colors.cyan}Generated at: ${result.timestamp}${colors.reset}`);
+  console.log();
+  
   const markdown = formatAuditResult(result);
 
   // Output to console with colors
