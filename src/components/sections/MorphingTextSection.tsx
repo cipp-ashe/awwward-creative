@@ -18,20 +18,20 @@ import { ANIMATION, TRANSITION, EASING_FN, SMOOTHING, DURATION } from '@/constan
 import { useSmoothValue } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
-// Semantic shapes - organic forms that subtly embody each word
+// Semantic shapes - clean elliptical blobs with clockwise flow
 // All share identical 6-segment bezier structure: M C C C C C C Z
-// Centered at ~(100, 70) with similar scale for smooth morphing
+// Safe bounds: X(28-172), Y(25-115), centered at (100, 70)
 const MORPH_PATHS = {
-  // Dynamic, forward-leaning - suggests momentum
-  motion: "M55,65 C45,40 70,20 105,22 C140,24 170,45 175,72 C180,99 155,125 115,128 C75,131 50,115 40,88 C30,61 65,90 55,65 Z",
-  // Tall, vertical rhythm - suggests upward flow
-  scroll: "M90,18 C115,15 135,32 145,55 C155,78 150,105 135,125 C120,145 95,148 75,132 C55,116 50,88 55,60 C60,32 65,21 90,18 Z",
-  // Wide, stable baseline - suggests text block
-  type: "M40,62 C38,40 65,28 100,25 C135,22 165,35 172,58 C179,81 168,108 135,118 C102,128 60,122 42,100 C24,78 42,84 40,62 Z",
-  // Layered, asymmetric weight - suggests dimension
-  depth: "M85,22 C125,18 160,38 175,68 C190,98 170,128 130,135 C90,142 55,128 38,98 C21,68 35,35 65,25 C95,15 45,26 85,22 Z",
-  // Balanced, refined circle - suggests completion
-  craft: "M95,20 C135,18 168,42 178,72 C188,102 168,132 132,140 C96,148 58,132 42,100 C26,68 42,35 72,22 C102,9 55,22 95,20 Z",
+  // Horizontal stretch - momentum, forward energy
+  motion: "M100,28 C135,28 165,45 168,70 C171,95 145,112 100,112 C55,112 32,95 30,70 C28,45 55,30 85,28 C90,27 95,28 100,28 Z",
+  // Vertical stretch - upward flow, scrolling rhythm  
+  scroll: "M100,25 C120,25 135,42 135,70 C135,98 122,115 100,115 C78,115 65,98 65,70 C65,42 78,27 95,25 C97,25 99,25 100,25 Z",
+  // Wide horizontal - text block, stable baseline
+  type: "M100,35 C145,35 170,50 170,70 C170,90 145,105 100,105 C55,105 30,90 30,70 C30,50 55,37 90,35 C93,35 97,35 100,35 Z",
+  // Slight asymmetry - layered depth, dimension
+  depth: "M95,28 C140,30 168,48 170,72 C172,96 148,112 105,113 C62,114 35,98 32,72 C29,46 52,30 88,28 C90,28 93,28 95,28 Z",
+  // Near-perfect circle - refined, complete, balanced
+  craft: "M100,27 C138,27 168,48 168,72 C168,96 140,113 100,113 C60,113 32,96 32,72 C32,48 60,29 95,27 C97,27 99,27 100,27 Z",
 };
 
 const WORDS = ['motion', 'scroll', 'type', 'depth', 'craft'] as const;
