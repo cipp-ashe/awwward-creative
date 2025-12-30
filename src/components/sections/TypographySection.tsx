@@ -4,15 +4,17 @@
  * Demonstrates kinetic typography with variable fonts and scroll-driven reveals.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { motion } from 'framer-motion';
 import { Section, SectionLabel } from '@/components/layout/Section';
+import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 import { 
   ANIMATION, 
   TRANSITION, 
   DURATION, 
   DELAY, 
+  STAGGER,
   EASING_ARRAY,
   withDelay, 
   withStagger 
@@ -21,10 +23,41 @@ import {
 const TypographySection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const charsRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const [fontWeight, setFontWeight] = useState(400);
+  const [originIndex, setOriginIndex] = useState(0);
+  const { isReducedMotion } = useMotionConfigSafe();
 
   const mainText = 'Text is geometry and interface';
   const hoverWords = ['Hover', 'to', 'feel', 'typographic', 'space', 'expand'];
+
+  // Find closest word to cursor on hover entry
+  const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isReducedMotion) return;
+    
+    const cursorX = e.clientX;
+    let closestIndex = 0;
+    let closestDist = Infinity;
+    
+    wordRefs.current.forEach((ref, i) => {
+      if (!ref) return;
+      const rect = ref.getBoundingClientRect();
+      const wordCenterX = rect.left + rect.width / 2;
+      const dist = Math.abs(cursorX - wordCenterX);
+      
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIndex = i;
+      }
+    });
+    
+    setOriginIndex(closestIndex);
+  }, [isReducedMotion]);
+
+  // Calculate delay based on distance from origin word
+  const getWordDelay = (wordIndex: number): number => {
+    return Math.abs(wordIndex - originIndex) * STAGGER.tight;
+  };
 
   useEffect(() => {
     const charCount = charsRef.current.filter(Boolean).length;
@@ -144,17 +177,19 @@ const TypographySection = () => {
         </motion.div>
       </div>
 
-      {/* Demo: Hover effect on large text - per-word cascade */}
+      {/* Demo: Hover effect on large text - cursor-relative cascade */}
       <div className="mt-24 py-12 border-y border-border/30">
         <motion.div
           className="text-display text-display-sm text-center flex flex-wrap justify-center gap-x-[0.3em]"
           initial="rest"
           whileHover="hover"
           animate="rest"
+          onMouseEnter={handleMouseEnter}
         >
           {hoverWords.map((word, i) => (
             <motion.span
               key={i}
+              ref={(el) => (wordRefs.current[i] = el)}
               style={{ 
                 color: 'hsl(var(--muted-foreground) / 0.5)',
                 willChange: 'letter-spacing, color, transform'
@@ -174,7 +209,7 @@ const TypographySection = () => {
               transition={{
                 duration: DURATION.normal,
                 ease: EASING_ARRAY.smooth,
-                delay: i * 0.05,
+                delay: getWordDelay(i),
               }}
             >
               {word}
