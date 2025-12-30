@@ -2,12 +2,9 @@ import { useEffect, useRef, useState, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { EffectComposer, Bloom, ChromaticAberration, Vignette, DepthOfField } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '@/lib/gsap';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
-
-gsap.registerPlugin(ScrollTrigger);
 
 // Vertex shader with displacement
 const vertexShader = `

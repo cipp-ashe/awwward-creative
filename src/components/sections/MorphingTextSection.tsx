@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { interpolate } from 'flubber';
 import { motion } from 'framer-motion';
 import ParticleTrail from '@/components/ParticleTrail';
-
-gsap.registerPlugin(ScrollTrigger);
 
 // Morphability-optimized SVG paths with IDENTICAL topology
 // All paths: 12 control points, same command structure (M + 11 L + Z)

@@ -1,11 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { useReveal } from '@/contexts/RevealContext';
 import ThemeToggle from '@/components/ThemeToggle';
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface NavSection {
   id: string;

@@ -1,4 +1,20 @@
+/**
+ * useCursor Hook
+ * 
+ * Provides smooth cursor tracking with lerp interpolation.
+ * Detects hover states on interactive elements.
+ * 
+ * @returns Object containing cursor position and hover state
+ * 
+ * @example
+ * const { position, isHovering } = useCursor();
+ * // position.x, position.y are lerp-interpolated screen coordinates
+ * // isHovering is true when over links/buttons
+ */
+
 import { useEffect, useRef, useState } from 'react';
+import { lerp } from '@/lib/math';
+import { CURSOR } from '@/constants/animation';
 
 interface CursorPosition {
   x: number;
@@ -28,13 +44,9 @@ export const useCursor = () => {
       setIsHovering(false);
     };
 
-    const lerp = (start: number, end: number, factor: number) => {
-      return start + (end - start) * factor;
-    };
-
     const animate = () => {
-      currentRef.current.x = lerp(currentRef.current.x, targetRef.current.x, 0.15);
-      currentRef.current.y = lerp(currentRef.current.y, targetRef.current.y, 0.15);
+      currentRef.current.x = lerp(currentRef.current.x, targetRef.current.x, CURSOR.lerpFactor);
+      currentRef.current.y = lerp(currentRef.current.y, targetRef.current.y, CURSOR.lerpFactor);
       
       setPosition({ ...currentRef.current });
       rafRef.current = requestAnimationFrame(animate);

@@ -1,21 +1,51 @@
+/**
+ * useAssetLoader Hook
+ * 
+ * Tracks loading progress of fonts, images, and document resources.
+ * Provides smooth animated progress for preloader displays.
+ * 
+ * @param options.minDuration - Minimum display time in ms (default: 1000)
+ * @param options.maxTimeout - Maximum wait time before forcing complete (default: 8000)
+ * @returns Loading state with progress, completion status, and error tracking
+ * 
+ * @example
+ * const { progress, isComplete, currentAsset } = useAssetLoader({ minDuration: 2000 });
+ * 
+ * if (!isComplete) {
+ *   return <Preloader progress={progress} status={currentAsset} />;
+ * }
+ */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { PRELOADER } from '@/constants/animation';
 
 interface AssetLoadingState {
+  /** Loading progress 0-100 */
   progress: number;
+  /** Whether loading is complete */
   isComplete: boolean;
+  /** Number of assets loaded */
   loadedAssets: number;
+  /** Total number of assets being tracked */
   totalAssets: number;
+  /** Current asset being loaded (for status display) */
   currentAsset: string;
+  /** Any errors encountered during loading */
   errors: string[];
 }
 
 interface UseAssetLoaderOptions {
+  /** Minimum display time in ms */
   minDuration?: number;
+  /** Maximum wait time before forcing complete */
   maxTimeout?: number;
 }
 
 const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState => {
-  const { minDuration = 1000, maxTimeout = 8000 } = options;
+  const { 
+    minDuration = PRELOADER.minDuration, 
+    maxTimeout = 8000 
+  } = options;
   
   const [state, setState] = useState<AssetLoadingState>({
     progress: 0,
@@ -98,7 +128,6 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
 
   useEffect(() => {
     startTimeRef.current = Date.now();
-    const errors: string[] = [];
     let loadedCount = 0;
     let totalCount = 0;
 
@@ -107,25 +136,21 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
       updateProgress(loadedCount, totalCount, 'Loading fonts...');
       
       try {
-        // Check if fonts API is available
         if ('fonts' in document) {
           await document.fonts.ready;
-          
-          // Get loaded fonts count
           const fontFaces = Array.from(document.fonts);
           totalCount += fontFaces.length || 1;
           loadedCount += fontFaces.length || 1;
           updateProgress(loadedCount, totalCount, 'Fonts loaded');
         } else {
-          // Fallback: assume fonts are ready
           totalCount += 1;
           loadedCount += 1;
           updateProgress(loadedCount, totalCount, 'Fonts ready');
         }
-      } catch (err) {
+      } catch {
         addError('Font loading failed');
         totalCount += 1;
-        loadedCount += 1; // Count as loaded to not block
+        loadedCount += 1;
       }
     };
 
@@ -134,7 +159,7 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
       updateProgress(loadedCount, totalCount, 'Loading images...');
       
       const images = Array.from(document.querySelectorAll('img'));
-      const criticalImages = images.slice(0, 5); // Only track first 5 images
+      const criticalImages = images.slice(0, 5);
       
       if (criticalImages.length === 0) {
         totalCount += 1;
@@ -161,7 +186,7 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
             const handleError = () => {
               loadedCount++;
               addError(`Image failed: ${img.src.slice(-30)}`);
-              resolve(); // Don't block on errors
+              resolve();
             };
             img.addEventListener('load', handleLoad, { once: true });
             img.addEventListener('error', handleError, { once: true });
@@ -200,19 +225,9 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
 
     // Track CSS stylesheets
     const trackStylesheets = async (): Promise<void> => {
-      const stylesheets = Array.from(document.styleSheets);
       totalCount += 1;
       
       try {
-        // Check if all stylesheets are loaded
-        const loaded = stylesheets.every(sheet => {
-          try {
-            return sheet.cssRules !== null;
-          } catch {
-            return true; // Cross-origin sheets count as loaded
-          }
-        });
-        
         loadedCount++;
         updateProgress(loadedCount, totalCount, 'Styles loaded');
       } catch {
@@ -224,23 +239,20 @@ const useAssetLoader = (options: UseAssetLoaderOptions = {}): AssetLoadingState 
     // Main loading sequence
     const loadAssets = async () => {
       try {
-        // Run tracking in sequence for accurate progress
         await trackDocument();
         await trackStylesheets();
         await trackFonts();
         await trackImages();
-        
-        // Signal assets are ready - animation will complete when minDuration is reached
         markAssetsReady();
       } catch (err) {
         console.error('Asset loading error:', err);
-        markAssetsReady(); // Complete anyway to not block the app
+        markAssetsReady();
       }
     };
 
     loadAssets();
 
-    // Fallback timeout - force assets ready after maxTimeout
+    // Fallback timeout
     const timeoutId = setTimeout(() => {
       if (!assetsReadyRef.current) {
         console.warn('Asset loader timeout - forcing ready');
