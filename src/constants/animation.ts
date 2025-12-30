@@ -384,8 +384,8 @@ export const withGsapStagger = <T extends Record<string, unknown>>(
  * Preloader timing configuration.
  */
 export const PRELOADER = {
-  /** Minimum display time in ms */
-  minDuration: 2000,
+  /** Minimum display time in ms — fast enough to not feel vain */
+  minDuration: 1200,
   /** Exit animation duration in ms */
   exitDuration: 800,
   /** Progress interpolation factor (0-1) */
@@ -398,9 +398,10 @@ export const PRELOADER = {
 
 /**
  * Custom cursor configuration.
+ * Note: lerpFactor deprecated — Framer springs now sole smoothing authority.
  */
 export const CURSOR = {
-  /** Lerp factor for smooth following */
+  /** @deprecated lerp removed, springs handle all smoothing */
   lerpFactor: 0.15,
   /** Scale when hovering interactive elements */
   hoverScale: 1.5,
