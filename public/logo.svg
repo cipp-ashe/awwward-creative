@@ -1,10 +1,10 @@
 <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Outer ring -->
-  <circle cx="40" cy="40" r="35" stroke="#3b3b3b" stroke-width="1" fill="none"/>
+  <circle cx="40" cy="40" r="35" stroke="currentColor" stroke-width="1" fill="none" opacity="0.6"/>
   
-  <!-- Inner hexagonal shape -->
-  <path d="M40 20 L55 35 L55 55 L40 70 L25 55 L25 35 Z" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+  <!-- Inner pentagon/house shape - flat top, pointed bottom -->
+  <path d="M25 30 L55 30 L55 50 L40 68 L25 50 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
   
   <!-- Center dot -->
-  <circle cx="40" cy="40" r="4" fill="#ffffff"/>
+  <circle cx="40" cy="42" r="4" fill="currentColor"/>
 </svg>
