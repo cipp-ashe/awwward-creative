@@ -519,8 +519,11 @@ const WebGL3DSection = () => {
     return (
       <section ref={sectionRef} className="section py-32">
         <div className="section-content text-center">
-          <span className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block">
-            07 — WebGL
+          <span className="text-mono text-xs text-primary tracking-widest uppercase mb-2 block">
+            07 / WebGL
+          </span>
+          <span className="text-mono text-xs text-primary/40 tracking-widest uppercase mb-8 block">
+            THREE.JS / GLSL
           </span>
           <h2 className="text-display text-display-md mb-6">
             Interactive <span className="text-primary">Depth</span>
@@ -571,12 +574,20 @@ const WebGL3DSection = () => {
           
           <div className="text-center relative">
             <motion.span 
-              className="text-mono text-xs text-primary tracking-widest uppercase mb-8 block"
+              className="text-mono text-xs text-primary tracking-widest uppercase mb-2 block"
               {...ANIMATION.fadeUp}
               whileInView={ANIMATION.fadeUp.animate}
               viewport={{ once: true }}
             >
-              07 — WebGL
+              07 / WebGL
+            </motion.span>
+            <motion.span 
+              className="text-mono text-xs text-primary/40 tracking-widest uppercase mb-8 block"
+              {...ANIMATION.fadeIn}
+              whileInView={ANIMATION.fadeIn.animate}
+              viewport={{ once: true }}
+            >
+              THREE.JS / GLSL
             </motion.span>
             
             <motion.h2 

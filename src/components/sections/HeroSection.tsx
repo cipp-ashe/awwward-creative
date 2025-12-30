@@ -101,15 +101,19 @@ const HeroSection = () => {
           ))}
         </h1>
 
-        <motion.p
+        <motion.div
           ref={subtitleRef}
           {...ANIMATION.fadeUp}
           transition={withDelay(TRANSITION.hero, DELAY.xlong)}
-          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-balance"
+          className="max-w-2xl mx-auto text-center"
         >
-          A synthesis of modern creative web patterns — motion, scroll, typography, 
-          and performance working together to communicate taste, intent, and technical fluency.
-        </motion.p>
+          <p className="text-lg md:text-xl text-muted-foreground mb-3">
+            This is what motion feels like when it means something.
+          </p>
+          <p className="text-mono text-xs md:text-sm text-primary/60 tracking-widest">
+            GSAP · Lenis · Three.js · Framer Motion — not stacked, orchestrated.
+          </p>
+        </motion.div>
       </SectionContent>
 
       {/* Decorative elements */}
