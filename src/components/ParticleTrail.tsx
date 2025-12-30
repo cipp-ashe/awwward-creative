@@ -166,10 +166,42 @@ const ParticleTrail = ({
     return { x: point.x, y: point.y };
   }, []);
 
+  /**
+   * Convert SVG coordinates to canvas coordinates.
+   * Accounts for SVG's preserveAspectRatio="xMidYMid meet" behavior
+   * which centers content with letterboxing/pillarboxing on aspect mismatch.
+   */
   const svgToCanvas = useCallback((svgX: number, svgY: number): { x: number; y: number } => {
-    const scaleX = width / viewBox.width;
-    const scaleY = height / viewBox.height;
-    return { x: svgX * scaleX, y: svgY * scaleY };
+    const containerAspect = width / height;
+    const viewBoxAspect = viewBox.width / viewBox.height;
+    
+    let renderWidth: number;
+    let renderHeight: number;
+    let offsetX: number;
+    let offsetY: number;
+    
+    if (containerAspect > viewBoxAspect) {
+      // Container is wider than viewBox - height-constrained (pillarboxing)
+      renderHeight = height;
+      renderWidth = height * viewBoxAspect;
+      offsetX = (width - renderWidth) / 2;
+      offsetY = 0;
+    } else {
+      // Container is taller than viewBox - width-constrained (letterboxing)
+      renderWidth = width;
+      renderHeight = width / viewBoxAspect;
+      offsetX = 0;
+      offsetY = (height - renderHeight) / 2;
+    }
+    
+    // Map SVG coordinates to the actual rendered area
+    const scaleX = renderWidth / viewBox.width;
+    const scaleY = renderHeight / viewBox.height;
+    
+    return {
+      x: offsetX + svgX * scaleX,
+      y: offsetY + svgY * scaleY
+    };
   }, [width, height, viewBox]);
 
   // Spawn burst particles at high velocity points - intensity scales with scroll speed
