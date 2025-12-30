@@ -8,6 +8,8 @@ import GrainOverlay from '@/components/GrainOverlay';
 import Preloader from '@/components/Preloader';
 import SectionReveal from '@/components/SectionReveal';
 import NavigationBar from '@/components/NavigationBar';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import WebGLErrorBoundary from '@/components/WebGLErrorBoundary';
 import HeroSection from '@/components/sections/HeroSection';
 import MotionSection from '@/components/sections/MotionSection';
 import ScrollSection from '@/components/sections/ScrollSection';
@@ -69,9 +71,11 @@ const IndexContent = () => {
 
       <main className="relative bg-background">
         {showWebGL && (
-          <Suspense fallback={null}>
-            <WebGLBackground />
-          </Suspense>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <WebGLBackground />
+            </Suspense>
+          </ErrorBoundary>
         )}
         <GrainOverlay />
         <CustomCursor />
@@ -119,7 +123,12 @@ const IndexContent = () => {
         
         <SectionReveal index={7}>
           <div id="webgl">
-            <WebGL3DSection />
+            <WebGLErrorBoundary 
+              sectionLabel="07 — WebGL"
+              title={<>Interactive <span className="text-primary">Depth</span></>}
+            >
+              <WebGL3DSection />
+            </WebGLErrorBoundary>
           </div>
         </SectionReveal>
         
