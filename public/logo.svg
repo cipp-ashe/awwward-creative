@@ -1,0 +1,10 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer ring -->
+  <circle cx="40" cy="40" r="35" stroke="#3b3b3b" stroke-width="1" fill="none"/>
+  
+  <!-- Inner hexagonal shape -->
+  <path d="M40 20 L55 35 L55 55 L40 70 L25 55 L25 35 Z" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+  
+  <!-- Center dot -->
+  <circle cx="40" cy="40" r="4" fill="#ffffff"/>
+</svg>
