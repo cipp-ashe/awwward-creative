@@ -465,7 +465,7 @@ const WebGL3DSection = () => {
   // Use refs for high-frequency inputs to avoid re-renders (60+ Hz during scroll/mouse)
   const rawScrollProgressRef = useRef(0);
   const rawMousePositionRef = useRef({ x: 0, y: 0 });
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // Start visible to preload
   
   // Use centralized motion config instead of local check
   const { isReducedMotion } = useMotionConfigSafe();
