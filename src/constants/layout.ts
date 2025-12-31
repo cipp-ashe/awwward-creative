@@ -59,19 +59,21 @@ export const BREAKPOINT = {
 
 /**
  * Modular spacing scale for consistent rhythm.
- * Base unit: 8px (0.5rem), ratio: ~2x
+ * Matches existing gap usage patterns.
  * Use these via Tailwind: gap-section-*, p-section-*, m-section-*
  */
 export const SPACING = {
-  /** 8px - tight inline elements */
-  xs: '0.5rem',
-  /** 16px - related items */
-  sm: '1rem',
-  /** 24px - component spacing */
-  md: '1.5rem',
-  /** 48px - section internal */
+  /** 12px (gap-3) - micro spacing */
+  '2xs': '0.75rem',
+  /** 16px (gap-4) - tight inline elements */
+  xs: '1rem',
+  /** 24px (gap-6) - related items */
+  sm: '1.5rem',
+  /** 32px (gap-8) - component spacing */
+  md: '2rem',
+  /** 48px (gap-12) - section internal */
   lg: '3rem',
-  /** 96px - section separation */
+  /** 96px (gap-24) - section separation */
   xl: '6rem',
 } as const;
 

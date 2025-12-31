@@ -70,7 +70,7 @@ const PerformanceSection = () => {
         <SectionLabel className="mb-8 block">05 / Perf</SectionLabel>
       </ScrollReveal>
 
-      <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">
+      <div className="grid md:grid-cols-2 gap-section-lg md:gap-section-xl items-start mb-24">
         <div>
           <ScrollReveal variant="slideUp" delay={DELAY.micro}>
             <h2 className="text-display text-display-md mb-6">
@@ -86,7 +86,7 @@ const PerformanceSection = () => {
         </div>
 
         <div ref={statsRef}>
-          <StaggerContainer staggerDelay={STAGGER.normal} className="grid grid-cols-2 gap-8">
+          <StaggerContainer staggerDelay={STAGGER.normal} className="grid grid-cols-2 gap-section-md">
             <StaggerItem variant="scale">
               <div className="text-center p-6 border border-border/30 rounded-lg">
                 <div className="stat-value text-display text-display-sm text-primary" data-value="60">0</div>
@@ -116,10 +116,10 @@ const PerformanceSection = () => {
       </div>
 
       {/* Principles grid */}
-      <StaggerContainer staggerDelay={STAGGER.normal} className="grid md:grid-cols-2 gap-6">
+      <StaggerContainer staggerDelay={STAGGER.normal} className="grid md:grid-cols-2 gap-section-sm">
         {principles.map((principle, index) => (
           <StaggerItem key={index} variant="fadeUp">
-            <div className="flex gap-4 p-6 bg-card/20 rounded-lg border border-border/30">
+            <div className="flex gap-section-xs p-6 bg-card/20 rounded-lg border border-border/30">
               <span className="text-2xl">{principle.icon}</span>
               <div>
                 <h3 className="text-display text-base mb-2">{principle.title}</h3>

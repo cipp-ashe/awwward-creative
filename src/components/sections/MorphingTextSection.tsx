@@ -397,7 +397,7 @@ const MorphingTextSection = () => {
           </div>
 
           {/* Progress indicator */}
-          <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="flex items-center justify-center gap-section-2xs mb-8">
             {WORDS.map((word) => (
               <div
                 key={word}

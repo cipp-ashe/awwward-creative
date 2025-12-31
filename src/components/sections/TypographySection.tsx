@@ -131,7 +131,7 @@ const TypographySection = () => {
       </div>
 
       {/* Content grid */}
-      <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+      <div className="grid md:grid-cols-3 gap-section-md md:gap-section-lg">
         <motion.div
           {...ANIMATION.fadeUp}
           whileInView={ANIMATION.fadeUp.animate}

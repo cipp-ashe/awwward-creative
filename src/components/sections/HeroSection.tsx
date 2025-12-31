@@ -124,7 +124,7 @@ const HeroSection = () => {
         ref={scrollIndicatorRef}
         {...ANIMATION.fadeIn}
         transition={withDelay(TRANSITION.hero, DELAY.hero)}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-section-2xs"
       >
         <span className="text-mono text-xs text-muted-foreground tracking-widest uppercase">
           Scroll

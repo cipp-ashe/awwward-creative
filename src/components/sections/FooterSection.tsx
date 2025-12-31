@@ -34,12 +34,12 @@ const FooterSection = () => {
           transition={withDelay(TRANSITION.hero, 0.3)}
           className="border-t border-border/30 pt-12"
         >
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-section-md">
             <div className="text-mono text-xs text-muted-foreground">
               An experimental demonstrator of Awwwards-style web principles
             </div>
 
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-section-md">
               <span className="text-mono text-xs text-muted-foreground">
                 GSAP • Lenis • Three.js • Framer Motion
               </span>

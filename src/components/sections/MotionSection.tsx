@@ -83,7 +83,7 @@ const MotionSection = () => {
 
   return (
     <Section ref={sectionRef} id="motion">
-      <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start">
+      <div className="grid md:grid-cols-2 gap-section-lg md:gap-section-xl items-start">
         <div>
           <SectionLabel className="mb-2 block">01 / Motion</SectionLabel>
           <div className="text-mono text-xs text-primary/40 tracking-widest uppercase mb-4">
@@ -118,7 +118,7 @@ const MotionSection = () => {
       </div>
 
       {/* Motion demo */}
-      <div ref={demoRef} className="mt-16 flex justify-center gap-6 overflow-hidden py-12">
+      <div ref={demoRef} className="mt-16 flex justify-center gap-section-sm overflow-hidden py-12">
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
