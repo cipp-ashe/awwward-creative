@@ -315,7 +315,7 @@ const MorphingTextSection = () => {
             />
 
             {/* SVG Container with Particles - CENTERED TOGETHER */}
-            <div ref={svgContainerRef} className="relative w-full max-w-lg mx-auto">
+            <div ref={svgContainerRef} className="relative w-full max-w-content-narrow mx-auto">
               <ParticleTrail
                 pathDataRef={pathDataRef}
                 width={containerSize.width}
@@ -389,7 +389,7 @@ const MorphingTextSection = () => {
                 <h2 className="text-display text-display-lg mb-2">
                   {PRINCIPLES[currentWord].label}
                 </h2>
-                <p className="text-muted-foreground max-w-md text-balance text-sm">
+                <p className="text-muted-foreground max-w-content-narrow text-balance text-sm">
                   {PRINCIPLES[currentWord].desc}
                 </p>
               </motion.div>

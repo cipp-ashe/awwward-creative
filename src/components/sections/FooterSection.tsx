@@ -21,7 +21,7 @@ const FooterSection = () => {
           <h2 className="text-display text-display-lg mb-8">
             Built with <span className="text-primary">intent</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
+          <p className="text-lg text-muted-foreground max-w-content-narrow mx-auto text-balance">
             This is not a clone of any specific site, but a synthesis of modern 
             creative web patterns executed with discipline.
           </p>
