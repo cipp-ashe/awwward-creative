@@ -20,19 +20,21 @@ export default {
         'content-wide': '80rem',     // 1280px - wide content
         'content-max': '87.5rem',    // 1400px - maximum width
       },
-      // Spacing scale tokens - modular scale (base 4, ratio ~2x)
+      // Spacing scale tokens - modular scale matching existing usage
       // Use: gap-section-*, p-section-*, m-section-*, space-*-section-*
       gap: {
-        'section-xs': '0.5rem',      // 8px - tight inline elements
-        'section-sm': '1rem',        // 16px - related items
-        'section-md': '1.5rem',      // 24px - component spacing
-        'section-lg': '3rem',        // 48px - section internal
-        'section-xl': '6rem',        // 96px - section separation
+        'section-2xs': '0.75rem',    // 12px (gap-3)
+        'section-xs': '1rem',        // 16px (gap-4) - tight inline elements
+        'section-sm': '1.5rem',      // 24px (gap-6) - related items
+        'section-md': '2rem',        // 32px (gap-8) - component spacing
+        'section-lg': '3rem',        // 48px (gap-12) - section internal
+        'section-xl': '6rem',        // 96px (gap-24) - section separation
       },
       spacing: {
-        'section-xs': '0.5rem',      // 8px
-        'section-sm': '1rem',        // 16px
-        'section-md': '1.5rem',      // 24px
+        'section-2xs': '0.75rem',    // 12px
+        'section-xs': '1rem',        // 16px
+        'section-sm': '1.5rem',      // 24px
+        'section-md': '2rem',        // 32px
         'section-lg': '3rem',        // 48px
         'section-xl': '6rem',        // 96px
       },

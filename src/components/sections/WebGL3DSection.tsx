@@ -629,7 +629,7 @@ const WebGL3DSection = () => {
 
             {/* Stats display */}
             <motion.div 
-              className="flex justify-center gap-8 text-mono text-xs"
+              className="flex justify-center gap-section-md text-mono text-xs"
               {...ANIMATION.fadeIn}
               whileInView={ANIMATION.fadeIn.animate}
               viewport={{ once: true }}

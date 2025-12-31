@@ -52,10 +52,10 @@ export const analyzeGridComposition = (files: FileContents): FrictionPoint[] => 
   }
   
   // Define the SPACING token system - these are valid/intentional
-  const spacingTokens = ['section-xs', 'section-sm', 'section-md', 'section-lg', 'section-xl'];
+  const spacingTokens = ['section-2xs', 'section-xs', 'section-sm', 'section-md', 'section-lg', 'section-xl'];
   
   // Check for inconsistent gap values (excluding token-based gaps)
-  const gapPattern = /gap-(\d+|section-(?:xs|sm|md|lg|xl))/g;
+  const gapPattern = /gap-(\d+|section-(?:2xs|xs|sm|md|lg|xl))/g;
   const numericGapValues: number[] = [];
   let tokenGapCount = 0;
   

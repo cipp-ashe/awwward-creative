@@ -17,7 +17,7 @@ const MicroInteractionsSection = () => {
         <SectionLabel className="mb-8 block">04 / Micro</SectionLabel>
       </ScrollReveal>
 
-      <div className="grid md:grid-cols-2 gap-12 md:gap-24 items-start mb-24">
+      <div className="grid md:grid-cols-2 gap-section-lg md:gap-section-xl items-start mb-24">
         <div>
           <ScrollReveal variant="slideUp" delay={DELAY.micro}>
             <h2 className="text-display text-display-md mb-6">
@@ -49,7 +49,7 @@ const MicroInteractionsSection = () => {
       </div>
 
       {/* Interactive demo area */}
-      <StaggerContainer staggerDelay={STAGGER.normal} className="grid md:grid-cols-3 gap-6 md:gap-8">
+      <StaggerContainer staggerDelay={STAGGER.normal} className="grid md:grid-cols-3 gap-section-sm md:gap-section-md">
         <StaggerItem variant="scale">
           <MagneticCard 
             title="Magnetic Pull" 
