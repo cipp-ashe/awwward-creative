@@ -9,7 +9,7 @@
  * - Centralized RAF via useTicker (single animation loop)
  */
 
-import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTicker } from '@/hooks/useTicker';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
@@ -135,33 +135,11 @@ const ParticleTrail = ({
   
   const { shouldAnimate } = useMotionConfigSafe();
   
-  // Visibility gating: pause animation when off-screen to save CPU
-  const [isVisible, setIsVisible] = useState(true);
-  
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.1, rootMargin: '100px' }
-    );
-    
-    observer.observe(canvas);
-    return () => observer.disconnect();
-  }, []);
-  
   // Device-adaptive particle count (memoized once)
   const effectiveParticleCount = useMemo(() => {
     const isLowEnd = detectLowEndDevice();
     return isLowEnd ? Math.floor(particleCount * 0.5) : particleCount;
   }, [particleCount]);
-  
-  // Store dimensions in refs to prevent callback churn
-  const dimensionsRef = useRef({ width, height });
-  useEffect(() => {
-    dimensionsRef.current = { width, height };
-  }, [width, height]);
 
   // Use cached path length for performance (avoids getTotalLength() per frame)
   const getPointAtPosition = useCallback((path: SVGPathElement, position: number): { x: number; y: number } => {
@@ -414,8 +392,8 @@ const ParticleTrail = ({
       const spreadX = Math.cos(spreadAngle) * spreadAmount;
       const spreadY = Math.sin(spreadAngle) * spreadAmount;
       
-      // Faster response to reduce perceived lag (~5-6 frames to 63% target)
-      const smoothFactor = 0.18;
+      // Slower, more intentional movement with orbital offset
+      const smoothFactor = 0.10;
       particle.x += (particle.targetX + spreadX - particle.x) * smoothFactor;
       particle.y += (particle.targetY + spreadY - particle.y) * smoothFactor;
 
@@ -549,11 +527,10 @@ const ParticleTrail = ({
     }
     
     return () => { pathRef.current = null; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Stable deps - use refs for dynamic values
+  }, [initializeParticlesOnPath, pathDataRef]);
 
-  // Use central ticker with visibility gating
-  useTicker(animate, shouldAnimate && isVisible);
+  // Use central ticker instead of standalone RAF
+  useTicker(animate, shouldAnimate);
 
   useEffect(() => {
     const canvas = canvasRef.current;

@@ -71,7 +71,7 @@ const HeroSection = () => {
     <section
       ref={sectionRef}
       id="hero"
-      className="min-h-screen flex flex-col justify-center items-center relative overflow-hidden py-section-xl"
+      className="min-h-screen flex flex-col justify-center items-center relative overflow-hidden py-32"
     >
       <SectionContent className="text-center">
         <motion.div

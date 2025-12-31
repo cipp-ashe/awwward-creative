@@ -38,20 +38,6 @@ export default {
         'section-lg': '3rem',        // 48px
         'section-xl': '6rem',        // 96px
       },
-      // Z-index scale - single source of truth (replaces Z_INDEX constants)
-      zIndex: {
-        'below': '-1',
-        'base': '0',
-        'float': '10',
-        'nav': '100',
-        'dropdown': '200',
-        'modal-backdrop': '300',
-        'modal': '400',
-        'toast': '500',
-        'preloader': '9000',
-        'grain': '9999',
-        'cursor': '10000',
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

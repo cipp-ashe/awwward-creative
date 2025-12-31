@@ -17,31 +17,20 @@ import {
   ErrorBoundary,
   WebGLErrorBoundary,
 } from '@/components';
-// Eager load above-fold sections
 import {
   HeroSection,
   MotionSection,
+  ScrollSection,
   TypographySection,
+  MorphingTextSection,
+  WebGL3DSection,
   MicroInteractionsSection,
   PerformanceSection,
   FooterSection,
 } from '@/components/sections';
 
-// ============================================================================
-// LAZY LOADED SECTIONS (Heavy below-fold components)
-// ============================================================================
-
 /** Lazy load WebGL background for performance */
 const WebGLBackground = lazy(() => import('@/components/WebGLBackground'));
-
-/** Lazy load ScrollSection - GSAP horizontal scroll with pinning */
-const ScrollSection = lazy(() => import('@/components/sections/ScrollSection'));
-
-/** Lazy load MorphingTextSection - d3-interpolate + SVG morphing */
-const MorphingTextSection = lazy(() => import('@/components/sections/MorphingTextSection'));
-
-/** Lazy load WebGL3DSection - Three.js 3D scene */
-const WebGL3DSection = lazy(() => import('@/components/sections/WebGL3DSection'));
 
 // ============================================================================
 // SECTION COMPONENT MAPPING
@@ -59,16 +48,13 @@ const WebGL3DSection = lazy(() => import('@/components/sections/WebGL3DSection')
 const SECTION_COMPONENTS: Record<string, ComponentType> = {
   hero: HeroSection,
   motion: MotionSection,
-  scroll: ScrollSection,           // lazy
+  scroll: ScrollSection,
   typography: TypographySection,
   micro: MicroInteractionsSection,
   performance: PerformanceSection,
-  morphing: MorphingTextSection,   // lazy
-  webgl: WebGL3DSection,           // lazy
+  morphing: MorphingTextSection,
+  webgl: WebGL3DSection,
 };
-
-/** Sections that are lazy loaded and need Suspense wrapper */
-const LAZY_SECTIONS = new Set(['scroll', 'morphing', 'webgl']);
 
 /**
  * Custom wrappers for sections needing special treatment.
@@ -97,15 +83,7 @@ const renderSection = (config: SectionConfig, index: number) => {
   if (!Component) return null;
   
   const Wrapper = SECTION_WRAPPERS[config.id];
-  const isLazy = LAZY_SECTIONS.has(config.id);
-  
-  // Build component with optional wrapper
-  let content = Wrapper ? <Wrapper><Component /></Wrapper> : <Component />;
-  
-  // Wrap lazy sections in Suspense with null fallback (SectionReveal handles loading state)
-  if (isLazy) {
-    content = <Suspense fallback={null}>{content}</Suspense>;
-  }
+  const content = Wrapper ? <Wrapper><Component /></Wrapper> : <Component />;
   
   // Sections with GSAP pin conflicts skip SectionReveal
   if (config.skipRevealWrapper) {

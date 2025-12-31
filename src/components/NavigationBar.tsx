@@ -93,7 +93,7 @@ const NavigationBar = () => {
           opacity: isVisible ? 1 : 0 
         }}
         transition={TRANSITION.fast}
-        className="fixed top-0 left-0 right-0 z-nav pointer-events-none"
+        className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
       >
         {/* Background blur */}
         <div className="absolute inset-0 bg-background/80 backdrop-blur-md border-b border-border/30" />

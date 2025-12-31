@@ -192,12 +192,14 @@ const MorphingTextSection = () => {
           setCurrentWord("craft");
         },
         onUpdate: (self) => {
-          // Direct mapping - Lenis already provides smooth scroll input
-          // Removing redundant smoothing layer to eliminate triple-smoothing lag
-          const progress = self.progress;
+          const targetProgress = self.progress;
 
-          // Update refs for downstream consumers (no React re-render)
-          smoothedProgressRef.current = progress;
+          // Temporal decoupling: morph approaches scroll at fixed rate
+          // Prevents fast scroll from skipping shapes (~200ms minimum visibility per shape)
+          smoothedProgressRef.current += (targetProgress - smoothedProgressRef.current) * SMOOTHING.morph;
+          const progress = smoothedProgressRef.current;
+
+          // Update raw progress ref (no React re-render)
           rawProgressRef.current = progress;
 
           // --- 1. MORPH LOGIC ---

@@ -42,8 +42,8 @@ export interface SectionRevealProps {
 }
 
 /**
- * Maximum number of sections that receive preloader-coordinated stagger.
- * Sections beyond this index use viewport-based triggering instead.
+ * Maximum number of sections that receive staggered delays.
+ * Sections beyond this index reveal with just the base delay.
  */
 const MAX_STAGGERED_SECTIONS = 2;
 
@@ -55,37 +55,18 @@ const SectionReveal = ({
 }: SectionRevealProps) => {
   const { isRevealed } = useReveal();
   
-  // Above-fold sections: coordinate with preloader reveal
-  // Below-fold sections: use viewport-based triggering
-  const isAboveFold = index <= MAX_STAGGERED_SECTIONS;
-  
-  const delay = isAboveFold ? baseDelay + index * staggerDelay : 0;
+  // Only first few sections get stagger; beyond viewport, no artificial delay
+  const delay = index <= MAX_STAGGERED_SECTIONS 
+    ? baseDelay + index * staggerDelay 
+    : baseDelay;
 
-  // Above-fold: animate when preloader completes
-  if (isAboveFold) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 60 }}
-        animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
-        transition={{
-          duration: DURATION.reveal,
-          delay,
-          ease: EASING_ARRAY.smooth,
-        }}
-      >
-        {children}
-      </motion.div>
-    );
-  }
-
-  // Below-fold: animate when scrolled into viewport
   return (
     <motion.div
       initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-100px' }}
+      animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
       transition={{
         duration: DURATION.reveal,
+        delay,
         ease: EASING_ARRAY.smooth,
       }}
     >
