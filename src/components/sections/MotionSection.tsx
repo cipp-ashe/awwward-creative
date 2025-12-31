@@ -113,7 +113,7 @@ const MotionSection = () => {
       </div>
 
       {/* Easing Curve Indicator */}
-      <div className="mt-16 max-w-sm mx-auto md:mx-0 md:ml-auto">
+      <div className="mt-16 max-w-content-narrow mx-auto md:mx-0 md:ml-auto">
         <EasingCurveIndicator scrollProgress={scrollProgress} />
       </div>
 

@@ -8,8 +8,16 @@ import type { FrictionPoint, FileContents } from '../types';
 export const analyzeGridComposition = (files: FileContents): FrictionPoint[] => {
   const issues: FrictionPoint[] = [];
   
-  // Check for hardcoded max-width without a grid system
-  const maxWidthPattern = /max-w-(\d+xl|\[\d+(?:px|rem)\])/g;
+  // Define the CONTENT_WIDTH token system - these are valid/intentional
+  const contentWidthTokens = [
+    'content-narrow',   // 42rem
+    'content-default',  // 64rem
+    'content-wide',     // 80rem
+    'content-max',      // 87.5rem
+  ];
+  
+  // Check for hardcoded max-width without using the token system
+  const maxWidthPattern = /max-w-(\[?\d*(?:xl|px|rem)\]?|content-(?:narrow|default|wide|max)|[a-z]+)/g;
   const maxWidthValues: { file: string; value: string }[] = [];
   
   Object.entries(files).forEach(([path, content]) => {
@@ -17,17 +25,29 @@ export const analyzeGridComposition = (files: FileContents): FrictionPoint[] => 
       let match;
       const regex = new RegExp(maxWidthPattern.source, 'g');
       while ((match = regex.exec(content)) !== null) {
-        maxWidthValues.push({ file: path, value: match[1] });
+        const value = match[1];
+        // Skip content-width tokens (these are the standardized system)
+        if (!contentWidthTokens.includes(value)) {
+          maxWidthValues.push({ file: path, value });
+        }
       }
     }
   });
   
   const uniqueMaxWidths = [...new Set(maxWidthValues.map(m => m.value))];
+  // Only flag if there are hardcoded values outside the token system
   if (uniqueMaxWidths.length > 2) {
     issues.push({
       persona: 'grid-composition',
-      issue: `${uniqueMaxWidths.length} different max-width values (${uniqueMaxWidths.join(', ')}). No grid system. Each section invents its own layout.`,
+      issue: `${uniqueMaxWidths.length} different max-width values outside token system (${uniqueMaxWidths.join(', ')}). Use max-w-content-* tokens.`,
       severity: 'critical',
+    });
+  } else if (uniqueMaxWidths.length > 0 && uniqueMaxWidths.length <= 2) {
+    // Warn about remaining non-token values
+    issues.push({
+      persona: 'grid-composition',
+      issue: `${uniqueMaxWidths.length} max-width value(s) not using token system: ${uniqueMaxWidths.join(', ')}. Consider migrating to max-w-content-* tokens.`,
+      severity: 'medium',
     });
   }
   

@@ -113,7 +113,7 @@ const ScrollSection = () => {
       <div ref={horizontalRef} className="flex items-center h-screen">
         {/* Intro panel */}
         <div className="flex-shrink-0 w-screen h-full flex items-center justify-center px-6 md:px-24">
-          <div className="max-w-3xl">
+          <div className="max-w-content-default">
             <h2 className="text-display text-display-md mb-6">
               Scroll is the <span className="text-primary">timeline</span>,
               <br />

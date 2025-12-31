@@ -13,6 +13,13 @@ export default {
       },
     },
     extend: {
+      // Grid composition tokens from CONTENT_WIDTH constants
+      maxWidth: {
+        'content-narrow': '42rem',   // 672px - reading content
+        'content-default': '64rem',  // 1024px - section default
+        'content-wide': '80rem',     // 1280px - wide content
+        'content-max': '87.5rem',    // 1400px - maximum width
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

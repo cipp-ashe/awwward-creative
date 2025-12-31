@@ -543,7 +543,7 @@ const WebGL3DSection = () => {
           <h2 className="text-display text-display-md mb-6">
             Interactive <span className="text-primary">Depth</span>
           </h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
+          <p className="text-muted-foreground max-w-content-narrow mx-auto">
             3D visualization disabled for reduced motion preference.
           </p>
         </div>
@@ -617,7 +617,7 @@ const WebGL3DSection = () => {
             </motion.h2>
             
             <motion.p 
-              className="text-muted-foreground max-w-md mx-auto text-balance mb-8"
+              className="text-muted-foreground max-w-content-narrow mx-auto text-balance mb-8"
               {...ANIMATION.fadeUp}
               whileInView={ANIMATION.fadeUp.animate}
               viewport={{ once: true }}

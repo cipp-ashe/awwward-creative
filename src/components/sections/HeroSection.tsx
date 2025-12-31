@@ -105,7 +105,7 @@ const HeroSection = () => {
           ref={subtitleRef}
           {...ANIMATION.fadeUp}
           transition={withDelay(TRANSITION.hero, DELAY.xlong)}
-          className="max-w-2xl mx-auto text-center"
+          className="max-w-content-narrow mx-auto text-center"
         >
           <p className="text-lg md:text-xl text-muted-foreground mb-3">
             This is what motion feels like when it means something.
