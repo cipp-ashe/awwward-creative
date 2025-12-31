@@ -10,7 +10,7 @@ import { ANIMATION, TRANSITION, withDelay } from '@/constants/animation';
 
 const FooterSection = () => {
   return (
-    <footer className="py-32 md:py-48 relative overflow-hidden">
+    <footer className="py-section-xl relative overflow-hidden">
       <SectionContent>
         <motion.div
           {...ANIMATION.fadeUp}
