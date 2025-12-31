@@ -5,7 +5,7 @@ import { BlendFunction } from 'postprocessing';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
-import { ANIMATION, TRANSITION, SMOOTHING, DELAY, withDelay } from '@/constants/animation';
+import { ANIMATION, TRANSITION, SMOOTHING, DELAY, DURATION, EASING_ARRAY, withDelay } from '@/constants/animation';
 import { useSmoothValueRef, useSmoothVec2Ref } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
@@ -554,10 +554,14 @@ const WebGL3DSection = () => {
   }
 
   return (
-    <section 
+    <motion.section 
       ref={sectionRef} 
       className="relative min-h-[200vh]"
       aria-label="Interactive 3D WebGL demonstration"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: '-100px' }}
+      transition={{ duration: DURATION.reveal, ease: EASING_ARRAY.smooth }}
     >
       {/* Sticky canvas container */}
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
@@ -659,7 +663,7 @@ const WebGL3DSection = () => {
           style={{ opacity: 0.1 + scrollProgress * 0.15 }}
         />
       </div>
-    </section>
+    </motion.section>
   );
 };
 
