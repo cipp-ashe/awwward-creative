@@ -465,7 +465,6 @@ const WebGL3DSection = () => {
   // Use refs for high-frequency inputs to avoid re-renders (60+ Hz during scroll/mouse)
   const rawScrollProgressRef = useRef(0);
   const rawMousePositionRef = useRef({ x: 0, y: 0 });
-  const [isVisible, setIsVisible] = useState(true); // Start visible to preload
   
   // Use centralized motion config instead of local check
   const { isReducedMotion } = useMotionConfigSafe();
@@ -506,10 +505,6 @@ const WebGL3DSection = () => {
           // Write directly to ref (no setState = no re-render)
           rawScrollProgressRef.current = self.progress;
         },
-        onEnter: () => setIsVisible(true),
-        onLeave: () => setIsVisible(false),
-        onEnterBack: () => setIsVisible(true),
-        onLeaveBack: () => setIsVisible(false),
       });
     }, section);
 
@@ -565,29 +560,33 @@ const WebGL3DSection = () => {
     >
       {/* Sticky canvas container */}
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-        {/* WebGL Canvas - only render when visible */}
-        {isVisible && (
-          <div className="absolute inset-0">
-            <Suspense fallback={null}>
-              <Canvas
-                camera={{ position: [0, 0, 5], fov: 50 }}
-                dpr={[1, 1.5]}
-                frameloop="demand"
-                gl={{ 
-                  antialias: true, 
-                  powerPreference: 'high-performance',
-                  alpha: true,
-                }}
-                style={{ background: 'transparent' }}
-              >
-                <Scene 
-                  scrollProgress={scrollProgress} 
-                  mousePosition={mousePosition} 
-                />
-              </Canvas>
-            </Suspense>
-          </div>
-        )}
+        {/* WebGL Canvas - always mounted, fades in independently */}
+        <motion.div 
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: '200px' }} // Start fade early (200px before entering viewport)
+          transition={{ duration: 1.2, ease: EASING_ARRAY.smooth }}
+        >
+          <Suspense fallback={null}>
+            <Canvas
+              camera={{ position: [0, 0, 5], fov: 50 }}
+              dpr={[1, 1.5]}
+              frameloop="demand"
+              gl={{ 
+                antialias: true, 
+                powerPreference: 'high-performance',
+                alpha: true,
+              }}
+              style={{ background: 'transparent' }}
+            >
+              <Scene 
+                scrollProgress={scrollProgress} 
+                mousePosition={mousePosition} 
+              />
+            </Canvas>
+          </Suspense>
+        </motion.div>
 
         {/* Overlay content with readable backdrop */}
         <div className="section-content relative z-10 pointer-events-none">
