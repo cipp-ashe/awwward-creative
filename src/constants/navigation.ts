@@ -75,7 +75,7 @@ export const NAVIGATION_SECTIONS: readonly SectionConfig[] = [
   { id: 'micro', label: 'Micro', number: '04' },
   { id: 'performance', label: 'Perf', number: '05' },
   { id: 'morphing', label: 'Morph', number: '06' },
-  { id: 'webgl', label: 'WebGL', number: '07' },
+  { id: 'webgl', label: 'WebGL', number: '07', skipRevealWrapper: true },
 ] as const;
 
 // ============================================================================
