@@ -279,10 +279,10 @@ export const SCROLL_TRIGGER = {
     invalidateOnRefresh: true,
   },
   
-  /** Progress tracker - for scroll progress callbacks */
+  /** Progress tracker - for scroll progress callbacks (starts earlier for anticipation) */
   progress: {
-    start: 'top bottom',
-    end: 'bottom top',
+    start: 'top 120%',
+    end: 'bottom -20%',
     scrub: true,
   },
   
