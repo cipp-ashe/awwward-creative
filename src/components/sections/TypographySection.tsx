@@ -64,9 +64,10 @@ const TypographySection = () => {
     
     const ctx = gsap.context(() => {
       // Character-by-character reveal with normalized stagger
-      // Distributes all characters across a fixed scroll range (80%→30% start, 50%→20% end)
-      const startRange = { from: 80, to: 30 };
-      const endRange = { from: 50, to: 20 };
+      // Distributes all characters across a fixed scroll range
+      // Start when section enters viewport center, end when section is near top
+      const startRange = { from: 50, to: 10 };
+      const endRange = { from: 30, to: -20 };
       
       charsRef.current.forEach((char, i) => {
         if (!char) return;
