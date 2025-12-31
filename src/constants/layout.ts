@@ -2,40 +2,10 @@
  * Layout Constants
  * 
  * Centralized layout configuration for consistent spacing and structure.
+ * 
+ * NOTE: Z-index scale has been migrated to tailwind.config.ts as z-* tokens.
+ * Use Tailwind classes (z-nav, z-modal, z-cursor, etc.) instead of JS constants.
  */
-
-// ============================================================================
-// Z-INDEX SCALE
-// ============================================================================
-
-/**
- * Z-index scale for layering elements.
- * Use these instead of arbitrary z-index values.
- */
-export const Z_INDEX = {
-  /** Below default content */
-  below: -1,
-  /** Default layer */
-  base: 0,
-  /** Floating elements */
-  float: 10,
-  /** Fixed navigation */
-  nav: 100,
-  /** Dropdowns and popovers */
-  dropdown: 200,
-  /** Modal backdrops */
-  modalBackdrop: 300,
-  /** Modal content */
-  modal: 400,
-  /** Toast notifications */
-  toast: 500,
-  /** Preloader overlay */
-  preloader: 9000,
-  /** Custom cursor */
-  cursor: 10000,
-  /** Grain overlay (always on top) */
-  grain: 9999,
-} as const;
 
 // ============================================================================
 // BREAKPOINTS
@@ -75,26 +45,6 @@ export const SPACING = {
   lg: '3rem',
   /** 96px (gap-24) - section separation */
   xl: '6rem',
-} as const;
-
-// ============================================================================
-// SECTION CONFIG (Legacy - use SPACING instead)
-// ============================================================================
-
-/**
- * Section-level spacing values.
- * @deprecated Use SPACING tokens for new code
- */
-export const SECTION = {
-  /** Padding for section content */
-  paddingY: 'clamp(4rem, 10vh, 8rem)',
-  /** Maximum content width */
-  maxWidth: '1400px',
-  /** Horizontal padding */
-  paddingX: {
-    mobile: '1.5rem',  // 24px
-    desktop: '3rem',   // 48px
-  },
 } as const;
 
 // ============================================================================

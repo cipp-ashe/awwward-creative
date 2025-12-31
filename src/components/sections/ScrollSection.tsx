@@ -92,8 +92,8 @@ const ScrollSection = () => {
 
   return (
     <section ref={sectionRef} id="scroll" className="relative min-h-screen overflow-hidden">
-      {/* Progress bar */}
-      <div className="fixed top-0 left-0 right-0 h-px bg-border z-50">
+      {/* Progress bar - uses z-nav token for fixed positioning */}
+      <div className="fixed top-0 left-0 right-0 h-px bg-border z-nav">
         <div
           ref={progressRef}
           className="h-full bg-primary origin-left"

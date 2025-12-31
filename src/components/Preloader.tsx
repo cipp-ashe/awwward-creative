@@ -59,7 +59,7 @@ const Preloader = ({ onComplete, minDuration = 1000 }: PreloaderProps) => {
     <AnimatePresence>
       {!isExiting && (
         <motion.div
-          className="fixed inset-0 z-[10001] bg-background flex flex-col items-center justify-center"
+          className="fixed inset-0 z-preloader bg-background flex flex-col items-center justify-center"
           initial={{ opacity: 1 }}
           exit={{ 
             opacity: 0,

@@ -534,7 +534,7 @@ const WebGL3DSection = () => {
   // Reduced motion fallback
   if (isReducedMotion) {
     return (
-      <section ref={sectionRef} className="section py-32">
+      <section ref={sectionRef} className="section py-section-xl">
         <div className="section-content text-center">
           <span className="text-mono text-xs text-primary tracking-widest uppercase mb-2 block">
             07 / WebGL
