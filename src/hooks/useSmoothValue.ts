@@ -187,3 +187,72 @@ export const useSmoothVec2 = (
   
   return smoothedValue;
 };
+
+// ============================================================================
+// REF-BASED VECTOR VARIANT (Zero Re-renders)
+// ============================================================================
+
+/**
+ * Ref-based variant that reads target from a ref, avoiding parent re-renders.
+ * Use this for high-frequency inputs like mouse position that update 60+ times/sec.
+ * 
+ * @param targetRef - Ref containing the raw { x, y } target (updated externally)
+ * @param options - Smoothing configuration
+ * @returns Smoothed Vec2 value
+ * 
+ * @example
+ * const rawMouseRef = useRef({ x: 0, y: 0 });
+ * const smoothedMouse = useSmoothVec2Ref(rawMouseRef, { smoothing: SMOOTHING.mouse });
+ * 
+ * // In mouse handler (no setState = no re-render):
+ * rawMouseRef.current = { x: normalizedX, y: normalizedY };
+ */
+export const useSmoothVec2Ref = (
+  targetRef: React.MutableRefObject<Vec2>,
+  options: SmoothVec2Options = {}
+): Vec2 => {
+  const { 
+    smoothing = 0.08, 
+    threshold = 0.0001,
+    initialValue = 0 
+  } = options;
+  
+  const [smoothedValue, setSmoothedValue] = useState<Vec2>({ 
+    x: initialValue, 
+    y: initialValue 
+  });
+  const currentRef = useRef<Vec2>({ x: initialValue, y: initialValue });
+  const { isReducedMotion } = useMotionConfigSafe();
+  
+  // If reduced motion, return target directly
+  if (isReducedMotion) {
+    return targetRef.current;
+  }
+  
+  useTicker((deltaTime) => {
+    const target = targetRef.current;
+    const current = currentRef.current;
+    const diffX = Math.abs(target.x - current.x);
+    const diffY = Math.abs(target.y - current.y);
+    
+    // Skip if both components settled
+    if (diffX < threshold && diffY < threshold) {
+      if (current.x !== target.x || current.y !== target.y) {
+        currentRef.current = { ...target };
+        setSmoothedValue({ ...target });
+      }
+      return;
+    }
+    
+    // Frame-rate independent smoothing
+    const normalizedFactor = 1 - Math.pow(1 - smoothing, deltaTime * 60);
+    
+    const newX = current.x + (target.x - current.x) * normalizedFactor;
+    const newY = current.y + (target.y - current.y) * normalizedFactor;
+    
+    currentRef.current = { x: newX, y: newY };
+    setSmoothedValue({ x: newX, y: newY });
+  }, true);
+  
+  return smoothedValue;
+};

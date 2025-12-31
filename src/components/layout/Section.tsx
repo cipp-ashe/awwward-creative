@@ -98,7 +98,7 @@ export const SectionHeader = ({
     )}
     <h2 className="text-display text-display-md mb-6">{title}</h2>
     {subtitle && (
-      <p className="text-lg text-muted-foreground max-w-2xl">{subtitle}</p>
+      <p className="text-lg text-muted-foreground max-w-content-narrow">{subtitle}</p>
     )}
   </div>
 );
