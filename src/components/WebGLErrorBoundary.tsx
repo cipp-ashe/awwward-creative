@@ -83,7 +83,7 @@ export class WebGLErrorBoundary extends Component<WebGLErrorBoundaryProps, WebGL
               {title}
             </h2>
             
-            <p className="text-muted-foreground max-w-md mx-auto mb-8">
+            <p className="text-muted-foreground max-w-content-narrow mx-auto mb-8">
               {fallbackDescription}
             </p>
 

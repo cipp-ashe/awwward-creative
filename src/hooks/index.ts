@@ -19,7 +19,7 @@ export { useTicker } from './useTicker';
 export type { TickerCallback, TickerHandle } from './useTicker';
 
 /** Damped value interpolation for smooth animations */
-export { useSmoothValue, useSmoothVec2 } from './useSmoothValue';
+export { useSmoothValue, useSmoothVec2, useSmoothVec2Ref } from './useSmoothValue';
 
 /** Smooth scrolling with Lenis */
 export { useLenis } from './useLenis';

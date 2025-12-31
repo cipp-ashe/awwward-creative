@@ -6,7 +6,7 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
 import { ANIMATION, TRANSITION, SMOOTHING, DELAY, withDelay } from '@/constants/animation';
-import { useSmoothValue, useSmoothVec2 } from '@/hooks/useSmoothValue';
+import { useSmoothValue, useSmoothVec2Ref } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
 // Vertex shader with displacement
@@ -463,7 +463,8 @@ const Scene = ({ scrollProgress, mousePosition }: SceneProps) => {
 const WebGL3DSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const [rawScrollProgress, setRawScrollProgress] = useState(0);
-  const [rawMousePosition, setRawMousePosition] = useState({ x: 0, y: 0 });
+  // Use ref for mouse position to avoid re-renders on every mouse move (60+ Hz)
+  const rawMousePositionRef = useRef({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   
   // Use centralized motion config instead of local check
@@ -481,7 +482,8 @@ const WebGL3DSection = () => {
   });
   
   // SMOOTHING.mouse for balanced mouse tracking responsiveness
-  const mousePosition = useSmoothVec2(rawMousePosition, { 
+  // Uses ref-based variant to avoid parent re-renders on high-frequency mouse input
+  const mousePosition = useSmoothVec2Ref(rawMousePositionRef, { 
     smoothing: SMOOTHING.mouse,
     threshold: 0.0001 
   });
@@ -519,10 +521,10 @@ const WebGL3DSection = () => {
     if (isReducedMotion) return;
     
     const handleMouseMove = (e: MouseEvent) => {
-      // Normalize to [-1, 1], write to RAW value
+      // Normalize to [-1, 1], write directly to ref (no setState = no re-render)
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      setRawMousePosition({ x, y });
+      rawMousePositionRef.current = { x, y };
     };
 
     window.addEventListener('mousemove', handleMouseMove);
