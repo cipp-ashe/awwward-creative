@@ -71,7 +71,7 @@ export const NAVIGATION_SECTIONS: readonly SectionConfig[] = [
   { id: 'hero', label: 'Intro', number: '00' },
   { id: 'motion', label: 'Motion', number: '01' },
   { id: 'scroll', label: 'Scroll', number: '02', skipRevealWrapper: true },
-  { id: 'typography', label: 'Type', number: '03' },
+  { id: 'typography', label: 'Type', number: '03', skipRevealWrapper: true },
   { id: 'micro', label: 'Micro', number: '04' },
   { id: 'performance', label: 'Perf', number: '05' },
   { id: 'morphing', label: 'Morph', number: '06' },
