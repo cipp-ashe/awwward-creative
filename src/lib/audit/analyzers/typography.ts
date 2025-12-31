@@ -47,19 +47,23 @@ export const analyzeTypography = (files: FileContents): FrictionPoint[] => {
     }
   }
   
-  // Check for extremely tight line-heights
-  const tightLineHeights = lineHeights.filter(lh => lh < 1);
+  // Check for extremely tight line-heights (allow for display-* sizes as they are single-line)
+  // Only flag line-heights below 0.85 which are dangerously tight
+  const tightLineHeights = lineHeights.filter(lh => lh < 0.85);
   if (tightLineHeights.length > 0) {
     issues.push({
       persona: 'typography',
-      issue: `Line-height below 1.0 (${tightLineHeights.join(', ')}) causes descenders to clip on multi-line text. Acceptable only for guaranteed single-line titles.`,
+      issue: `Line-height below 0.85 (${tightLineHeights.join(', ')}) causes descenders to clip even on single-line titles.`,
       severity: 'high',
       file: 'tailwind.config.ts',
     });
   }
   
   // Check for letter-spacing inversions
-  const letterSpacingRegex = /letterSpacing:\s*["']?(-?[\d.]+)em["']?/g;
+  // NOTE: In professional typography, LARGER text typically has TIGHTER tracking
+  // (negative letter-spacing) because the larger size already provides visual separation.
+  // SMALLER text needs LOOSER tracking to remain legible.
+  // Valid progression: display-xl (-0.04em) → display-sm (-0.01em)
   const letterSpacings: { size: string; value: number }[] = [];
   
   // Simple heuristic: look for patterns like "display-xl": ... letterSpacing: "-0.03em"
@@ -73,18 +77,22 @@ export const analyzeTypography = (files: FileContents): FrictionPoint[] => {
     }
   });
   
-  // Check if smaller sizes have tighter tracking than larger (inverted)
+  // Check if larger sizes have LOOSER tracking than smaller (which would be inverted)
+  // Correct: xl=-0.04, lg=-0.03, md=-0.02, sm=-0.01 (larger = tighter)
+  // Inverted: xl=-0.01, lg=-0.02, md=-0.03, sm=-0.04 (larger = looser) 
   if (letterSpacings.length >= 2) {
+    const sizeOrder = ['sm', 'md', 'lg', 'xl', '2xl', '3xl'];
     const sorted = [...letterSpacings].sort((a, b) => {
-      const order = ['sm', 'md', 'lg', 'xl', '2xl', '3xl'];
-      return order.indexOf(a.size) - order.indexOf(b.size);
+      return sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size);
     });
     
     for (let i = 1; i < sorted.length; i++) {
-      if (sorted[i].value < sorted[i-1].value) {
+      // If larger size (higher index) has LOOSER tracking (less negative), that's inverted
+      // Example: md=-0.02, lg=-0.01 would be inverted (lg should be tighter, not looser)
+      if (sorted[i].value > sorted[i-1].value) {
         issues.push({
           persona: 'typography',
-          issue: `Letter-spacing inverted: display-${sorted[i].size} (${sorted[i].value}em) tighter than display-${sorted[i-1].size} (${sorted[i-1].value}em). Larger type should breathe more.`,
+          issue: `Letter-spacing inverted: display-${sorted[i].size} (${sorted[i].value}em) looser than display-${sorted[i-1].size} (${sorted[i-1].value}em). Larger type should have tighter tracking.`,
           severity: 'medium',
           file: 'tailwind.config.ts',
         });

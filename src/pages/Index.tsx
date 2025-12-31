@@ -120,7 +120,7 @@ const IndexContent = () => {
   return (
     <>
       {isLoading && (
-        <Preloader onComplete={handlePreloaderComplete} minDuration={1200} />
+        <Preloader onComplete={handlePreloaderComplete} minDuration={1000} />
       )}
 
       <NavigationBar />

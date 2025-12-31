@@ -32,11 +32,11 @@ import {
 export interface PreloaderProps {
   /** Callback fired when loading completes and exit animation finishes */
   onComplete: () => void;
-  /** Minimum time to show preloader in ms (default: 1500) */
+  /** Minimum time to show preloader in ms (default: 1000 for optimal perceived performance) */
   minDuration?: number;
 }
 
-const Preloader = ({ onComplete, minDuration = 1500 }: PreloaderProps) => {
+const Preloader = ({ onComplete, minDuration = 1000 }: PreloaderProps) => {
   const [isExiting, setIsExiting] = useState(false);
   const { progress, isComplete, currentAsset, loadedAssets, totalAssets } = useAssetLoader({
     minDuration,
