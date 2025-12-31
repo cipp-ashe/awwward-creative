@@ -499,7 +499,7 @@ const WebGL3DSection = () => {
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: section,
-        start: 'top 150%', // Start earlier so WebGL preloads before visible
+        start: 'top 300%', // Preload while user is in morphing section
         end: 'bottom -50%', // Keep mounted longer after leaving
         invalidateOnRefresh: true, // Recalculate on resize
         onUpdate: (self) => {
