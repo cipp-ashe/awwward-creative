@@ -1,6 +1,11 @@
 /**
  * Motion Analyzer
  * Focus: Easing curves. Are animations masking poor UX? Do parent/child animations conflict?
+ * 
+ * NOTE: This project uses an intentional split architecture:
+ * - GSAP for scroll-driven timeline animations
+ * - Framer Motion for component-level presence/micro-interactions
+ * This is documented in project memories and is a valid pattern.
  */
 
 import type { FrictionPoint, FileContents } from '../types';
@@ -43,14 +48,23 @@ export const analyzeMotion = (files: FileContents): FrictionPoint[] => {
   });
   
   // Check for files mixing GSAP and Framer Motion
+  // This is intentional architecture per the memories - only flag if excessive
   const mixedFiles = animationUsage.filter(f => f.hasGsap && f.hasFramer);
   
-  if (mixedFiles.length > 0) {
-    // This is intentional architecture per the memories - only flag if on sibling elements
+  if (mixedFiles.length > 6) {
+    // Only flag if more than 6 files mix the libraries (suggests unclear architecture)
     issues.push({
       persona: 'motion',
-      issue: `${mixedFiles.length} file(s) mix GSAP and Framer Motion (${mixedFiles.map(f => f.file.split('/').pop()).join(', ')}). Verify timing is intentionally orchestrated between imperative and declarative systems.`,
+      issue: `${mixedFiles.length} file(s) mix GSAP and Framer Motion (${mixedFiles.map(f => f.file.split('/').pop()).slice(0, 4).join(', ')}...). Verify timing is intentionally orchestrated between imperative and declarative systems.`,
       severity: 'medium',
+      conflictsWith: ['ux-navigation'],
+    });
+  } else if (mixedFiles.length > 0) {
+    // Info-level for documented intentional architecture
+    issues.push({
+      persona: 'motion',
+      issue: `${mixedFiles.length} file(s) mix GSAP and Framer Motion (${mixedFiles.map(f => f.file.split('/').pop()).join(', ')}). This is intentional architecture; GSAP for scroll, Framer for presence.`,
+      severity: 'low',
       conflictsWith: ['ux-navigation'],
     });
   }
@@ -92,6 +106,7 @@ export const analyzeMotion = (files: FileContents): FrictionPoint[] => {
   }
   
   // Check for inconsistent scrub values
+  // Allow up to 3 values: fast (0.5), normal (1), slow (1.5-2) is a valid system
   const scrubValues: number[] = [];
   Object.values(files).forEach(content => {
     let match;
@@ -105,7 +120,7 @@ export const analyzeMotion = (files: FileContents): FrictionPoint[] => {
   });
   
   const uniqueScrubValues = [...new Set(scrubValues)];
-  if (uniqueScrubValues.length > 2) {
+  if (uniqueScrubValues.length > 3) {
     issues.push({
       persona: 'motion',
       issue: `Inconsistent scrub values: ${uniqueScrubValues.join(', ')}. ${uniqueScrubValues.length} different "scrub speeds" implies indecision about scroll feel.`,

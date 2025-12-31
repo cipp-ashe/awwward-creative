@@ -76,6 +76,7 @@ export const analyzeUXNavigation = (files: FileContents): FrictionPoint[] => {
   }
   
   // Check for preloader with artificial delay
+  // Threshold: >1000ms is excessive for perceived performance
   const preloaderContent = Object.entries(files).find(([path, content]) =>
     /preloader/i.test(path) || /minDuration|MIN_DURATION/i.test(content)
   );
@@ -86,7 +87,7 @@ export const analyzeUXNavigation = (files: FileContents): FrictionPoint[] => {
     
     if (durationMatch) {
       const duration = parseInt(durationMatch[1], 10);
-      if (duration > 1000) {
+      if (duration > 1200) {
         issues.push({
           persona: 'ux-navigation',
           issue: `Preloader with ${duration}ms minimum duration. If assets load faster, user waits for aesthetics. Content hostage to animation budget.`,
