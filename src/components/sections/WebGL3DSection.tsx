@@ -6,7 +6,7 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
 import { ANIMATION, TRANSITION, SMOOTHING, DELAY, withDelay } from '@/constants/animation';
-import { useSmoothValue, useSmoothVec2Ref } from '@/hooks/useSmoothValue';
+import { useSmoothValueRef, useSmoothVec2Ref } from '@/hooks/useSmoothValue';
 import { useMotionConfigSafe } from '@/contexts/MotionConfigContext';
 
 // Vertex shader with displacement
@@ -462,8 +462,8 @@ const Scene = ({ scrollProgress, mousePosition }: SceneProps) => {
 
 const WebGL3DSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const [rawScrollProgress, setRawScrollProgress] = useState(0);
-  // Use ref for mouse position to avoid re-renders on every mouse move (60+ Hz)
+  // Use refs for high-frequency inputs to avoid re-renders (60+ Hz during scroll/mouse)
+  const rawScrollProgressRef = useRef(0);
   const rawMousePositionRef = useRef({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   
@@ -473,23 +473,23 @@ const WebGL3DSection = () => {
   // ========================================================================
   // DAMPING LAYER: Smooth scroll and mouse values before passing to shaders
   // This prevents visual chaos on fast scroll and creates organic motion
+  // Uses ref-based variants to avoid parent re-renders on high-frequency input
   // ========================================================================
   
   // SMOOTHING.scroll for cinematic scroll-driven animations
-  const scrollProgress = useSmoothValue(rawScrollProgress, { 
+  const scrollProgress = useSmoothValueRef(rawScrollProgressRef, { 
     smoothing: SMOOTHING.scroll,
     threshold: 0.0001 
   });
   
   // SMOOTHING.mouse for balanced mouse tracking responsiveness
-  // Uses ref-based variant to avoid parent re-renders on high-frequency mouse input
   const mousePosition = useSmoothVec2Ref(rawMousePositionRef, { 
     smoothing: SMOOTHING.mouse,
     threshold: 0.0001 
   });
 
   // Scroll tracking via GSAP ScrollTrigger
-  // Writes to rawScrollProgress which gets smoothed via useSmoothValue
+  // Writes directly to ref - damping layer handles smoothing (no setState = no re-render)
   useEffect(() => {
     if (isReducedMotion) return;
     
@@ -503,8 +503,8 @@ const WebGL3DSection = () => {
         end: 'bottom top',
         invalidateOnRefresh: true, // Recalculate on resize
         onUpdate: (self) => {
-          // Write to RAW value - damping layer handles smoothing
-          setRawScrollProgress(self.progress);
+          // Write directly to ref (no setState = no re-render)
+          rawScrollProgressRef.current = self.progress;
         },
         onEnter: () => setIsVisible(true),
         onLeave: () => setIsVisible(false),

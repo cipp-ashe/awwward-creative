@@ -120,6 +120,70 @@ export const useSmoothValue = (
 };
 
 // ============================================================================
+// REF-BASED SCALAR VARIANT (Zero Re-renders)
+// ============================================================================
+
+/**
+ * Ref-based variant that reads target from a ref, avoiding parent re-renders.
+ * Use this for high-frequency inputs like scroll progress that update 60+ times/sec.
+ * 
+ * @param targetRef - Ref containing the raw number target (updated externally)
+ * @param options - Smoothing configuration
+ * @returns Smoothed number value
+ * 
+ * @example
+ * const rawScrollRef = useRef(0);
+ * const smoothedScroll = useSmoothValueRef(rawScrollRef, { smoothing: SMOOTHING.scroll });
+ * 
+ * // In ScrollTrigger onUpdate (no setState = no re-render):
+ * rawScrollRef.current = self.progress;
+ */
+export const useSmoothValueRef = (
+  targetRef: React.MutableRefObject<number>,
+  options: SmoothValueOptions = {}
+): number => {
+  const { 
+    smoothing = 0.08, 
+    threshold = 0.0001,
+    initialValue = 0 
+  } = options;
+  
+  const [smoothedValue, setSmoothedValue] = useState(initialValue);
+  const currentRef = useRef(initialValue);
+  const { isReducedMotion } = useMotionConfigSafe();
+  
+  // If reduced motion, return target directly (no smoothing)
+  if (isReducedMotion) {
+    return targetRef.current;
+  }
+  
+  // Use central ticker for frame-rate independent smoothing
+  useTicker((deltaTime) => {
+    const target = targetRef.current;
+    const current = currentRef.current;
+    const diff = Math.abs(target - current);
+    
+    // Skip update if within threshold (value has settled)
+    if (diff < threshold) {
+      if (current !== target) {
+        currentRef.current = target;
+        setSmoothedValue(target);
+      }
+      return;
+    }
+    
+    // Frame-rate independent smoothing
+    const normalizedFactor = 1 - Math.pow(1 - smoothing, deltaTime * 60);
+    const newValue = current + (target - current) * normalizedFactor;
+    
+    currentRef.current = newValue;
+    setSmoothedValue(newValue);
+  }, true);
+  
+  return smoothedValue;
+};
+
+// ============================================================================
 // VECTOR VARIANT
 // ============================================================================
 
