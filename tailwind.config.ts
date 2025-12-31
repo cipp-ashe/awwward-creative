@@ -20,6 +20,22 @@ export default {
         'content-wide': '80rem',     // 1280px - wide content
         'content-max': '87.5rem',    // 1400px - maximum width
       },
+      // Spacing scale tokens - modular scale (base 4, ratio ~2x)
+      // Use: gap-section-*, p-section-*, m-section-*, space-*-section-*
+      gap: {
+        'section-xs': '0.5rem',      // 8px - tight inline elements
+        'section-sm': '1rem',        // 16px - related items
+        'section-md': '1.5rem',      // 24px - component spacing
+        'section-lg': '3rem',        // 48px - section internal
+        'section-xl': '6rem',        // 96px - section separation
+      },
+      spacing: {
+        'section-xs': '0.5rem',      // 8px
+        'section-sm': '1rem',        // 16px
+        'section-md': '1.5rem',      // 24px
+        'section-lg': '3rem',        // 48px
+        'section-xl': '6rem',        // 96px
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
