@@ -499,8 +499,8 @@ const WebGL3DSection = () => {
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: section,
-        start: 'top bottom',
-        end: 'bottom top',
+        start: 'top 150%', // Start earlier so WebGL preloads before visible
+        end: 'bottom -50%', // Keep mounted longer after leaving
         invalidateOnRefresh: true, // Recalculate on resize
         onUpdate: (self) => {
           // Write directly to ref (no setState = no re-render)
