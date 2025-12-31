@@ -51,21 +51,30 @@ export const analyzeGridComposition = (files: FileContents): FrictionPoint[] => 
     });
   }
   
-  // Check for inconsistent gap values
-  const gapPattern = /gap-(\d+)/g;
-  const gapValues: number[] = [];
+  // Define the SPACING token system - these are valid/intentional
+  const spacingTokens = ['section-xs', 'section-sm', 'section-md', 'section-lg', 'section-xl'];
+  
+  // Check for inconsistent gap values (excluding token-based gaps)
+  const gapPattern = /gap-(\d+|section-(?:xs|sm|md|lg|xl))/g;
+  const numericGapValues: number[] = [];
+  let tokenGapCount = 0;
   
   Object.values(files).forEach(content => {
     let match;
     const regex = new RegExp(gapPattern.source, 'g');
     while ((match = regex.exec(content)) !== null) {
-      gapValues.push(parseInt(match[1], 10));
+      const value = match[1];
+      if (spacingTokens.includes(value)) {
+        tokenGapCount++;
+      } else {
+        numericGapValues.push(parseInt(value, 10));
+      }
     }
   });
   
-  const uniqueGaps = [...new Set(gapValues)].sort((a, b) => a - b);
+  const uniqueGaps = [...new Set(numericGapValues)].sort((a, b) => a - b);
   
-  // Check if gaps follow a modular scale (roughly powers of 2 or golden ratio)
+  // Check if numeric gaps follow a modular scale (roughly powers of 2 or golden ratio)
   if (uniqueGaps.length > 4) {
     const isModular = uniqueGaps.every((gap, i) => {
       if (i === 0) return true;
@@ -76,7 +85,7 @@ export const analyzeGridComposition = (files: FileContents): FrictionPoint[] => 
     if (!isModular) {
       issues.push({
         persona: 'grid-composition',
-        issue: `Gap values vary: ${uniqueGaps.join(', ')}. No modular scale detected. Spacing feels arbitrary.`,
+        issue: `Gap values vary: ${uniqueGaps.join(', ')}. No modular scale detected. Consider using gap-section-* tokens.`,
         severity: 'high',
       });
     }
